@@ -1,7 +1,13 @@
-# Project setup
+# On Chain
 
-You should not do this again, but here are the steps documenting the
-process.
+This demo shows how we can get transitive attested data on chain. In this demo,
+bring a transitive attested function call from the [iterate demo](../iterate/)
+on to a chain in a development environment.
+
+## Setup
+
+You should not do this again, but here are the steps documenting getting
+the project setup.
 
 ```bash
 npm install npm@10.9.0
