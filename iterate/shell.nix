@@ -14,6 +14,5 @@ pkgs.mkShellNoCC {
     tinygo
     jq
     gnumake
-		mustache-go
   ];
 }
