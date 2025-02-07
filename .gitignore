@@ -2,6 +2,9 @@
 iterate/bky-as
 iterate/tmp
 
+# on-chain project ignores
+on-chain/inputs
+
 # node/ts files
 on-chain/node_modules
 on-chain/.env
