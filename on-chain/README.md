@@ -24,3 +24,18 @@ npm install --save-dev -dd solidity-bytes-utils
 ```
 
 You are ready to start going!!
+
+## Bring results from iterate on chain
+
+Copy an output from iterate
+
+```bash
+mkdir input
+cp ../iterate/tmp/prev.json input/prev.json
+```
+
+And run the test:
+
+```bash
+make test-local
+```
