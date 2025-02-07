@@ -59,13 +59,17 @@ func extractSamples(eAttest, tAttest, whitelist json.RawMessage) ([]Sample, erro
 		return []Sample{}, nil
 	}
 
-	claims, err := as.VerifyAttestation(eAttest, tAttest, whitelist)
+	verifyOut, err := as.VerifyAttestation(as.HostVerifyAttestationInput{
+		EnclaveAttestedKey:    eAttest,
+		TransitiveAttestation: tAttest,
+		AcceptableMeasures:    whitelist,
+	})
 	if err != nil {
 		return nil, fmt.Errorf("could not verify previous attestation: %w", err)
 	}
 
 	var fixedRep [][]byte
-	err = json.Unmarshal(claims, &fixedRep)
+	err = json.Unmarshal(verifyOut.RawClaims, &fixedRep)
 	if err != nil {
 		return nil, fmt.Errorf("could not unmarshal previous claims: %w", err)
 	}
@@ -90,8 +94,8 @@ func getNewSample(apiKey string) (Sample, error) {
 	req := as.HostHTTPRequestInput{
 		Method: "GET",
 		URL:    fmt.Sprintf("https://api.coingecko.com/api/v3/coins/%s/tickers", coinID),
-		Headers: []as.HostHTTPRequestHeaders{
-			{Key: "x-cg-demo-api-key", Values: []string{apiKey}},
+		Headers: map[string][]string{
+			"x-cg-demo-api-key": []string{apiKey},
 		},
 	}
 	resp, err := as.HostFuncHTTPRequest(req)
@@ -111,7 +115,7 @@ func getNewSample(apiKey string) (Sample, error) {
 	}{}
 	err = json.Unmarshal(resp.Body, &coinGeckoData)
 	if err != nil {
-		return Sample{}, fmt.Errorf("unmarshaling coin gecko data: %w", err)
+		return Sample{}, fmt.Errorf("unmarshaling coin gecko data: %w...%s", err, resp.Body)
 	}
 
 	price := coinGeckoData.Tickers[0].ConvertedLast.Eth
@@ -133,14 +137,14 @@ func average(samples []Sample) (float64, error) {
 func advanceWindow(input Args, secret SecretArgs) (Window, error) {
 	samples, err := extractSamples(input.EAttest, input.TAttest, input.Whitelist)
 	if err != nil {
-		return Window{}, fmt.Errorf("extracting samples: ", err)
+		return Window{}, fmt.Errorf("extracting samples: %w", err)
 	}
 
 	as.Logf("last samples %v\n", samples)
 
 	newSample, err := getNewSample(secret.CoinGeckoAPIKey)
 	if err != nil {
-		return Window{}, fmt.Errorf("getting new sample: ", err)
+		return Window{}, fmt.Errorf("getting new sample %w: ", err)
 	}
 
 	as.LogToHost(fmt.Sprintf("newSample %v\n", newSample))

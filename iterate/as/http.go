@@ -1,56 +1,55 @@
 package as
 
 import (
-	"encoding/json"
 	"errors"
 	"runtime"
 )
 
 type HostHTTPRequestInput struct {
-	Method  string                   `json:"method"`
-	URL     string                   `json:"url"`
-	Headers []HostHTTPRequestHeaders `json:"headers"`
-	Body    []byte                   `json:"body"`
+	Method  string              `json:"method"`
+	URL     string              `json:"url"`
+	Headers map[string][]string `json:"headers"`
+	Body    []byte              `json:"body"`
 }
 
-type HostHTTPRequestHeaders struct {
-	Key    string   `json:"key"`
-	Values []string `json:"values"`
+type HostHTTPRequestResult struct {
+	IsOk  bool                  `json:"ok"`
+	Value HostHTTPRequestOutput `json:"value"`
+	Error string                `json:"error"`
 }
 
 type HostHTTPRequestOutput struct {
-	StatusCode int    `json:"status_code"`
-	Body       []byte `json:"body"`
-	Error      string `json:"error"`
-}
-
-func hostHTTPReqInToBytes(v HostHTTPRequestInput) ([]byte, error) {
-	return json.Marshal(v)
-}
-
-func hostHTTPReqOutFromBytes(data []byte) (HostHTTPRequestOutput, error) {
-	var v HostHTTPRequestOutput
-	err := json.Unmarshal(data, &v)
-	return v, err
+	StatusCode int                 `json:"status_code"`
+	Body       []byte              `json:"body"`
+	Headers    map[string][]string `json:"headers"`
 }
 
 //go:wasmimport env httpRequest
-func _hostFuncHTTPRequest(ptr, size uint32) uint64
+func _hostFuncHTTPRequest(offset, size uint32) uint64
 
-func HostFuncHTTPRequest(request HostHTTPRequestInput) (HostHTTPRequestOutput, error) {
-	inputData, err := hostHTTPReqInToBytes(request)
+func HostFuncHTTPRequest(
+	input HostHTTPRequestInput,
+) (HostHTTPRequestOutput, error) {
+	inputData, err := Marshal(input)
 	if err != nil {
-		return HostHTTPRequestOutput{}, errors.New("marshaling request data: " + err.Error())
+		msg := "marshaling input data: " + err.Error()
+		return HostHTTPRequestOutput{}, errors.New(msg)
 	}
 
-	inOffset, inLen := bytesToPtr(inputData)
-	outPtr := _hostFuncHTTPRequest(inOffset, inLen)
+	inOffset, inSize := bytesToOffsetSize(inputData)
+	outPtr := _hostFuncHTTPRequest(inOffset, inSize)
 	runtime.KeepAlive(inputData)
-	outputData := bytesFromPtr(outPtr)
+	outputData := bytesFromFatPtr(outPtr)
 
-	output, err := hostHTTPReqOutFromBytes(outputData)
-	if err != nil {
-		return HostHTTPRequestOutput{}, errors.New("unmarshaling result data: " + err.Error())
+	var result HostHTTPRequestResult
+	err = Unmarshal(outputData, &result)
+	switch {
+	case err != nil:
+		msg := "unmarshaling output data: " + err.Error()
+		return HostHTTPRequestOutput{}, errors.New(msg)
+	case !result.IsOk:
+		msg := "host fn returned error: " + result.Error
+		return HostHTTPRequestOutput{}, errors.New(msg)
 	}
-	return output, nil
+	return result.Value, nil
 }

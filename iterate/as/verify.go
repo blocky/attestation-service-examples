@@ -6,45 +6,48 @@ import (
 	"runtime"
 )
 
+type HostVerifyAttestationInput struct {
+	EnclaveAttestedKey    json.RawMessage `json:"enclave_attested_app_public_key"`
+	TransitiveAttestation json.RawMessage `json:"transitive_attestation"`
+	AcceptableMeasures    json.RawMessage `json:"acceptable_measurements"`
+}
+
+type HostVerifyAttestationResult struct {
+	IsOk  bool                        `json:"ok"`
+	Value HostVerifyAttestationOutput `json:"value"`
+	Error string                      `json:"error"`
+}
+
+type HostVerifyAttestationOutput struct {
+	RawClaims []byte `json:"raw_claims"`
+}
+
 //go:wasmimport env verifyAttestation
-func _hostFuncVerify(ptr, size uint32) uint64
+func _hostFuncVerifyAttestation(offset, size uint32) uint64
 
-type VerifyInput struct {
-	EAttest   json.RawMessage `json:"eAttest"`
-	TAttest   json.RawMessage `json:"tAttest"`
-	Whitelist json.RawMessage `json:"whitelist"`
-}
-
-type VerifyOutput struct {
-	RawClaims []byte `json:"raw_clamis"`
-	Error     string `json:"error"`
-}
-
-func VerifyAttestation(eAttest, tAttest, whitelist json.RawMessage) ([]byte, error) {
-	LogToHost("starting verification\n")
-	in := VerifyInput{
-		EAttest:   eAttest,
-		TAttest:   tAttest,
-		Whitelist: whitelist,
-	}
-	data, err := json.Marshal(in)
+func VerifyAttestation(
+	input HostVerifyAttestationInput,
+) (HostVerifyAttestationOutput, error) {
+	inputData, err := Marshal(input)
 	if err != nil {
-		return nil, errors.New("marshaling verify input: " + err.Error())
+		msg := "marshaling input data: " + err.Error()
+		return HostVerifyAttestationOutput{}, errors.New(msg)
 	}
 
-	offset, length := bytesToPtr(data)
-	outPtr := _hostFuncVerify(offset, length)
-	runtime.KeepAlive(data)
+	inOffset, inSize := bytesToOffsetSize(inputData)
+	resultPtr := _hostFuncVerifyAttestation(inOffset, inSize)
+	runtime.KeepAlive(inputData)
+	resultData := bytesFromFatPtr(resultPtr)
 
-	var out VerifyOutput
-	outData := bytesFromPtr(outPtr)
-	err = json.Unmarshal(outData, &out)
+	var result HostVerifyAttestationResult
+	err = Unmarshal(resultData, &result)
 	switch {
 	case err != nil:
-		return nil, errors.New("unmarshaling verify output: " + err.Error())
-	case out.Error != "":
-		return nil, errors.New(out.Error)
+		msg := "unmarshaling result data: " + err.Error()
+		return HostVerifyAttestationOutput{}, errors.New(msg)
+	case !result.IsOk:
+		msg := "host fn returned error: " + result.Error
+		return HostVerifyAttestationOutput{}, errors.New(msg)
 	}
-
-	return out.RawClaims, nil
+	return result.Value, nil
 }

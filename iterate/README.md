@@ -7,7 +7,8 @@ Coingecko API to accumulate a collection of samples such that we can compute
 the average of those samples.
 
 To get started, put a copy of `bky-as` in the current directory.  You can use
-`nix` to set up the correct shell.
+`nix` to set up the correct shell (but note that it sets up an alias that is
+pretty specific to dave's prototyping environment).
 
 ```bash
 nix-shell

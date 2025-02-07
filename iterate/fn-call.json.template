@@ -3,19 +3,8 @@
         "code_file": "./tmp/x.wasm",
         "function": "myTestFunc",
         "input": {
-            "eAttest": {
-                "Platform": "plain",
-                "PlAttests": [
-                  "eyJEYXRhIjoiZXlKamRYSjJaVjkwZVhCbElqb2ljREkxTm1zeElpd2laR0YwWVNJNklrST0iLCJNZWFzdXJlbWVudCI6eyJQbGF0Zm9ybSI6InBsYWluIiwiQ29kZSI6InBsYWluIn19",
-                  "eyJEYXRhIjoiVEdKSFVVRTJhamx4UWxVNWFIb3labE56VVcwdlZqVTJOMDByVWtKa1NtYz0iLCJNZWFzdXJlbWVudCI6eyJQbGF0Zm9ybSI6InBsYWluIiwiQ29kZSI6InBsYWluIn19",
-                  "eyJEYXRhIjoiYTFKU1JqWlhiRXBSV0U1UU5WbzBWMkpMZEhKR2NrSTVabGhoVG01Qldraz0iLCJNZWFzdXJlbWVudCI6eyJQbGF0Zm9ybSI6InBsYWluIiwiQ29kZSI6InBsYWluIn19",
-                  "eyJEYXRhIjoiTjJwT05rYzBORUpWYkVrdlpWSnpPVUV6WWxkYVl6MGlmUT09IiwiTWVhc3VyZW1lbnQiOnsiUGxhdGZvcm0iOiJwbGFpbiIsIkNvZGUiOiJwbGFpbiJ9fQ==",
-                  "eyJEYXRhIjoiQ1lOZFV1NUsrMGg2TTRBZi9DcXJCcUNWVXdEYW5zNlVBQVhYdGZXeWZjTT0iLCJNZWFzdXJlbWVudCI6eyJQbGF0Zm9ybSI6InBsYWluIiwiQ29kZSI6InBsYWluIn19"
-                ]
-            },
-
-            TATTEST
-
+            "eAttest": VAR_EATTEST,
+            VAR_TATTEST
             "whitelist": [
                 { "platform": "plain", "code": "plain" }
             ]

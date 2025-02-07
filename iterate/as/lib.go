@@ -9,28 +9,37 @@ package as
 import "C"
 
 import (
+	"encoding/json"
 	"unsafe"
 )
 
-// bytesToPtr returns a pointer and size pair for the given byte slice in a
+// bytesToOffsetSize returns a pointer and size pair for the given byte slice in a
 // format compatible with WebAssembly numeric types.
-func bytesToPtr(data []byte) (uint32, uint32) {
+func bytesToOffsetSize(data []byte) (uint32, uint32) {
 	ptr := unsafe.Pointer(unsafe.SliceData(data))
 	offset := uint32(uintptr(ptr))
-	length := uint32(len(data))
-	return offset, length
+	size := uint32(len(data))
+	return offset, size
 }
 
-// bytesFromPtr takes a packed offset and size pointer in a format compatible
+// bytesFromFatPtr takes a packed offset and size pointer in a format compatible
 // with WebAssembly numeric types and returns the corresponding byte slice.
-func bytesFromPtr(inPtr uint64) []byte {
+func bytesFromFatPtr(inPtr uint64) []byte {
 	offset := uint32(inPtr >> 32)
 	size := uint32(inPtr)
 	return unsafe.Slice((*byte)(unsafe.Pointer(uintptr(offset))), size)
 }
 
 func Bytes(inPtr uint64) []byte {
-	return bytesFromPtr(inPtr)
+	return bytesFromFatPtr(inPtr)
+}
+
+func Unmarshal(data []byte, v any) error {
+	return json.Unmarshal(data, v)
+}
+
+func Marshal(v any) ([]byte, error) {
+	return json.Marshal(v)
 }
 
 // leakToSharedMem is used to persist data in shared memory beyond the execution

@@ -15,7 +15,7 @@ func _hostFuncConsoleLog(ptr, size uint32)
 
 func LogToHost(msg string) {
 	msgData := []byte(msg)
-	inOffset, inLen := bytesToPtr(msgData)
+	inOffset, inLen := bytesToOffsetSize(msgData)
 	_hostFuncConsoleLog(inOffset, inLen)
 	runtime.KeepAlive(msgData)
 }
@@ -23,7 +23,7 @@ func LogToHost(msg string) {
 func Logf(format string, a ...any) {
 	msg := fmt.Sprintf(format, a...)
 	msgData := []byte(msg)
-	inOffset, inLen := bytesToPtr(msgData)
+	inOffset, inLen := bytesToOffsetSize(msgData)
 	_hostFuncConsoleLog(inOffset, inLen)
 	runtime.KeepAlive(msgData)
 }
