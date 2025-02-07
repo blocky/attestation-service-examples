@@ -1,0 +1,22 @@
+# iterate project ignores
+iterate/bky-as
+iterate/tmp
+
+# node/ts files
+on-chain/node_modules
+on-chain/.env
+
+# Hardhat files
+on-chain/cache
+on-chain/artifacts
+
+# TypeChain files
+on-chain/typechain
+on-chain/typechain-types
+
+# solidity-coverage files
+on-chain/coverage
+on-chain/coverage.json
+
+# Hardhat Ignition default folder for deployments against a local node
+on-chain/ignition/deployments/chain-31337
