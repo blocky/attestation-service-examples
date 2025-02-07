@@ -1,4 +1,4 @@
-# as-examples
+# attestation-service-examples
 
 This repo contains some fun examples of things that you can do with the BLOCKY
 AS service.  It is currently under heavily active development and may not
