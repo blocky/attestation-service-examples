@@ -15,10 +15,17 @@ const loadEVMLinkData = () => {
 
         const data = JSON.parse(file);
 
-        const bytes = ethers.decodeBase64(data.function_calls[0].transitive_attestation)
-        const ta = Buffer.from(bytes).toString('utf-8');
+        const k = data.enclave_attested_application_public_key.public_key.data
+        const pubKeyBytes = ethers.decodeBase64(k)
+        const publicKeyHex = Buffer.from(pubKeyBytes).toString('hex');
+
+        const taBytes = ethers.decodeBase64(data.function_calls[0].transitive_attestation)
+        const ta = Buffer.from(taBytes).toString('utf-8');
+
+
+
         return {
-            publicKey: `0x${data.enclave_attested_application_public_key.public_key.data}`,
+            publicKey: `0x${publicKeyHex}`,
             transitiveAttestation: ta
         };
     } catch (e) {
