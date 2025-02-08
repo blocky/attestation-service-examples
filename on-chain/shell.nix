@@ -8,7 +8,6 @@ in
 pkgs.mkShellNoCC {
   packages = with pkgs; [
     gnumake
-    nodejs_18
-    jq
+    nodejs_20
   ];
 }

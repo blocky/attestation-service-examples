@@ -1,26 +1,30 @@
-// SPDX-License-Identifier: UNLICENSED
+// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.10;
 
+import "@openzeppelin/contracts/access/Ownable.sol";
+import "hardhat/console.sol";
 import {JsmnSolLib} from "../lib/JsmnSolLib.sol";
 import {TAParser} from "./TAParser.sol";
 import {console} from "hardhat/console.sol";
 
-contract User is TAParser {
+contract User is Ownable, TAParser {
     event AttestedFunctionCallOutput(string result, string error);
 
     address public _verifierAddress;
     address public taSigningKeyAddress;
 
-    // todo: make this an owner function
+    constructor() Ownable(msg.sender) {
+    }
+
     function setTASigningKeyAddress(
         bytes calldata taSigningKey
     )
-    public
+    public onlyOwner
     {
         taSigningKeyAddress = publicKeyToAddress(taSigningKey);
     }
 
-    function verifyAttestedAPICallClaims(
+    function verifyAttestedFnCallClaims(
         string calldata taData
     )
     private view returns (TAParser.FnCallClaims memory)
@@ -33,7 +37,7 @@ contract User is TAParser {
         return claims;
     }
 
-    function parseAPICallClaims(
+    function parseFnCallClaims(
         TAParser.FnCallClaims memory claims
     ) public
     {
@@ -56,16 +60,16 @@ contract User is TAParser {
         emit AttestedFunctionCallOutput(isErr, avg);
     }
 
-    function processAttestedAPICallClaims(
+    function processAttestedFnCallClaims(
         string calldata taData
     ) public {
-        console.log("\n> Processing attested API call claims");
+        console.log("\n> Processing attested function call claims");
 
-        TAParser.FnCallClaims memory claims = verifyAttestedAPICallClaims(taData);
+        TAParser.FnCallClaims memory claims = verifyAttestedFnCallClaims(taData);
 
-        parseAPICallClaims(claims);
+        parseFnCallClaims(claims);
 
-        console.log("Processed attested API call claims");
+        console.log("Processed attested function call claims");
     }
 }
 
