@@ -15,6 +15,6 @@
   "scripts": {
     "test": "make test-local"
   },
-  "author": "Blocky",
+  "author": "Blocky, Inc.",
   "license": "MIT"
 }
