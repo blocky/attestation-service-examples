@@ -1,46 +1,40 @@
 # On Chain
 
 This demo shows how we can get transitive attested data on chain. In this demo,
-bring a transitive attested function call from the [iterate demo](../iterate/)
+bring a transitive attested function call from the [iterate demo](../iterate)
 on to a chain in a development environment.
 
 ## Setup
 
-You should not do this again, but here are the steps documenting getting
-the project setup.
+Use `nix` to set up a shell environment with the correct dependencies:
 
 ```bash
-npm install npm@10.9.0
-npm init
-npm install --save-dev hardhat
-npx hardhat init
+nix-shell
 ```
 
-The last step may hang, you can cancel and reissue the command
+Continue with the following commands in the nix shell.
+
+Set up the project dependencies:
 
 ```bash
-npm install --save-dev "@nomicfoundation/hardhat-toolbox@^5.0.0" --dd
+npm install
 ```
 
-Install other dependencies
+## Run
 
-
-```bash
-npm install --save-dev -dd solidity-bytes-utils
-```
-
-You are ready to start going!!
-
-## Bring results from iterate on chain
-
-Copy an output from iterate
-
-```bash
-make copy-from-iterate
-```
-
-And run the test:
+Test bringing a transitive attested function call on chain into the
+[User](contracts/User.sol) contract:
 
 ```bash
 make test-local
+```
+
+You can see the details of this test in [test/User.ts](test/User.ts).
+
+(Optionally) If you ran the [iterate demo](../iterate) and want to use its
+latest transitive attested function call, bring it into this project by
+running:
+
+```bash
+make copy-from-iterate
 ```
