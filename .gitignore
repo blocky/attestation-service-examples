@@ -1,6 +1,5 @@
 # iterate project ignores
 iterate/bky-as
-iterate/config.toml
 iterate/tmp
 
 # on-chain project ignores
