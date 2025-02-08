@@ -36,8 +36,7 @@ You are ready to start going!!
 Copy an output from iterate
 
 ```bash
-mkdir input
-cp ../iterate/tmp/prev.json input/prev.json
+make copy-from-iterate
 ```
 
 And run the test:
