@@ -1,10 +1,9 @@
 # iterate project ignores
 iterate/bky-as
+iterate/config.toml
 iterate/tmp
 
 # on-chain project ignores
-on-chain/inputs
-
 # node/ts files
 on-chain/node_modules
 on-chain/.env
