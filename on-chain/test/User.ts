@@ -38,14 +38,16 @@ describe("Local Tests", function () {
     }
 
     it("process TA", async () => {
-        const {userContract} = await loadFixture(deployUser);
+        // given
         const evmLinkData = loadEVMLinkData();
-
         const publicKey = evmLinkData.publicKey;
+
+        const {userContract} = await loadFixture(deployUser);
         await userContract.setTASigningKeyAddress(publicKey as any);
 
+        // when
         const ta = evmLinkData.transitiveAttestation;
-        const tx = await userContract.processAttestedFnCallClaims(ta)
+        const tx = await userContract.processAttestedFnCallClaims(ta as any)
 
         // then
         await expect(tx).to.emit(
