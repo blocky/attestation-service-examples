@@ -1,4 +1,3 @@
-// SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.10;
 
 import {JsmnSolLib} from "../lib/JsmnSolLib.sol";
@@ -52,7 +51,7 @@ contract TAParser {
     {
         TA memory ta = decodeTA(taData);
 
-        FnCallClaims memory claims = decodeAPICallClaims(ta.Data);
+        FnCallClaims memory claims = decodeFnCallClaims(ta.Data);
 
         bytes memory sigAsBytes = Base64.decode(ta.Sig);
         bytes32 r = BytesLib.toBytes32(sigAsBytes, 0);
@@ -86,7 +85,7 @@ contract TAParser {
         return ta;
     }
 
-    function decodeAPICallClaims(
+    function decodeFnCallClaims(
         string memory data
     )
     private pure returns (FnCallClaims memory)

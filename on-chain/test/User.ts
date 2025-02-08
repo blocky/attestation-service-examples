@@ -3,8 +3,6 @@ import {loadFixture} from "@nomicfoundation/hardhat-toolbox/network-helpers";
 import {expect} from "chai";
 import {ethers} from "ethers";
 
-require('dotenv').config();
-
 const fs = require("fs")
 const path = require("path")
 
@@ -47,7 +45,7 @@ describe("Local Tests", function () {
         await userContract.setTASigningKeyAddress(publicKey as any);
 
         const ta = evmLinkData.transitiveAttestation;
-        const tx = await userContract.processAttestedAPICallClaims(ta)
+        const tx = await userContract.processAttestedFnCallClaims(ta)
 
         // then
         await expect(tx).to.emit(
