@@ -1,19 +1,19 @@
 {
   "dependencies": {
+    "@openzeppelin/contracts": "^5.2.0",
     "base64-sol": "github:brechtpd/base64",
-    "npm": "^10.9.0"
+    "npm": "^10.9.0",
+    "solidity-bytes-utils": "^0.8.3"
   },
   "name": "on-chain",
   "version": "1.0.0",
   "main": "index.js",
   "devDependencies": {
     "@nomicfoundation/hardhat-toolbox": "^5.0.0",
-    "@openzeppelin/contracts": "^5.2.0",
-    "hardhat": "^2.22.18",
-    "solidity-bytes-utils": "^0.8.3"
+    "hardhat": "^2.22.18"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "make test-local"
   },
   "author": "Blocky",
   "license": "MIT"
