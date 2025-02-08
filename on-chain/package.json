@@ -1,7 +1,6 @@
 {
   "dependencies": {
     "base64-sol": "github:brechtpd/base64",
-    "dotenv": "^16.4.7",
     "npm": "^10.9.0"
   },
   "name": "on-chain",
@@ -10,6 +9,7 @@
   "main": "index.js",
   "devDependencies": {
     "@nomicfoundation/hardhat-toolbox": "^5.0.0",
+    "@openzeppelin/contracts": "^5.2.0",
     "hardhat": "^2.22.18",
     "solidity-bytes-utils": "^0.8.3"
   },
@@ -17,5 +17,9 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "directories": {
+    "lib": "lib",
+    "test": "test"
+  }
 }
