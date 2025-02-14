@@ -13,7 +13,6 @@ tmp/x.wasm: main.go $(wildcard as/*.go) | tmp check
 	@docker run --rm \
         -v .:/src \
         -w /src \
-        --platform linux/amd64 \
         tinygo/tinygo:0.31.2 \
         tinygo build -o tmp/x.wasm -target=wasi main.go
 
