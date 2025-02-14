@@ -3,7 +3,7 @@ default: run
 tmp:
 	@mkdir -p tmp
 	
-tmp/x.wasm: main.go | tmp
+tmp/x.wasm: main.go $(wildcard as/*.go) | tmp
 	@echo "Building WASM module..."
 	@tinygo build -o tmp/x.wasm -target=wasi main.go
 
