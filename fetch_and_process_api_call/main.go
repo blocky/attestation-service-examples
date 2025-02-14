@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"net/http"
 	"time"
@@ -96,22 +95,22 @@ func myOracleFunc(inputPtr, secretPtr uint64) uint64 {
 	inputData := as.Bytes(inputPtr)
 	err := json.Unmarshal(inputData, &input)
 	if err != nil {
-		outErr := errors.New("could not unmarshal input args: " + err.Error())
-		return emitErr(outErr)
+		outErr := fmt.Errorf("could not unmarshal input args: %w", err)
+		return emitErr(outErr.Error())
 	}
 
 	var secret SecretArgs
 	secretData := as.Bytes(secretPtr)
 	err = json.Unmarshal(secretData, &secret)
 	if err != nil {
-		outErr := errors.New("could not unmarshal secret args: " + err.Error())
-		return emitErr(outErr)
+		outErr := fmt.Errorf("could not unmarshal secret args: %w", err)
+		return emitErr(outErr.Error())
 	}
 
 	price, err := getPrice(input.Market, input.CoinID, secret.CoinGeckoAPIKey)
 	if err != nil {
-		outErr := errors.New("getting price: " + err.Error())
-		return emitErr(outErr)
+		outErr := fmt.Errorf("getting price: %w", err)
+		return emitErr(outErr.Error())
 	}
 
 	return emitPrice(price)
@@ -119,10 +118,10 @@ func myOracleFunc(inputPtr, secretPtr uint64) uint64 {
 
 func main() {}
 
-func emitErr(err error) uint64 {
+func emitErr(err string) uint64 {
 	result := Result{
 		Success: false,
-		Error:   err.Error(),
+		Error:   err,
 	}
 	return writeResultToSharedMem(result)
 }
