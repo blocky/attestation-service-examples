@@ -27,13 +27,13 @@ Your output should show the price of Bitcoin in USD on the Binance market:
 
 ```json
 {
-  "IsErr": false,
+  "Success": true,
   "Value": {
     "market": "Binance",
     "coin_id": "BTC",
     "currency": "USD",
-    "price": 98420,
-    "timestamp": "2025-02-14T19:19:00Z"
+    "price": 97151,
+    "timestamp": "2025-02-14T23:09:00Z"
   },
   "Error": ""
 }
