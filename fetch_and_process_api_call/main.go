@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"net/http"
 	"time"
 
 	"github.com/blocky/as-demo/as"
@@ -58,7 +59,7 @@ func getPrice(market string, coinID string, apiKey string) (Price, error) {
 		return Price{}, fmt.Errorf("making http request: %w", err)
 	}
 
-	if resp.StatusCode != 200 {
+	if resp.StatusCode != http.StatusOK {
 		return Price{}, fmt.Errorf(
 			"http request failed with status code %d",
 			resp.StatusCode,
