@@ -23,7 +23,8 @@ To run this example, all you need to do is call:
 make
 ```
 
-Your output should show the price of Bitcoin in USD on the Binance market:
+Your output should show the attested price of Bitcoin in USD on the Binance 
+market:
 
 ```json
 {
