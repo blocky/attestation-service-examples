@@ -75,6 +75,13 @@ func getPrice(market string, coinID string, apiKey string) (Price, error) {
 		return Price{}, fmt.Errorf("making http request: %w", err)
 	}
 
+	if resp.StatusCode != 200 {
+		return Price{}, fmt.Errorf(
+			"http request failed with status code %d",
+			resp.StatusCode,
+		)
+	}
+
 	coinGeckoResponse := CoinGeckoResponse{}
 	err = json.Unmarshal(resp.Body, &coinGeckoResponse)
 	if err != nil {
