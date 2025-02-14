@@ -41,7 +41,7 @@ func writeOutputToSharedMem(price Price, respErr error) uint64 {
 	}
 
 	output := Output{Value: price, Error: errString, IsErr: isErr}
-	outputData, err := json.Marshal(output)
+	outputData, err := as.Marshal(output)
 	if err != nil {
 		// We panic on errors we cannot communicate back to function caller
 		panic("Fatal error: could not marshal output data")
