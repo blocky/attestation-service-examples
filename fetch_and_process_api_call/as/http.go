@@ -29,7 +29,10 @@ func _hostFuncHTTPRequest(offset, size uint32) uint64
 
 func HostFuncHTTPRequest(
 	input HostHTTPRequestInput,
-) (HostHTTPRequestOutput, error) {
+) (
+	HostHTTPRequestOutput,
+	error,
+) {
 	inputData, err := Marshal(input)
 	if err != nil {
 		msg := "marshaling input data: " + err.Error()

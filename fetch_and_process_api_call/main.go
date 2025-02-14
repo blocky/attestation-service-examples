@@ -26,27 +26,10 @@ type Price struct {
 	Timestamp time.Time `json:"timestamp"`
 }
 
-type Output struct {
-	IsErr bool
-	Value Price
-	Error string
-}
-
-func writeOutputToSharedMem(price Price, respErr error) uint64 {
-	isErr := false
-	errString := ""
-	if respErr != nil {
-		isErr = true
-		errString = "Error executing function: " + respErr.Error()
-	}
-
-	output := Output{Value: price, Error: errString, IsErr: isErr}
-	outputData, err := as.Marshal(output)
-	if err != nil {
-		// We panic on errors we cannot communicate back to function caller
-		panic("Fatal error: could not marshal output data")
-	}
-	return as.ShareWithHost(outputData)
+type Result struct {
+	Success bool
+	Value   Price
+	Error   string
 }
 
 type CoinGeckoResponse struct {
@@ -113,7 +96,7 @@ func myOracleFunc(inputPtr, secretPtr uint64) uint64 {
 	err := json.Unmarshal(inputData, &input)
 	if err != nil {
 		outErr := errors.New("could not unmarshal input args: " + err.Error())
-		return writeOutputToSharedMem(Price{}, outErr)
+		return emitErr(outErr)
 	}
 
 	var secret SecretArgs
@@ -121,16 +104,41 @@ func myOracleFunc(inputPtr, secretPtr uint64) uint64 {
 	err = json.Unmarshal(secretData, &secret)
 	if err != nil {
 		outErr := errors.New("could not unmarshal secret args: " + err.Error())
-		return writeOutputToSharedMem(Price{}, outErr)
+		return emitErr(outErr)
 	}
 
 	price, err := getPrice(input.Market, input.CoinID, secret.CoinGeckoAPIKey)
 	if err != nil {
 		outErr := errors.New("getting price: " + err.Error())
-		return writeOutputToSharedMem(Price{}, outErr)
+		return emitErr(outErr)
 	}
 
-	return writeOutputToSharedMem(price, nil)
+	return emitPrice(price)
 }
 
 func main() {}
+
+func emitErr(err error) uint64 {
+	result := Result{
+		Success: false,
+		Error:   err.Error(),
+	}
+	return writeResultToSharedMem(result)
+}
+
+func emitPrice(price Price) uint64 {
+	result := Result{
+		Success: true,
+		Value:   price,
+	}
+	return writeResultToSharedMem(result)
+}
+
+func writeResultToSharedMem(result Result) uint64 {
+	outputData, err := as.Marshal(result)
+	if err != nil {
+		// We panic on errors we cannot communicate back to function caller
+		panic("Fatal error: could not marshal output data")
+	}
+	return as.ShareWithHost(outputData)
+}
