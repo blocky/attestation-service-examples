@@ -7,7 +7,7 @@
             "coin_id": "bitcoin"
         },
         "secret": {
-            "api_key": "CG-NqKT8uUEv9tfwG62w9EUqF7j"
+            "api_key": "CoinGecko API key"
         }
     }
 ]
