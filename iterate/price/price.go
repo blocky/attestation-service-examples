@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"sort"
 	"time"
+
+	"github.com/blocky/as-demo/as"
 )
 
 type Price struct {
@@ -43,4 +45,13 @@ func TWAP(atTime time.Time, samples []Price) (float64, error) {
 	}
 
 	return weightedSum / totalWeight, nil
+}
+
+func TWAPNow(samples []Price) (float64, error) {
+	now, err := as.TimeNow()
+	if err != nil {
+		return 0, fmt.Errorf("could not get current time: %w", err)
+	}
+
+	return TWAP(now, samples)
 }

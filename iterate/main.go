@@ -16,19 +16,31 @@ type Args struct {
 	Whitelist    json.RawMessage `json:"whitelist"`
 }
 
-type SecretArgs struct {
-	CoinGeckoAPIKey string `json:"api_key"`
-}
-
-type Window struct {
-	TWAP    float64
-	Samples []price.Price
+func readArgs(inputPtr uint64) (Args, error) {
+	var input Args
+	inputData := as.Bytes(inputPtr)
+	err := json.Unmarshal(inputData, &input)
+	if err != nil {
+		return Args{}, fmt.Errorf("could not unmarshal input args: %w", err)
+	}
+	return input, nil
 }
 
 type Result struct {
 	Success bool
-	Value   Window
 	Error   string
+}
+
+type PriceSamples []price.Price
+
+type ResultPriceSamples struct {
+	Result       Result
+	PriceSamples PriceSamples
+}
+
+type ResultTWAP struct {
+	Result Result
+	TWAP   float64
 }
 
 func extractPriceSamples(
@@ -36,12 +48,12 @@ func extractPriceSamples(
 	tAttest,
 	whitelist json.RawMessage,
 ) (
-	[]price.Price,
+	PriceSamples,
 	error,
 ) {
 	// bootstrap with empty samples if we don't have a transitive attestation
 	if tAttest == nil {
-		return []price.Price{}, nil
+		return PriceSamples{}, nil
 	}
 
 	verifyOut, err := as.VerifyAttestation(
@@ -62,16 +74,16 @@ func extractPriceSamples(
 	}
 
 	prevResultData := fixedRep[3]
-	var prevResult Result
+	var prevResult ResultPriceSamples
 	err = json.Unmarshal(prevResultData, &prevResult)
 	switch {
 	case err != nil:
 		return nil, fmt.Errorf("could not unmarshal previous output: %w", err)
-	case !prevResult.Success:
+	case !prevResult.Result.Success:
 		return nil, fmt.Errorf("previous run was an error: %w", err)
 	}
 
-	return prevResult.Value.Samples, nil
+	return prevResult.PriceSamples, nil
 
 }
 
@@ -113,93 +125,65 @@ func getNewPriceSample(tokenAddress string, chainID string) (price.Price, error)
 	}, nil
 }
 
-func windowWithoutSamples(input Args) (Window, error) {
-	samples, err := extractPriceSamples(input.EAttest, input.TAttest, input.Whitelist)
+func priceSamples(args Args, advance bool) (PriceSamples, error) {
+	samples, err := extractPriceSamples(args.EAttest, args.TAttest, args.Whitelist)
 	if err != nil {
-		return Window{}, fmt.Errorf("extracting samples: %w", err)
+		return PriceSamples{}, fmt.Errorf("extracting samples: %w", err)
 	}
 
-	now, err := as.TimeNow()
-	if err != nil {
-		return Window{}, fmt.Errorf("getting current time: %w", err)
+	if advance {
+		newPriceSample, err := getNewPriceSample(args.TokenAddress, args.ChainID)
+		if err != nil {
+			return PriceSamples{}, fmt.Errorf("getting new sample %w: ", err)
+		}
+
+		samples = append(samples, newPriceSample)
+		if len(samples) > 5 {
+			samples = samples[:5]
+		}
 	}
 
-	twap, err := price.TWAP(now, samples)
-	if err != nil {
-		return Window{}, fmt.Errorf("computing TWAP: %w", err)
-	}
-
-	window := Window{
-		TWAP: twap,
-	}
-
-	return window, nil
-}
-
-func advanceWindow(input Args) (Window, error) {
-	samples, err := extractPriceSamples(input.EAttest, input.TAttest, input.Whitelist)
-	if err != nil {
-		return Window{}, fmt.Errorf("extracting samples: %w", err)
-	}
-
-	newPriceSample, err := getNewPriceSample(input.TokenAddress, input.ChainID)
-	if err != nil {
-		return Window{}, fmt.Errorf("getting new sample %w: ", err)
-	}
-
-	nextPriceSamples := append(samples, newPriceSample)
-	if len(nextPriceSamples) > 5 {
-		nextPriceSamples = nextPriceSamples[:5]
-	}
-
-	// twap, err := price.TWAP(time.Now(), nextPriceSamples)
-	// if err != nil {
-	// 	return Window{}, fmt.Errorf("computing average: %w", err)
-	// }
-
-	next := Window{
-		TWAP:    1,
-		Samples: nextPriceSamples,
-	}
-	return next, nil
+	return samples, nil
 }
 
 //export iteration
 func iteration(inputPtr, secretPtr uint64) uint64 {
-	var input Args
-	inputData := as.Bytes(inputPtr)
-	err := json.Unmarshal(inputData, &input)
+	args, err := readArgs(inputPtr)
 	if err != nil {
-		outErr := fmt.Errorf("could not unmarshal input args: %w", err)
+		outErr := fmt.Errorf("could not read args: %w", err)
 		return emitErr(outErr.Error())
 	}
 
-	nextWindow, err := advanceWindow(input)
+	nextPriceSamples, err := priceSamples(args, true)
 	if err != nil {
 		outErr := fmt.Errorf("updating average price: %w", err)
 		return emitErr(outErr.Error())
 	}
 
-	return emitWindow(nextWindow)
+	return emitPriceSamples(nextPriceSamples)
 }
 
 //export twap
 func twap(inputPtr, secretPtr uint64) uint64 {
-	var input Args
-	inputData := as.Bytes(inputPtr)
-	err := json.Unmarshal(inputData, &input)
+	args, err := readArgs(inputPtr)
 	if err != nil {
-		outErr := fmt.Errorf("could not unmarshal input args: %w", err)
+		outErr := fmt.Errorf("could not read args: %w", err)
 		return emitErr(outErr.Error())
 	}
 
-	window, err := windowWithoutSamples(input)
+	priceSamples, err := priceSamples(args, false)
 	if err != nil {
 		outErr := fmt.Errorf("updating average price: %w", err)
 		return emitErr(outErr.Error())
 	}
 
-	return emitWindow(window)
+	twap, err := price.TWAPNow(priceSamples)
+	if err != nil {
+		outErr := fmt.Errorf("computing TWAP: %w", err)
+		return emitErr(outErr.Error())
+	}
+
+	return emitTWAP(twap)
 }
 
 func main() {}
@@ -209,30 +193,33 @@ func emitErr(err string) uint64 {
 		Success: false,
 		Error:   err,
 	}
-	return writeResultToSharedMem(result)
+	return emitOutput(result)
 }
 
-func emitWindow(window Window) uint64 {
-	result := Result{
-		Success: true,
-		Value:   window,
+func emitPriceSamples(priceSamples PriceSamples) uint64 {
+	result := ResultPriceSamples{
+		Result: Result{
+			Success: true,
+			Error:   "",
+		},
+		PriceSamples: priceSamples,
 	}
-	return writeResultToSharedMem(result)
+	return emitOutput(result)
 }
 
-func writeResultToSharedMem(result Result) uint64 {
-
-	r := struct {
-		Success bool
-		Value   any
-		Error   string
-	}{
-		Success: result.Success,
-		Value:   result.Value,
-		Error:   result.Error,
+func emitTWAP(twap float64) uint64 {
+	result := ResultTWAP{
+		Result: Result{
+			Success: true,
+			Error:   "",
+		},
+		TWAP: twap,
 	}
+	return emitOutput(result)
+}
 
-	outputData, err := as.Marshal(r)
+func emitOutput(output any) uint64 {
+	outputData, err := as.Marshal(output)
 	if err != nil {
 		// We panic on errors we cannot communicate back to function caller
 		panic("Fatal error: could not marshal output data")
