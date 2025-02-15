@@ -73,4 +73,18 @@ func TestTimeWeightedAverage(t *testing.T) {
 			t.Fatalf("expected 'no samples provided' error, got: %v", err)
 		}
 	})
+
+	t.Run("no time difference", func(t *testing.T) {
+		invalidSample := Price{
+			Value:     100,
+			Timestamp: now,
+		}
+		_, err := TWAP(now, []Price{invalidSample})
+		if err == nil {
+			t.Fatal("expected error, got nil")
+		}
+		if err.Error() != "total weight is zero, cannot compute TWAP" {
+			t.Fatalf("expected 'total weight is zero, cannot compute TWAP' error, got: %v", err)
+		}
+	})
 }

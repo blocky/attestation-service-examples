@@ -33,5 +33,9 @@ func TWAP(now time.Time, samples []Price) (float64, error) {
 		now = sample.Timestamp
 	}
 
+	if totalWeight == 0 {
+		return 0, fmt.Errorf("total weight is zero, cannot compute TWAP")
+	}
+
 	return weightedSum / totalWeight, nil
 }
