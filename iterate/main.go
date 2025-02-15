@@ -73,39 +73,25 @@ func extractSamples(eAttest, tAttest, whitelist json.RawMessage) ([]Sample, erro
 
 }
 
-func getNewSample(
-	tokenAddress string,
-	chainID string,
-	apiKey string,
-) (
-	Sample,
-	error,
-) {
-	coinID := "everclear"
-
+func getNewSample(tokenAddress string, chainID string) (Sample, error) {
 	req := as.HostHTTPRequestInput{
 		Method: "GET",
-		URL:    fmt.Sprintf("https://api.coingecko.com/api/v3/coins/%s/tickers", coinID),
-		Headers: map[string][]string{
-			"x-cg-demo-api-key": []string{apiKey},
-		},
+		URL: fmt.Sprintf(
+			"https://app.steer.finance/api/token/price?tokenAddress=%s&chainId=%s",
+			tokenAddress,
+			chainID,
+		),
 	}
 	resp, err := as.HostFuncHTTPRequest(req)
 	if err != nil {
 		return Sample{}, fmt.Errorf("making http request: %w", err)
 	}
 
-	// I parsed out the data using the following jq query
-	// cat out.json | jq '{ evercler2eth: .tickers[0].converted_last.eth, timestamp: .tickers[0].timestamp }'
-	coinGeckoData := struct {
-		Tickers []struct {
-			ConvertedLast struct {
-				Eth float64 `json:"eth"`
-			} `json:"converted_last"`
-			Timestamp time.Time `json:"timestamp"`
-		} `json:"tickers"`
+	steerData := struct {
+		Price float64 `json:"price"`
 	}{}
-	err = json.Unmarshal(resp.Body, &coinGeckoData)
+
+	err = json.Unmarshal(resp.Body, &steerData)
 	if err != nil {
 		return Sample{}, fmt.Errorf(
 			"unmarshaling coin gecko data: %w...%s",
@@ -114,10 +100,10 @@ func getNewSample(
 		)
 	}
 
-	price := coinGeckoData.Tickers[0].ConvertedLast.Eth
-	timestamp := coinGeckoData.Tickers[0].Timestamp
-
-	return Sample{Price: price, Timestamp: timestamp}, nil
+	return Sample{
+		Price:     steerData.Price,
+		Timestamp: time.Now(),
+	}, nil
 }
 
 func average(samples []Sample) (float64, error) {
@@ -130,17 +116,13 @@ func average(samples []Sample) (float64, error) {
 	return acc / n, nil
 }
 
-func advanceWindow(input Args, secret SecretArgs) (Window, error) {
+func advanceWindow(input Args) (Window, error) {
 	samples, err := extractSamples(input.EAttest, input.TAttest, input.Whitelist)
 	if err != nil {
 		return Window{}, fmt.Errorf("extracting samples: %w", err)
 	}
 
-	newSample, err := getNewSample(
-		input.TokenAddress,
-		input.ChainID,
-		secret.CoinGeckoAPIKey,
-	)
+	newSample, err := getNewSample(input.TokenAddress, input.ChainID)
 	if err != nil {
 		return Window{}, fmt.Errorf("getting new sample %w: ", err)
 	}
@@ -172,15 +154,7 @@ func myTestFunc(inputPtr, secretPtr uint64) uint64 {
 		return emitErr(outErr.Error())
 	}
 
-	var secret SecretArgs
-	secretData := as.Bytes(secretPtr)
-	err = json.Unmarshal(secretData, &secret)
-	if err != nil {
-		outErr := fmt.Errorf("could not unmarshal secret args: %w", err)
-		return emitErr(outErr.Error())
-	}
-
-	nextWindow, err := advanceWindow(input, secret)
+	nextWindow, err := advanceWindow(input)
 	if err != nil {
 		outErr := fmt.Errorf("updating average price: %w", err)
 		return emitErr(outErr.Error())
