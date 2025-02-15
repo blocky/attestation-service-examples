@@ -13,52 +13,41 @@ func TestTimeWeightedAverage(t *testing.T) {
 
 	tests := []struct {
 		name     string
-		atTime   time.Time
 		samples  []Price
 		expected float64
 	}{
 		{
-			name:   "multiple samples",
-			atTime: now,
+			name: "multiple samples",
 			samples: []Price{
 				{Value: 100, Timestamp: now.Add(-1 * time.Hour)},
 				{Value: 200, Timestamp: now.Add(-2 * time.Hour)},
 				{Value: 300, Timestamp: now.Add(-3 * time.Hour)},
+				{Value: 0, Timestamp: now.Add(-4 * time.Hour)},
 			},
 			expected: 200,
 		},
 		{
-			name:   "single sample",
-			atTime: now,
+			name: "single sample",
 			samples: []Price{
 				{Value: 100, Timestamp: now.Add(-1 * time.Hour)},
 			},
 			expected: 100,
 		},
 		{
-			name:   "old samples",
-			atTime: now,
+			name: "out of order samples",
 			samples: []Price{
-				{Value: 100, Timestamp: now.Add(-3 * time.Hour)},
-				{Value: 200, Timestamp: now.Add(-4 * time.Hour)},
+				{Value: 200, Timestamp: now.Add(-2 * time.Hour)},
+				{Value: 100, Timestamp: now.Add(-1 * time.Hour)},
+				{Value: 0, Timestamp: now.Add(-3 * time.Hour)},
 			},
-			expected: 125,
-		},
-		{
-			name:   "out of order samples",
-			atTime: now,
-			samples: []Price{
-				{Value: 200, Timestamp: now.Add(-4 * time.Hour)},
-				{Value: 100, Timestamp: now.Add(-3 * time.Hour)},
-			},
-			expected: 125,
+			expected: 150,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			// when
-			result, err := TWAP(tt.atTime, tt.samples)
+			result, err := TWAP(tt.samples)
 			require.NoError(t, err)
 
 			// then
@@ -68,7 +57,7 @@ func TestTimeWeightedAverage(t *testing.T) {
 
 	t.Run("no samples", func(t *testing.T) {
 		// when
-		_, err := TWAP(now, []Price{})
+		_, err := TWAP([]Price{})
 
 		// then
 		assert.ErrorContains(t, err, "no samples provided")
@@ -76,29 +65,15 @@ func TestTimeWeightedAverage(t *testing.T) {
 
 	t.Run("no time difference", func(t *testing.T) {
 		// given
-		invalidSample := Price{
-			Value:     100,
-			Timestamp: now,
+		invalidSamples := []Price{
+			{Value: 100, Timestamp: now},
+			{Value: 200, Timestamp: now},
 		}
 
 		// when
-		_, err := TWAP(now, []Price{invalidSample})
+		_, err := TWAP(invalidSamples)
 
 		// then
 		assert.ErrorContains(t, err, "total weight is zero, cannot compute TWAP")
-	})
-
-	t.Run("atTime before latest sample", func(t *testing.T) {
-		// given
-		invalidSample := Price{
-			Value:     100,
-			Timestamp: now.Add(1 * time.Hour),
-		}
-
-		// when
-		_, err := TWAP(now, []Price{invalidSample})
-
-		// then
-		assert.ErrorContains(t, err, "atTime is before the latest sample")
 	})
 }

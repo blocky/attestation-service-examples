@@ -177,7 +177,7 @@ func twap(inputPtr, secretPtr uint64) uint64 {
 		return emitErr(outErr.Error())
 	}
 
-	twap, err := price.TWAPNow(priceSamples)
+	twap, err := price.TWAP(priceSamples)
 	if err != nil {
 		outErr := fmt.Errorf("computing TWAP: %w", err)
 		return emitErr(outErr.Error())

@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"sort"
 	"time"
-
-	"github.com/blocky/as-demo/as"
 )
 
 type Price struct {
@@ -13,9 +11,12 @@ type Price struct {
 	Timestamp time.Time `json:"timestamp"`
 }
 
-func TWAP(atTime time.Time, samples []Price) (float64, error) {
+func TWAP(samples []Price) (float64, error) {
 	if len(samples) == 0 {
 		return 0, fmt.Errorf("no samples provided")
+	}
+	if len(samples) == 1 {
+		return samples[0].Value, nil
 	}
 
 	// Sort samples from latest to earliest
@@ -25,19 +26,18 @@ func TWAP(atTime time.Time, samples []Price) (float64, error) {
 		},
 	)
 
-	// Check that atTime is after the latest sample
-	if atTime.Before(samples[0].Timestamp) {
-		return 0, fmt.Errorf("atTime is before the latest sample")
-	}
-
 	var weightedSum, totalWeight float64
 
-	for _, sample := range samples {
-		timeDiff := atTime.Sub(sample.Timestamp).Seconds()
-		weight := timeDiff
-		weightedSum += sample.Value * weight
+	// IMPORTANT: The value of the last sample is not included in the calculation
+	// because it doesn't have a next sample to compare with. However, its
+	// timestamp is used to calculate the weight of the previous sample.
+	prev := samples[0]
+	for _, next := range samples[1:] {
+		timeDiff := prev.Timestamp.Sub(next.Timestamp).Microseconds()
+		weight := float64(timeDiff)
+		weightedSum += prev.Value * weight
 		totalWeight += weight
-		atTime = sample.Timestamp
+		prev = next
 	}
 
 	if totalWeight == 0 {
@@ -45,13 +45,4 @@ func TWAP(atTime time.Time, samples []Price) (float64, error) {
 	}
 
 	return weightedSum / totalWeight, nil
-}
-
-func TWAPNow(samples []Price) (float64, error) {
-	now, err := as.TimeNow()
-	if err != nil {
-		return 0, fmt.Errorf("could not get current time: %w", err)
-	}
-
-	return TWAP(now, samples)
 }

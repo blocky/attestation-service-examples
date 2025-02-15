@@ -26,17 +26,13 @@ init: build
 	@cat tmp/iteration-call.json | ./bky-as attest-fn-call  | jq . > tmp/prev.json
 	@jq -r '.function_calls[0].claims.output | @base64d' tmp/prev.json | jq .
 
-run-iteration: build | check
+iteration: build | check
 	@sed \
 		-e 's/VAR_TATTEST/"tAttest": ${prev_ta},/' \
 		-e 's/VAR_EATTEST/${prev_ea}/' \
 		iteration-call.json.template > tmp/iteration-call.json
 	@cat tmp/iteration-call.json | ./bky-as attest-fn-call | jq . > tmp/prev.json
-
-iteration: run-iteration
 	@jq -r '.function_calls[0].claims.output | @base64d' tmp/prev.json | jq .
-
-iteration-logs: run-iteration
 	@jq -r '.function_calls[0].logs | @base64d' tmp/prev.json
 
 twap: build | check
