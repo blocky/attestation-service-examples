@@ -59,11 +59,13 @@ func extractSamples(eAttest, tAttest, whitelist json.RawMessage) ([]Sample, erro
 		return []Sample{}, nil
 	}
 
-	verifyOut, err := as.VerifyAttestation(as.HostVerifyAttestationInput{
-		EnclaveAttestedKey:    eAttest,
-		TransitiveAttestation: tAttest,
-		AcceptableMeasures:    whitelist,
-	})
+	verifyOut, err := as.VerifyAttestation(
+		as.HostVerifyAttestationInput{
+			EnclaveAttestedKey:    eAttest,
+			TransitiveAttestation: tAttest,
+			AcceptableMeasures:    whitelist,
+		},
+	)
 	if err != nil {
 		return nil, fmt.Errorf("could not verify previous attestation: %w", err)
 	}
@@ -115,7 +117,11 @@ func getNewSample(apiKey string) (Sample, error) {
 	}{}
 	err = json.Unmarshal(resp.Body, &coinGeckoData)
 	if err != nil {
-		return Sample{}, fmt.Errorf("unmarshaling coin gecko data: %w...%s", err, resp.Body)
+		return Sample{}, fmt.Errorf(
+			"unmarshaling coin gecko data: %w...%s",
+			err,
+			resp.Body,
+		)
 	}
 
 	price := coinGeckoData.Tickers[0].ConvertedLast.Eth
@@ -140,14 +146,10 @@ func advanceWindow(input Args, secret SecretArgs) (Window, error) {
 		return Window{}, fmt.Errorf("extracting samples: %w", err)
 	}
 
-	as.Logf("last samples %v\n", samples)
-
 	newSample, err := getNewSample(secret.CoinGeckoAPIKey)
 	if err != nil {
 		return Window{}, fmt.Errorf("getting new sample %w: ", err)
 	}
-
-	as.LogToHost(fmt.Sprintf("newSample %v\n", newSample))
 
 	nextSamples := append(samples, newSample)
 	if len(nextSamples) > 5 {
