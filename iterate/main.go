@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"time"
 
@@ -29,28 +28,10 @@ type Window struct {
 	Samples []Sample
 }
 
-type Output struct {
-	IsErr bool
-	Value Window
-	Error string
-}
-
-func writeOutputToSharedMem(v Window, respErr error) uint64 {
-	isErr := false
-	errString := ""
-	if respErr != nil {
-		isErr = true
-		errString = "Error executing function: " + respErr.Error()
-	}
-
-	output := Output{Value: v, Error: errString, IsErr: isErr}
-	outputData, err := json.Marshal(output)
-	if err != nil {
-		// We panic on errors we cannot communicate back to the caller of this
-		// function.
-		panic("Fatal error: could not marshal output data")
-	}
-	return as.ShareWithHost(outputData)
+type Result struct {
+	Success bool
+	Value   Window
+	Error   string
 }
 
 func extractSamples(eAttest, tAttest, whitelist json.RawMessage) ([]Sample, error) {
@@ -76,17 +57,17 @@ func extractSamples(eAttest, tAttest, whitelist json.RawMessage) ([]Sample, erro
 		return nil, fmt.Errorf("could not unmarshal previous claims: %w", err)
 	}
 
-	prevOutData := fixedRep[3]
-	var prevOut Output
-	err = json.Unmarshal(prevOutData, &prevOut)
+	prevResultData := fixedRep[3]
+	var prevResult Result
+	err = json.Unmarshal(prevResultData, &prevResult)
 	switch {
 	case err != nil:
 		return nil, fmt.Errorf("could not unmarshal previous output: %w", err)
-	case prevOut.IsErr:
+	case !prevResult.Success:
 		return nil, fmt.Errorf("previous run was an error: %w", err)
 	}
 
-	return prevOut.Value.Samples, nil
+	return prevResult.Value.Samples, nil
 
 }
 
@@ -174,25 +155,68 @@ func myTestFunc(inputPtr, secretPtr uint64) uint64 {
 	inputData := as.Bytes(inputPtr)
 	err := json.Unmarshal(inputData, &input)
 	if err != nil {
-		outErr := errors.New("could not unmarshal input args: " + err.Error())
-		return writeOutputToSharedMem(Window{}, outErr)
+		outErr := fmt.Errorf("could not unmarshal input args: %w", err)
+		return emitErr(outErr.Error())
 	}
 
 	var secret SecretArgs
 	secretData := as.Bytes(secretPtr)
 	err = json.Unmarshal(secretData, &secret)
 	if err != nil {
-		outErr := errors.New("could not unmarshal secret args: " + err.Error())
-		return writeOutputToSharedMem(Window{}, outErr)
+		outErr := fmt.Errorf("could not unmarshal secret args: %w", err)
+		return emitErr(outErr.Error())
 	}
 
 	nextWindow, err := advanceWindow(input, secret)
 	if err != nil {
-		outErr := errors.New("updating average price: " + err.Error())
-		return writeOutputToSharedMem(Window{}, outErr)
+		outErr := fmt.Errorf("updating average price: %w", err)
+		return emitErr(outErr.Error())
 	}
 
-	return writeOutputToSharedMem(nextWindow, nil)
+	return emitWindow(nextWindow)
 }
 
 func main() {}
+
+func emitErr(err string) uint64 {
+	result := Result{
+		Success: false,
+		Error:   err,
+	}
+	return writeResultToSharedMem(result)
+}
+
+func emitWindow(window Window) uint64 {
+	result := Result{
+		Success: true,
+		Value:   window,
+	}
+	return writeResultToSharedMem(result)
+}
+
+func writeResultToSharedMem(result Result) uint64 {
+	outputData, err := as.Marshal(result)
+	if err != nil {
+		// We panic on errors we cannot communicate back to function caller
+		panic("Fatal error: could not marshal output data")
+	}
+	return as.ShareWithHost(outputData)
+}
+
+// func writeOutputToSharedMem(v Window, respErr error) uint64 {
+// 	isErr := false
+// 	errString := ""
+// 	if respErr != nil {
+// 		isErr = true
+// 		errString = "Error executing function: " + respErr.Error()
+// 	}
+//
+// 	output := Output{Value: v, Error: errString, IsErr: isErr}
+// 	outputData, err := json.Marshal(output)
+// 	if err != nil {
+// 		// We panic on errors we cannot communicate back to the caller of this
+// 		// function.
+// 		panic("Fatal error: could not marshal output data")
+// 	}
+// 	return as.ShareWithHost(outputData)
+// }
