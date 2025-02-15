@@ -8,22 +8,19 @@ import (
 	"github.com/blocky/as-demo/price"
 )
 
-type Args struct {
+type ArgsIterate struct {
 	TokenAddress string          `json:"token_address"`
 	ChainID      string          `json:"chain_id"`
+	NumSamples   int             `json:"num_samples"`
 	EAttest      json.RawMessage `json:"eAttest"`
 	TAttest      json.RawMessage `json:"tAttest"`
 	Whitelist    json.RawMessage `json:"whitelist"`
 }
 
-func readArgs(inputPtr uint64) (Args, error) {
-	var input Args
-	inputData := as.Bytes(inputPtr)
-	err := json.Unmarshal(inputData, &input)
-	if err != nil {
-		return Args{}, fmt.Errorf("could not unmarshal input args: %w", err)
-	}
-	return input, nil
+type ArgsTWAP struct {
+	EAttest   json.RawMessage `json:"eAttest"`
+	TAttest   json.RawMessage `json:"tAttest"`
+	Whitelist json.RawMessage `json:"whitelist"`
 }
 
 type Result struct {
@@ -125,39 +122,31 @@ func getNewPriceSample(tokenAddress string, chainID string) (price.Price, error)
 	}, nil
 }
 
-func priceSamples(args Args, advance bool) (PriceSamples, error) {
-	samples, err := extractPriceSamples(args.EAttest, args.TAttest, args.Whitelist)
-	if err != nil {
-		return PriceSamples{}, fmt.Errorf("extracting samples: %w", err)
-	}
-
-	if advance {
-		newPriceSample, err := getNewPriceSample(args.TokenAddress, args.ChainID)
-		if err != nil {
-			return PriceSamples{}, fmt.Errorf("getting new sample %w: ", err)
-		}
-
-		samples = append(samples, newPriceSample)
-		if len(samples) > 5 {
-			samples = samples[:5]
-		}
-	}
-
-	return samples, nil
-}
-
 //export iteration
 func iteration(inputPtr, secretPtr uint64) uint64 {
-	args, err := readArgs(inputPtr)
+	var args ArgsIterate
+	inputData := as.Bytes(inputPtr)
+	err := json.Unmarshal(inputData, &args)
 	if err != nil {
-		outErr := fmt.Errorf("could not read args: %w", err)
+		outErr := fmt.Errorf("could not unmarshal args args: %w", err)
 		return emitErr(outErr.Error())
 	}
 
-	nextPriceSamples, err := priceSamples(args, true)
+	priceSamples, err := extractPriceSamples(args.EAttest, args.TAttest, args.Whitelist)
 	if err != nil {
-		outErr := fmt.Errorf("updating average price: %w", err)
+		outErr := fmt.Errorf("extracting priceSamples: %w", err)
 		return emitErr(outErr.Error())
+	}
+
+	newPriceSample, err := getNewPriceSample(args.TokenAddress, args.ChainID)
+	if err != nil {
+		outErr := fmt.Errorf("getting new sample: %w", err)
+		return emitErr(outErr.Error())
+	}
+
+	nextPriceSamples := append(priceSamples, newPriceSample)
+	if len(nextPriceSamples) > args.NumSamples {
+		nextPriceSamples = nextPriceSamples[1:]
 	}
 
 	return emitPriceSamples(nextPriceSamples)
@@ -165,15 +154,17 @@ func iteration(inputPtr, secretPtr uint64) uint64 {
 
 //export twap
 func twap(inputPtr, secretPtr uint64) uint64 {
-	args, err := readArgs(inputPtr)
+	var args ArgsTWAP
+	inputData := as.Bytes(inputPtr)
+	err := json.Unmarshal(inputData, &args)
 	if err != nil {
-		outErr := fmt.Errorf("could not read args: %w", err)
+		outErr := fmt.Errorf("could not unmarshal args args: %w", err)
 		return emitErr(outErr.Error())
 	}
 
-	priceSamples, err := priceSamples(args, false)
+	priceSamples, err := extractPriceSamples(args.EAttest, args.TAttest, args.Whitelist)
 	if err != nil {
-		outErr := fmt.Errorf("updating average price: %w", err)
+		outErr := fmt.Errorf("extracting samples: %w", err)
 		return emitErr(outErr.Error())
 	}
 
