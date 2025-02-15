@@ -1,33 +1,39 @@
 # Iteration
 
 This demo shows how we feed attested outputs as input into the attestation
-service.  One great use for that features is that it allows us to carry state
-from one invocation to the next.  For example, here, we iteratively call the
+service. One great use for that features is that it allows us to carry state
+from one invocation to the next. For example, here, we iteratively call the
 Coingecko API to accumulate a collection of samples such that we can compute
 the average of those samples.
 
-To get started, put a copy of `bky-as` in the current directory.  You can use
-`nix` to set up the correct shell (but note that it sets up an alias that is
-pretty specific to dave's prototyping environment).
+To get started, install `bky-as` in the current directory by following the
+instructions in the
+[Blocky Attestation Service setup documentation](https://blocky-docs.redocly.app/attestation-service/setup).
+
+Next, use `nix` to set up the correct environment for building WASM binaries 
+with TinyGo. Note that this process will take a while the first time you run it.
 
 ```bash
 nix-shell
 ```
-Build our wasm function.  Note that you may see an error 
+
+Build our WASM function.
+
+```bash
+make build
+```
+
+Note that you may see an error
 
 ```bash
 jq: error: Could not open file tmp/prev.json: No such file or directory
 ```
 
 No worries, that just means we have no previous iteration (and because this is
-a quick demo, I didn't try to fix that error message.)
-
-
-```bash
-make build
-```
+a quick demo, we didn't try to fix that error message.)
 
 Init the iteration
+
 ```bash
 make init
 ```

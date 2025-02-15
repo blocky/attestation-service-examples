@@ -3,7 +3,6 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"time"
 
 	"github.com/blocky/as-demo/as"
 	"github.com/blocky/as-demo/price"
@@ -103,10 +102,38 @@ func getNewPriceSample(tokenAddress string, chainID string) (price.Price, error)
 		)
 	}
 
+	now, err := as.TimeNow()
+	if err != nil {
+		return price.Price{}, fmt.Errorf("getting current time: %w", err)
+	}
+
 	return price.Price{
 		Value:     steerData.Price,
-		Timestamp: time.Now(),
+		Timestamp: now,
 	}, nil
+}
+
+func windowWithoutSamples(input Args) (Window, error) {
+	samples, err := extractPriceSamples(input.EAttest, input.TAttest, input.Whitelist)
+	if err != nil {
+		return Window{}, fmt.Errorf("extracting samples: %w", err)
+	}
+
+	now, err := as.TimeNow()
+	if err != nil {
+		return Window{}, fmt.Errorf("getting current time: %w", err)
+	}
+
+	twap, err := price.TWAP(now, samples)
+	if err != nil {
+		return Window{}, fmt.Errorf("computing TWAP: %w", err)
+	}
+
+	window := Window{
+		TWAP: twap,
+	}
+
+	return window, nil
 }
 
 func advanceWindow(input Args) (Window, error) {
@@ -125,13 +152,13 @@ func advanceWindow(input Args) (Window, error) {
 		nextPriceSamples = nextPriceSamples[:5]
 	}
 
-	twap, err := price.TWAP(time.Now(), nextPriceSamples)
-	if err != nil {
-		return Window{}, fmt.Errorf("computing average: %w", err)
-	}
+	// twap, err := price.TWAP(time.Now(), nextPriceSamples)
+	// if err != nil {
+	// 	return Window{}, fmt.Errorf("computing average: %w", err)
+	// }
 
 	next := Window{
-		TWAP:    twap,
+		TWAP:    1,
 		Samples: nextPriceSamples,
 	}
 	return next, nil
@@ -156,6 +183,25 @@ func iteration(inputPtr, secretPtr uint64) uint64 {
 	return emitWindow(nextWindow)
 }
 
+//export twap
+func twap(inputPtr, secretPtr uint64) uint64 {
+	var input Args
+	inputData := as.Bytes(inputPtr)
+	err := json.Unmarshal(inputData, &input)
+	if err != nil {
+		outErr := fmt.Errorf("could not unmarshal input args: %w", err)
+		return emitErr(outErr.Error())
+	}
+
+	window, err := windowWithoutSamples(input)
+	if err != nil {
+		outErr := fmt.Errorf("updating average price: %w", err)
+		return emitErr(outErr.Error())
+	}
+
+	return emitWindow(window)
+}
+
 func main() {}
 
 func emitErr(err string) uint64 {
@@ -175,7 +221,18 @@ func emitWindow(window Window) uint64 {
 }
 
 func writeResultToSharedMem(result Result) uint64 {
-	outputData, err := as.Marshal(result)
+
+	r := struct {
+		Success bool
+		Value   any
+		Error   string
+	}{
+		Success: result.Success,
+		Value:   result.Value,
+		Error:   result.Error,
+	}
+
+	outputData, err := as.Marshal(r)
 	if err != nil {
 		// We panic on errors we cannot communicate back to function caller
 		panic("Fatal error: could not marshal output data")

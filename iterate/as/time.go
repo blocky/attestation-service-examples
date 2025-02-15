@@ -19,7 +19,13 @@ func TimeNow() (time.Time, error) {
 	}
 
 	timeData := struct {
-		DateTime string `json:"dateTime"`
+		Year         int `json:"year"`
+		Month        int `json:"month"`
+		Day          int `json:"day"`
+		Hour         int `json:"hour"`
+		Minute       int `json:"minute"`
+		Seconds      int `json:"seconds"`
+		Milliseconds int `json:"milliSeconds"`
 	}{}
 
 	err = json.Unmarshal(resp.Body, &timeData)
@@ -31,17 +37,16 @@ func TimeNow() (time.Time, error) {
 		)
 	}
 
-	parsedTime, err := time.Parse(
-		"2006-01-02T15:04:05.0000000",
-		timeData.DateTime,
+	parsedTime := time.Date(
+		timeData.Year,
+		time.Month(timeData.Month),
+		timeData.Day,
+		timeData.Hour,
+		timeData.Minute,
+		timeData.Seconds,
+		timeData.Milliseconds*1e6,
+		time.UTC,
 	)
-	if err != nil {
-		return time.Time{}, fmt.Errorf(
-			"parsing time data: %w...%s",
-			err,
-			timeData.DateTime,
-		)
-	}
 
 	return parsedTime, nil
 }
