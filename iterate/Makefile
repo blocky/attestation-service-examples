@@ -22,16 +22,16 @@ tmp/x.wasm: main.go $(wildcard as/*.go) | tmp check
 build: tmp/x.wasm
 
 init: build
-	@sed -e 's/VAR_EATTEST/null/' -e 's/VAR_TATTEST//' ./fn-call.json.template > ./tmp/fn-call.json
-	@cat tmp/fn-call.json | ./bky-as attest-fn-call  | jq . > tmp/prev.json 
+	@sed -e 's/VAR_EATTEST/null/' -e 's/VAR_TATTEST//' ./iteration-call.json.template > ./tmp/iteration-call.json
+	@cat tmp/iteration-call.json | ./bky-as attest-fn-call  | jq . > tmp/prev.json
 	@jq -r '.function_calls[0].claims.output | @base64d' tmp/prev.json | jq .
 
 run: build | check
 	@sed \
 		-e 's/VAR_TATTEST/"tAttest": ${prev_ta},/' \
 		-e 's/VAR_EATTEST/${prev_ea}/' \
-		fn-call.json.template > tmp/fn-call.json
-	@cat tmp/fn-call.json | ./bky-as attest-fn-call | jq . > tmp/prev.json 
+		iteration-call.json.template > tmp/iteration-call.json
+	@cat tmp/iteration-call.json | ./bky-as attest-fn-call | jq . > tmp/prev.json
 	@jq -r '.function_calls[0].claims.output | @base64d' tmp/prev.json | jq .
 
 clean:

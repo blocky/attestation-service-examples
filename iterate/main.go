@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/blocky/as-demo/as"
+	"github.com/blocky/as-demo/price"
 )
 
 type Args struct {
@@ -20,14 +21,9 @@ type SecretArgs struct {
 	CoinGeckoAPIKey string `json:"api_key"`
 }
 
-type Sample struct {
-	Price     float64
-	Timestamp time.Time
-}
-
 type Window struct {
-	Average float64
-	Samples []Sample
+	TWAP    float64
+	Samples []price.Price
 }
 
 type Result struct {
@@ -36,10 +32,17 @@ type Result struct {
 	Error   string
 }
 
-func extractSamples(eAttest, tAttest, whitelist json.RawMessage) ([]Sample, error) {
+func extractPriceSamples(
+	eAttest,
+	tAttest,
+	whitelist json.RawMessage,
+) (
+	[]price.Price,
+	error,
+) {
 	// bootstrap with empty samples if we don't have a transitive attestation
 	if tAttest == nil {
-		return []Sample{}, nil
+		return []price.Price{}, nil
 	}
 
 	verifyOut, err := as.VerifyAttestation(
@@ -73,7 +76,7 @@ func extractSamples(eAttest, tAttest, whitelist json.RawMessage) ([]Sample, erro
 
 }
 
-func getNewSample(tokenAddress string, chainID string) (Sample, error) {
+func getNewPriceSample(tokenAddress string, chainID string) (price.Price, error) {
 	req := as.HostHTTPRequestInput{
 		Method: "GET",
 		URL: fmt.Sprintf(
@@ -84,7 +87,7 @@ func getNewSample(tokenAddress string, chainID string) (Sample, error) {
 	}
 	resp, err := as.HostFuncHTTPRequest(req)
 	if err != nil {
-		return Sample{}, fmt.Errorf("making http request: %w", err)
+		return price.Price{}, fmt.Errorf("making http request: %w", err)
 	}
 
 	steerData := struct {
@@ -93,59 +96,49 @@ func getNewSample(tokenAddress string, chainID string) (Sample, error) {
 
 	err = json.Unmarshal(resp.Body, &steerData)
 	if err != nil {
-		return Sample{}, fmt.Errorf(
+		return price.Price{}, fmt.Errorf(
 			"unmarshaling coin gecko data: %w...%s",
 			err,
 			resp.Body,
 		)
 	}
 
-	return Sample{
-		Price:     steerData.Price,
+	return price.Price{
+		Value:     steerData.Price,
 		Timestamp: time.Now(),
 	}, nil
 }
 
-func average(samples []Sample) (float64, error) {
-	acc := float64(0)
-	n := float64(len(samples))
-	for _, s := range samples {
-		acc += s.Price
-	}
-
-	return acc / n, nil
-}
-
 func advanceWindow(input Args) (Window, error) {
-	samples, err := extractSamples(input.EAttest, input.TAttest, input.Whitelist)
+	samples, err := extractPriceSamples(input.EAttest, input.TAttest, input.Whitelist)
 	if err != nil {
 		return Window{}, fmt.Errorf("extracting samples: %w", err)
 	}
 
-	newSample, err := getNewSample(input.TokenAddress, input.ChainID)
+	newPriceSample, err := getNewPriceSample(input.TokenAddress, input.ChainID)
 	if err != nil {
 		return Window{}, fmt.Errorf("getting new sample %w: ", err)
 	}
 
-	nextSamples := append(samples, newSample)
-	if len(nextSamples) > 5 {
-		nextSamples = nextSamples[:5]
+	nextPriceSamples := append(samples, newPriceSample)
+	if len(nextPriceSamples) > 5 {
+		nextPriceSamples = nextPriceSamples[:5]
 	}
 
-	nextAvg, err := average(nextSamples)
+	twap, err := price.TWAP(time.Now(), nextPriceSamples)
 	if err != nil {
 		return Window{}, fmt.Errorf("computing average: %w", err)
 	}
 
 	next := Window{
-		Average: nextAvg,
-		Samples: nextSamples,
+		TWAP:    twap,
+		Samples: nextPriceSamples,
 	}
 	return next, nil
 }
 
-//export myTestFunc
-func myTestFunc(inputPtr, secretPtr uint64) uint64 {
+//export iteration
+func iteration(inputPtr, secretPtr uint64) uint64 {
 	var input Args
 	inputData := as.Bytes(inputPtr)
 	err := json.Unmarshal(inputData, &input)
