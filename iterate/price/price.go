@@ -11,7 +11,7 @@ type Price struct {
 	Timestamp time.Time `json:"timestamp"`
 }
 
-func TWAP(now time.Time, samples []Price) (float64, error) {
+func TWAP(atTime time.Time, samples []Price) (float64, error) {
 	if len(samples) == 0 {
 		return 0, fmt.Errorf("no samples provided")
 	}
@@ -23,14 +23,19 @@ func TWAP(now time.Time, samples []Price) (float64, error) {
 		},
 	)
 
+	// Check that atTime is after the latest sample
+	if atTime.Before(samples[0].Timestamp) {
+		return 0, fmt.Errorf("atTime is before the latest sample")
+	}
+
 	var weightedSum, totalWeight float64
 
 	for _, sample := range samples {
-		timeDiff := now.Sub(sample.Timestamp).Seconds()
+		timeDiff := atTime.Sub(sample.Timestamp).Seconds()
 		weight := timeDiff
 		weightedSum += sample.Value * weight
 		totalWeight += weight
-		now = sample.Timestamp
+		atTime = sample.Timestamp
 	}
 
 	if totalWeight == 0 {

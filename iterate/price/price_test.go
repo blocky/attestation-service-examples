@@ -3,6 +3,9 @@ package price
 import (
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestTimeWeightedAverage(t *testing.T) {
@@ -10,13 +13,13 @@ func TestTimeWeightedAverage(t *testing.T) {
 
 	tests := []struct {
 		name     string
-		now      time.Time
+		atTime   time.Time
 		samples  []Price
 		expected float64
 	}{
 		{
-			name: "multiple samples",
-			now:  now,
+			name:   "multiple samples",
+			atTime: now,
 			samples: []Price{
 				{Value: 100, Timestamp: now.Add(-1 * time.Hour)},
 				{Value: 200, Timestamp: now.Add(-2 * time.Hour)},
@@ -25,16 +28,16 @@ func TestTimeWeightedAverage(t *testing.T) {
 			expected: 200,
 		},
 		{
-			name: "single sample",
-			now:  now,
+			name:   "single sample",
+			atTime: now,
 			samples: []Price{
 				{Value: 100, Timestamp: now.Add(-1 * time.Hour)},
 			},
 			expected: 100,
 		},
 		{
-			name: "old samples",
-			now:  now,
+			name:   "old samples",
+			atTime: now,
 			samples: []Price{
 				{Value: 100, Timestamp: now.Add(-3 * time.Hour)},
 				{Value: 200, Timestamp: now.Add(-4 * time.Hour)},
@@ -42,8 +45,8 @@ func TestTimeWeightedAverage(t *testing.T) {
 			expected: 125,
 		},
 		{
-			name: "out of order samples",
-			now:  now,
+			name:   "out of order samples",
+			atTime: now,
 			samples: []Price{
 				{Value: 200, Timestamp: now.Add(-4 * time.Hour)},
 				{Value: 100, Timestamp: now.Add(-3 * time.Hour)},
@@ -54,37 +57,48 @@ func TestTimeWeightedAverage(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result, err := TWAP(tt.now, tt.samples)
-			if err != nil {
-				t.Fatalf("unexpected error: %v", err)
-			}
-			if result != tt.expected {
-				t.Errorf("expected %f, got %f", tt.expected, result)
-			}
+			// when
+			result, err := TWAP(tt.atTime, tt.samples)
+			require.NoError(t, err)
+
+			// then
+			assert.Equal(t, tt.expected, result)
 		})
 	}
 
 	t.Run("no samples", func(t *testing.T) {
+		// when
 		_, err := TWAP(now, []Price{})
-		if err == nil {
-			t.Fatal("expected error, got nil")
-		}
-		if err.Error() != "no samples provided" {
-			t.Fatalf("expected 'no samples provided' error, got: %v", err)
-		}
+
+		// then
+		assert.ErrorContains(t, err, "no samples provided")
 	})
 
 	t.Run("no time difference", func(t *testing.T) {
+		// given
 		invalidSample := Price{
 			Value:     100,
 			Timestamp: now,
 		}
+
+		// when
 		_, err := TWAP(now, []Price{invalidSample})
-		if err == nil {
-			t.Fatal("expected error, got nil")
+
+		// then
+		assert.ErrorContains(t, err, "total weight is zero, cannot compute TWAP")
+	})
+
+	t.Run("atTime before latest sample", func(t *testing.T) {
+		// given
+		invalidSample := Price{
+			Value:     100,
+			Timestamp: now.Add(1 * time.Hour),
 		}
-		if err.Error() != "total weight is zero, cannot compute TWAP" {
-			t.Fatalf("expected 'total weight is zero, cannot compute TWAP' error, got: %v", err)
-		}
+
+		// when
+		_, err := TWAP(now, []Price{invalidSample})
+
+		// then
+		assert.ErrorContains(t, err, "atTime is before the latest sample")
 	})
 }
