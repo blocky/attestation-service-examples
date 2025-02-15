@@ -4,17 +4,29 @@ prev_ea := $(shell jq '.enclave_attested_application_public_key.enclave_attestat
 default: run
 
 tmp: 
-	mkdir tmp
-	
-build: tmp
-	tinygo build -o tmp/x.wasm -target=wasi main.go
+	@mkdir tmp
 
-init: 
+check:
+	@command -v docker >/dev/null 2>&1 || { echo >&2 "docker not found in PATH. Aborting."; exit 1; }
+	@command -v bky-as >/dev/null 2>&1 || { echo >&2 "bky-as not found in PATH. Aborting."; exit 1; }
+	@command -v jq >/dev/null 2>&1 || { echo >&2 "jq not found in PATH. Aborting."; exit 1; }
+
+tmp/x.wasm: main.go $(wildcard as/*.go) | tmp check
+	@echo "Building WASM module..."
+	@docker run --rm \
+        -v .:/src \
+        -w /src \
+        tinygo/tinygo:0.31.2 \
+        tinygo build -o tmp/x.wasm -target=wasi main.go
+
+build: tmp/x.wasm
+
+init: build
 	@sed -e 's/VAR_EATTEST/null/' -e 's/VAR_TATTEST//' ./fn-call.json.template > ./tmp/fn-call.json
 	@cat tmp/fn-call.json | ./bky-as attest-fn-call  | jq . > tmp/prev.json 
 	@jq -r '.function_calls[0].claims.output | @base64d' tmp/prev.json | jq .
 
-run: 
+run: build | check
 	@sed \
 		-e 's/VAR_TATTEST/"tAttest": ${prev_ta},/' \
 		-e 's/VAR_EATTEST/${prev_ea}/' \
@@ -23,5 +35,5 @@ run:
 	@jq -r '.function_calls[0].claims.output | @base64d' tmp/prev.json | jq .
 
 clean:
-	rm -rf tmp
+	@rm -rf tmp
 
