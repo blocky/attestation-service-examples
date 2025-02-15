@@ -9,9 +9,11 @@ import (
 )
 
 type Args struct {
-	EAttest   json.RawMessage `json:"eAttest"`
-	TAttest   json.RawMessage `json:"tAttest"`
-	Whitelist json.RawMessage `json:"whitelist"`
+	TokenAddress string          `json:"token_address"`
+	ChainID      string          `json:"chain_id"`
+	EAttest      json.RawMessage `json:"eAttest"`
+	TAttest      json.RawMessage `json:"tAttest"`
+	Whitelist    json.RawMessage `json:"whitelist"`
 }
 
 type SecretArgs struct {
@@ -71,7 +73,14 @@ func extractSamples(eAttest, tAttest, whitelist json.RawMessage) ([]Sample, erro
 
 }
 
-func getNewSample(apiKey string) (Sample, error) {
+func getNewSample(
+	tokenAddress string,
+	chainID string,
+	apiKey string,
+) (
+	Sample,
+	error,
+) {
 	coinID := "everclear"
 
 	req := as.HostHTTPRequestInput{
@@ -127,7 +136,11 @@ func advanceWindow(input Args, secret SecretArgs) (Window, error) {
 		return Window{}, fmt.Errorf("extracting samples: %w", err)
 	}
 
-	newSample, err := getNewSample(secret.CoinGeckoAPIKey)
+	newSample, err := getNewSample(
+		input.TokenAddress,
+		input.ChainID,
+		secret.CoinGeckoAPIKey,
+	)
 	if err != nil {
 		return Window{}, fmt.Errorf("getting new sample %w: ", err)
 	}
@@ -202,21 +215,3 @@ func writeResultToSharedMem(result Result) uint64 {
 	}
 	return as.ShareWithHost(outputData)
 }
-
-// func writeOutputToSharedMem(v Window, respErr error) uint64 {
-// 	isErr := false
-// 	errString := ""
-// 	if respErr != nil {
-// 		isErr = true
-// 		errString = "Error executing function: " + respErr.Error()
-// 	}
-//
-// 	output := Output{Value: v, Error: errString, IsErr: isErr}
-// 	outputData, err := json.Marshal(output)
-// 	if err != nil {
-// 		// We panic on errors we cannot communicate back to the caller of this
-// 		// function.
-// 		panic("Fatal error: could not marshal output data")
-// 	}
-// 	return as.ShareWithHost(outputData)
-// }
