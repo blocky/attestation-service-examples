@@ -1,6 +1,6 @@
 # iterate project ignores
-iterate/bky-as
-iterate/tmp
+twap/bky-as
+twap/tmp
 
 # on-chain project ignores
 # node/ts files
