@@ -1,5 +1,5 @@
-prev_ta := $(shell jq '.function_calls[0].transitive_attestation' tmp/prev.json) 
-prev_ea := $(shell jq '.enclave_attested_application_public_key.enclave_attestation' tmp/prev.json)
+prev_ta := $(shell jq '.function_calls[0].transitive_attestation' tmp/prev.json )
+prev_ea := $(shell jq '.enclave_attested_application_public_key.enclave_attestation' tmp/prev.json | sed 's/\//\\\//g' )
 
 default: run
 
@@ -25,6 +25,9 @@ init: build
 	@sed -e 's/VAR_EATTEST/null/' -e 's/VAR_TATTEST//' ./iteration-call.json.template > ./tmp/iteration-call.json
 	@cat tmp/iteration-call.json | ./bky-as attest-fn-call  | jq . > tmp/prev.json
 	@jq -r '.function_calls[0].claims.output | @base64d' tmp/prev.json | jq .
+
+echo:
+	@echo "prev_ea: ${prev_ea}"
 
 iteration: build | check
 	@sed \
