@@ -8,7 +8,7 @@ import {TAParser} from "./TAParser.sol";
 import {console} from "hardhat/console.sol";
 
 contract User is Ownable, TAParser {
-    event AttestedFunctionCallOutput(string result, string error);
+    event AttestedFunctionCallOutput(string Success, string TWAP);
 
     address public _verifierAddress;
     address public taSigningKeyAddress;
@@ -48,16 +48,16 @@ contract User is Ownable, TAParser {
         uint success;
         (success, tokens, number) = JsmnSolLib.parse(out, 50);
 
-        uint isErrIdx = 2;
-        string memory isErr = JsmnSolLib.getBytes(out, tokens[isErrIdx].start, tokens[isErrIdx].end);
+        uint successIdx = 4;
+        string memory resultSuccess = JsmnSolLib.getBytes(out, tokens[successIdx].start, tokens[successIdx].end);
 
-        uint avgIdx = 6;
-        string memory avg = JsmnSolLib.getBytes(out, tokens[avgIdx].start, tokens[avgIdx].end);
+        uint twapIdx = 8;
+        string memory resultTWAP = JsmnSolLib.getBytes(out, tokens[twapIdx].start, tokens[twapIdx].end);
 
-        console.log("Did it Error:", isErr);
-        console.log("Average:", avg);
+        console.log("Success:", resultSuccess);
+        console.log("TWAP:", resultTWAP);
 
-        emit AttestedFunctionCallOutput(isErr, avg);
+        emit AttestedFunctionCallOutput(resultSuccess, resultTWAP);
     }
 
     function processAttestedFnCallClaims(

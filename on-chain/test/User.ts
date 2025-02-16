@@ -8,7 +8,7 @@ const path = require("path")
 
 const loadEVMLinkData = () => {
     try {
-        const dir = path.resolve( __dirname, "../inputs/prev.json");
+        const dir = path.resolve( __dirname, "../inputs/twap.json");
         const file = fs.readFileSync(dir);
 
         const data = JSON.parse(file);

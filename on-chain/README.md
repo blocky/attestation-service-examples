@@ -36,5 +36,5 @@ latest transitive attested function call, bring it into this project by
 running:
 
 ```bash
-make copy-from-iterate
+make copy-from-twap
 ```
