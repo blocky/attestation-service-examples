@@ -25,7 +25,7 @@ func TimeNow() (time.Time, error) {
 	err = json.Unmarshal(resp.Body, &timeData)
 	if err != nil {
 		return time.Time{}, fmt.Errorf(
-			"unmarshaling time data: %w...%s",
+			"unmarshaling time data: %w...%v",
 			err,
 			resp.Body,
 		)
