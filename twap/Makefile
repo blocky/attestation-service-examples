@@ -23,7 +23,7 @@ build: tmp/x.wasm
 
 init: build
 	@sed -e 's/VAR_EATTEST/null/' -e 's/VAR_TATTEST//' ./iteration-call.json.template > ./tmp/iteration-call.json
-	@cat tmp/iteration-call.json | ./bky-as attest-fn-call  | jq . > tmp/prev.json
+	@cat tmp/iteration-call.json | bky-as attest-fn-call  | jq . > tmp/prev.json
 	@jq -r '.function_calls[0].claims.output | @base64d' tmp/prev.json | jq .
 
 echo:
@@ -34,7 +34,7 @@ iteration: build | check
 		-e 's/VAR_TATTEST/"tAttest": ${prev_ta},/' \
 		-e 's/VAR_EATTEST/${prev_ea}/' \
 		iteration-call.json.template > tmp/iteration-call.json
-	@cat tmp/iteration-call.json | ./bky-as attest-fn-call | jq . > tmp/prev.json
+	@cat tmp/iteration-call.json | bky-as attest-fn-call | jq . > tmp/prev.json
 	@jq -r '.function_calls[0].claims.output | @base64d' tmp/prev.json | jq .
 	@jq -r '.function_calls[0].logs | @base64d' tmp/prev.json
 
@@ -43,7 +43,7 @@ twap: build | check
 		-e 's/VAR_TATTEST/"tAttest": ${prev_ta},/' \
 		-e 's/VAR_EATTEST/${prev_ea}/' \
 		twap-call.json.template > tmp/twap-call.json
-	@cat tmp/twap-call.json | ./bky-as attest-fn-call | jq . > tmp/twap.json
+	@cat tmp/twap-call.json | bky-as attest-fn-call | jq . > tmp/twap.json
 	@jq -r '.function_calls[0].claims.output | @base64d' tmp/twap.json | jq .
 	@jq -r '.function_calls[0].logs | @base64d' tmp/twap.json
 
