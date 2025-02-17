@@ -19,13 +19,7 @@ func TimeNow() (time.Time, error) {
 	}
 
 	timeData := struct {
-		Year         int `json:"year"`
-		Month        int `json:"month"`
-		Day          int `json:"day"`
-		Hour         int `json:"hour"`
-		Minute       int `json:"minute"`
-		Seconds      int `json:"seconds"`
-		Milliseconds int `json:"milliSeconds"`
+		DateTime string `json:"dateTime"`
 	}{}
 
 	err = json.Unmarshal(resp.Body, &timeData)
@@ -37,16 +31,8 @@ func TimeNow() (time.Time, error) {
 		)
 	}
 
-	parsedTime := time.Date(
-		timeData.Year,
-		time.Month(timeData.Month),
-		timeData.Day,
-		timeData.Hour,
-		timeData.Minute,
-		timeData.Seconds,
-		timeData.Milliseconds*1e6,
-		time.UTC,
-	)
+	// convert datetime from ISO 8601 format to RFC 3339 format then parse
+	parsedTime, err := time.Parse(time.RFC3339, timeData.DateTime+"Z")
 
 	return parsedTime, nil
 }
