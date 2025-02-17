@@ -33,6 +33,9 @@ func TimeNow() (time.Time, error) {
 
 	// convert datetime from ISO 8601 format to RFC 3339 format then parse
 	parsedTime, err := time.Parse(time.RFC3339, timeData.DateTime+"Z")
+	if err != nil {
+		return time.Time{}, fmt.Errorf("parsing time: %w", err)
+	}
 
 	return parsedTime, nil
 }
