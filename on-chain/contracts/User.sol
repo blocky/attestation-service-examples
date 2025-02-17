@@ -1,14 +1,13 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.10;
 
-import "@openzeppelin/contracts/access/Ownable.sol";
-import "hardhat/console.sol";
 import {JsmnSolLib} from "../lib/JsmnSolLib.sol";
 import {TAParser} from "./TAParser.sol";
+import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {console} from "hardhat/console.sol";
 
 contract User is Ownable, TAParser {
-    event AttestedFunctionCallOutput(string Success, string TWAP);
+    event AttestedFunctionCallOutput(string output);
 
     address public _verifierAddress;
     address public taSigningKeyAddress;
@@ -48,16 +47,32 @@ contract User is Ownable, TAParser {
         uint success;
         (success, tokens, number) = JsmnSolLib.parse(out, 50);
 
-        uint successIdx = 4;
-        string memory resultSuccess = JsmnSolLib.getBytes(out, tokens[successIdx].start, tokens[successIdx].end);
+        uint successIdx = 2;
+        bool resultSuccess = JsmnSolLib.parseBool(
+            JsmnSolLib.getBytes(
+                out,
+                tokens[successIdx].start,
+                tokens[successIdx].end
+            )
+        );
 
-        uint twapIdx = 8;
-        string memory resultTWAP = JsmnSolLib.getBytes(out, tokens[twapIdx].start, tokens[twapIdx].end);
+        uint errorIdx = 4;
+        string memory resultError = JsmnSolLib.getBytes(
+            out,
+            tokens[errorIdx].start,
+            tokens[errorIdx].end
+        );
 
-        console.log("Success:", resultSuccess);
-        console.log("TWAP:", resultTWAP);
+        require(resultSuccess, resultError);
 
-        emit AttestedFunctionCallOutput(resultSuccess, resultTWAP);
+        uint twapIdx = 6;
+        string memory resultTWAP = JsmnSolLib.getBytes(
+            out,
+            tokens[twapIdx].start,
+            tokens[twapIdx].end
+        );
+
+        emit AttestedFunctionCallOutput(resultTWAP);
     }
 
     function processAttestedFnCallClaims(

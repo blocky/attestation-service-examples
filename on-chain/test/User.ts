@@ -6,9 +6,9 @@ import {ethers} from "ethers";
 const fs = require("fs")
 const path = require("path")
 
-const loadEVMLinkData = () => {
+function loadEVMLinkData(jsonPath: string) {
     try {
-        const dir = path.resolve( __dirname, "../inputs/twap.json");
+        const dir = path.resolve( __dirname, jsonPath);
         const file = fs.readFileSync(dir);
 
         const data = JSON.parse(file);
@@ -19,8 +19,6 @@ const loadEVMLinkData = () => {
 
         const taBytes = ethers.decodeBase64(data.function_calls[0].transitive_attestation)
         const ta = Buffer.from(taBytes).toString('utf-8');
-
-
 
         return {
             publicKey: `0x${publicKeyHex}`,
@@ -39,7 +37,7 @@ describe("Local Tests", function () {
 
     it("process TA", async () => {
         // given
-        const evmLinkData = loadEVMLinkData();
+        const evmLinkData = loadEVMLinkData("../inputs/twap.json");
         const publicKey = evmLinkData.publicKey;
 
         const {userContract} = await loadFixture(deployUser);
@@ -54,6 +52,22 @@ describe("Local Tests", function () {
             userContract,
             'AttestedFunctionCallOutput'
         )
+    })
+
+    it("process TA with revert", async () => {
+        // given
+        const evmLinkData = loadEVMLinkData("../inputs/error.json");
+        const publicKey = evmLinkData.publicKey;
+
+        const {userContract} = await loadFixture(deployUser);
+        await userContract.setTASigningKeyAddress(publicKey as any);
+
+        // when
+        const ta = evmLinkData.transitiveAttestation;
+        const tx = userContract.processAttestedFnCallClaims(ta as any)
+
+        // then
+        await expect(tx).to.revertedWith("Expected error for testing")
     })
 });
 

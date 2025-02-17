@@ -26,19 +26,10 @@ type ArgsTWAP struct {
 type Result struct {
 	Success bool
 	Error   string
+	Value   any
 }
 
 type PriceSamples []price.Price
-
-type ResultPriceSamples struct {
-	Result       Result
-	PriceSamples PriceSamples
-}
-
-type ResultTWAP struct {
-	Result Result
-	TWAP   float64
-}
 
 func extractPriceSamples(
 	eAttest,
@@ -71,17 +62,29 @@ func extractPriceSamples(
 	}
 
 	prevResultData := fixedRep[as.ATTEST_FN_CALL_OUTPUT_IDX]
-	var prevResult ResultPriceSamples
+	var prevResult Result
 	err = json.Unmarshal(prevResultData, &prevResult)
 	switch {
 	case err != nil:
 		return nil, fmt.Errorf("could not unmarshal previous output: %w", err)
-	case !prevResult.Result.Success:
+	case !prevResult.Success:
 		return nil, fmt.Errorf("previous run was an error: %w", err)
 	}
 
-	return prevResult.PriceSamples, nil
+	prevPriceSamplesStr, err := json.Marshal(prevResult.Value)
+	if err != nil {
+		retErr := fmt.Errorf("could not marshal previous price samples: %w", err)
+		return nil, retErr
+	}
 
+	var prevPriceSamples PriceSamples
+	err = json.Unmarshal(prevPriceSamplesStr, &prevPriceSamples)
+	if err != nil {
+		retErr := fmt.Errorf("could not unmarshal previous price samples: %w", err)
+		return nil, retErr
+	}
+
+	return prevPriceSamples, nil
 }
 
 func getNewPriceSample(tokenAddress string, chainID string) (price.Price, error) {
@@ -183,28 +186,25 @@ func writeErr(err string) uint64 {
 	result := Result{
 		Success: false,
 		Error:   err,
+		Value:   nil,
 	}
 	return writeOutput(result)
 }
 
 func writePriceSamples(priceSamples PriceSamples) uint64 {
-	result := ResultPriceSamples{
-		Result: Result{
-			Success: true,
-			Error:   "",
-		},
-		PriceSamples: priceSamples,
+	result := Result{
+		Success: true,
+		Error:   "",
+		Value:   priceSamples,
 	}
 	return writeOutput(result)
 }
 
 func writeTWAP(twap float64) uint64 {
-	result := ResultTWAP{
-		Result: Result{
-			Success: true,
-			Error:   "",
-		},
-		TWAP: twap,
+	result := Result{
+		Success: true,
+		Error:   "",
+		Value:   twap,
 	}
 	return writeOutput(result)
 }
