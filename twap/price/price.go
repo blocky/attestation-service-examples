@@ -12,10 +12,10 @@ type Price struct {
 }
 
 func TWAP(samples []Price) (float64, error) {
-	if len(samples) == 0 {
+	switch len(samples) {
+	case 0:
 		return 0, fmt.Errorf("no samples provided")
-	}
-	if len(samples) == 1 {
+	case 1:
 		return samples[0].Value, nil
 	}
 
