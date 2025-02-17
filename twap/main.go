@@ -29,19 +29,17 @@ type Result struct {
 	Value   any
 }
 
-type PriceSamples []price.Price
-
 func extractPriceSamples(
 	eAttest,
 	tAttest,
 	whitelist json.RawMessage,
 ) (
-	PriceSamples,
+	[]price.Price,
 	error,
 ) {
 	// bootstrap with empty samples if we don't have a transitive attestation
 	if tAttest == nil {
-		return PriceSamples{}, nil
+		return []price.Price{}, nil
 	}
 
 	verifyOut, err := as.VerifyAttestation(
@@ -77,7 +75,7 @@ func extractPriceSamples(
 		return nil, retErr
 	}
 
-	var prevPriceSamples PriceSamples
+	var prevPriceSamples []price.Price
 	err = json.Unmarshal(prevPriceSamplesStr, &prevPriceSamples)
 	if err != nil {
 		retErr := fmt.Errorf("could not unmarshal previous price samples: %w", err)
@@ -192,7 +190,7 @@ func writeErr(err string) uint64 {
 	return writeOutput(result)
 }
 
-func writePriceSamples(priceSamples PriceSamples) uint64 {
+func writePriceSamples(priceSamples []price.Price) uint64 {
 	result := Result{
 		Success: true,
 		Error:   "",
