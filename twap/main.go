@@ -149,7 +149,8 @@ func iteration(inputPtr, secretPtr uint64) uint64 {
 
 	nextPriceSamples := append(priceSamples, newPriceSample)
 	if len(nextPriceSamples) > args.NumSamples {
-		nextPriceSamples = nextPriceSamples[1:]
+		numToRemove := len(nextPriceSamples) - args.NumSamples
+		nextPriceSamples = nextPriceSamples[numToRemove:]
 	}
 
 	return writePriceSamples(nextPriceSamples)
