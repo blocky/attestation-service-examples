@@ -20,11 +20,10 @@ func TWAP(samples []Price) (float64, error) {
 	}
 
 	// Sort samples from latest to earliest
-	sort.Slice(
-		samples, func(i, j int) bool {
-			return samples[i].Timestamp.After(samples[j].Timestamp)
-		},
-	)
+	lessThan := func(i, j int) bool {
+		return samples[i].Timestamp.After(samples[j].Timestamp)
+	}
+	sort.Slice(samples, lessThan)
 
 	var weightedSum, totalWeight float64
 
