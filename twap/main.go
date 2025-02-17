@@ -70,7 +70,7 @@ func extractPriceSamples(
 		return nil, fmt.Errorf("could not unmarshal previous claims: %w", err)
 	}
 
-	prevResultData := fixedRep[3]
+	prevResultData := fixedRep[as.ATTEST_FN_CALL_OUTPUT_IDX]
 	var prevResult ResultPriceSamples
 	err = json.Unmarshal(prevResultData, &prevResult)
 	switch {
