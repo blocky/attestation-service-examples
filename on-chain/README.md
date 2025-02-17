@@ -6,16 +6,6 @@ on to a chain in a development environment.
 
 ## Setup
 
-Use `nix` to set up a shell environment with the correct dependencies:
-
-```bash
-nix-shell
-```
-
-> Note that this process can take about 10 minutes the first time you run it.
-
-Continue with the following commands in the nix shell.
-
 Set up the project dependencies:
 
 ```bash
