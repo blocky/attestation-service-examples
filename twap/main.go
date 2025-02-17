@@ -105,7 +105,7 @@ func getNewPriceSample(tokenAddress string, chainID string) (price.Price, error)
 	err = json.Unmarshal(resp.Body, &steerData)
 	if err != nil {
 		return price.Price{}, fmt.Errorf(
-			"unmarshaling coin gecko data: %w...%s",
+			"unmarshaling Steer data: %w...%s",
 			err,
 			resp.Body,
 		)
@@ -129,19 +129,19 @@ func iteration(inputPtr, secretPtr uint64) uint64 {
 	err := json.Unmarshal(inputData, &args)
 	if err != nil {
 		outErr := fmt.Errorf("could not unmarshal args args: %w", err)
-		return emitErr(outErr.Error())
+		return writeErr(outErr.Error())
 	}
 
 	priceSamples, err := extractPriceSamples(args.EAttest, args.TAttest, args.Whitelist)
 	if err != nil {
 		outErr := fmt.Errorf("extracting priceSamples: %w", err)
-		return emitErr(outErr.Error())
+		return writeErr(outErr.Error())
 	}
 
 	newPriceSample, err := getNewPriceSample(args.TokenAddress, args.ChainID)
 	if err != nil {
 		outErr := fmt.Errorf("getting new sample: %w", err)
-		return emitErr(outErr.Error())
+		return writeErr(outErr.Error())
 	}
 
 	nextPriceSamples := append(priceSamples, newPriceSample)
@@ -149,7 +149,7 @@ func iteration(inputPtr, secretPtr uint64) uint64 {
 		nextPriceSamples = nextPriceSamples[1:]
 	}
 
-	return emitPriceSamples(nextPriceSamples)
+	return writePriceSamples(nextPriceSamples)
 }
 
 //export twap
@@ -159,35 +159,35 @@ func twap(inputPtr, secretPtr uint64) uint64 {
 	err := json.Unmarshal(inputData, &args)
 	if err != nil {
 		outErr := fmt.Errorf("could not unmarshal args args: %w", err)
-		return emitErr(outErr.Error())
+		return writeErr(outErr.Error())
 	}
 
 	priceSamples, err := extractPriceSamples(args.EAttest, args.TAttest, args.Whitelist)
 	if err != nil {
 		outErr := fmt.Errorf("extracting samples: %w", err)
-		return emitErr(outErr.Error())
+		return writeErr(outErr.Error())
 	}
 
 	twap, err := price.TWAP(priceSamples)
 	if err != nil {
 		outErr := fmt.Errorf("computing TWAP: %w", err)
-		return emitErr(outErr.Error())
+		return writeErr(outErr.Error())
 	}
 
-	return emitTWAP(twap)
+	return writeTWAP(twap)
 }
 
 func main() {}
 
-func emitErr(err string) uint64 {
+func writeErr(err string) uint64 {
 	result := Result{
 		Success: false,
 		Error:   err,
 	}
-	return emitOutput(result)
+	return writeOutput(result)
 }
 
-func emitPriceSamples(priceSamples PriceSamples) uint64 {
+func writePriceSamples(priceSamples PriceSamples) uint64 {
 	result := ResultPriceSamples{
 		Result: Result{
 			Success: true,
@@ -195,10 +195,10 @@ func emitPriceSamples(priceSamples PriceSamples) uint64 {
 		},
 		PriceSamples: priceSamples,
 	}
-	return emitOutput(result)
+	return writeOutput(result)
 }
 
-func emitTWAP(twap float64) uint64 {
+func writeTWAP(twap float64) uint64 {
 	result := ResultTWAP{
 		Result: Result{
 			Success: true,
@@ -206,10 +206,10 @@ func emitTWAP(twap float64) uint64 {
 		},
 		TWAP: twap,
 	}
-	return emitOutput(result)
+	return writeOutput(result)
 }
 
-func emitOutput(output any) uint64 {
+func writeOutput(output any) uint64 {
 	outputData, err := as.Marshal(output)
 	if err != nil {
 		// We panic on errors we cannot communicate back to function caller
