@@ -22,6 +22,14 @@ type HostVerifyAttestationOutput struct {
 	RawClaims []byte `json:"raw_claims"`
 }
 
+const (
+	AttestFnCallHashOfCodeIdx    = 0
+	AttestFnCallFunctionNameIdx  = 1
+	AttestFnCallHashOfInputIdx   = 2
+	AttestFnCallOutputIdx        = 3
+	AttestFnCallHashOfSecretsIdx = 4
+)
+
 //go:wasmimport env verifyAttestation
 func _hostFuncVerifyAttestation(offset, size uint32) uint64
 

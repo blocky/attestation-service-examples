@@ -13,17 +13,10 @@ func _hostFuncBufferLog(ptr, size uint32)
 //go:wasmimport env consoleLog
 func _hostFuncConsoleLog(ptr, size uint32)
 
-func LogToHost(msg string) {
-	msgData := []byte(msg)
-	inOffset, inLen := bytesToOffsetSize(msgData)
-	_hostFuncConsoleLog(inOffset, inLen)
-	runtime.KeepAlive(msgData)
-}
-
 func Logf(format string, a ...any) {
 	msg := fmt.Sprintf(format, a...)
 	msgData := []byte(msg)
 	inOffset, inLen := bytesToOffsetSize(msgData)
-	_hostFuncConsoleLog(inOffset, inLen)
+	_hostFuncBufferLog(inOffset, inLen)
 	runtime.KeepAlive(msgData)
 }

@@ -96,7 +96,7 @@ func myOracleFunc(inputPtr, secretPtr uint64) uint64 {
 	err := json.Unmarshal(inputData, &input)
 	if err != nil {
 		outErr := fmt.Errorf("could not unmarshal input args: %w", err)
-		return emitErr(outErr.Error())
+		return writeErr(outErr.Error())
 	}
 
 	var secret SecretArgs
@@ -104,38 +104,38 @@ func myOracleFunc(inputPtr, secretPtr uint64) uint64 {
 	err = json.Unmarshal(secretData, &secret)
 	if err != nil {
 		outErr := fmt.Errorf("could not unmarshal secret args: %w", err)
-		return emitErr(outErr.Error())
+		return writeErr(outErr.Error())
 	}
 
 	price, err := getPrice(input.Market, input.CoinID, secret.CoinGeckoAPIKey)
 	if err != nil {
 		outErr := fmt.Errorf("getting price: %w", err)
-		return emitErr(outErr.Error())
+		return writeErr(outErr.Error())
 	}
 
-	return emitPrice(price)
+	return writePrice(price)
 }
 
 func main() {}
 
-func emitErr(err string) uint64 {
+func writeErr(err string) uint64 {
 	result := Result{
 		Success: false,
 		Error:   err,
 	}
-	return writeResultToSharedMem(result)
+	return writeOutput(result)
 }
 
-func emitPrice(price Price) uint64 {
+func writePrice(price Price) uint64 {
 	result := Result{
 		Success: true,
 		Value:   price,
 	}
-	return writeResultToSharedMem(result)
+	return writeOutput(result)
 }
 
-func writeResultToSharedMem(result Result) uint64 {
-	outputData, err := as.Marshal(result)
+func writeOutput(output any) uint64 {
+	outputData, err := as.Marshal(output)
 	if err != nil {
 		// We panic on errors we cannot communicate back to function caller
 		panic("Fatal error: could not marshal output data")
