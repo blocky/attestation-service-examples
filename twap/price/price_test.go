@@ -42,6 +42,16 @@ func TestTimeWeightedAverage(t *testing.T) {
 			},
 			expected: 150,
 		},
+		{
+			name: "unequal time intervals",
+			samples: []Price{
+				{Value: 100, Timestamp: now.Add(0 * time.Hour)},
+				{Value: 200, Timestamp: now.Add(-1 * time.Hour)},
+				{Value: 300, Timestamp: now.Add(-5 * time.Hour)},
+				{Value: 0, Timestamp: now.Add(-6 * time.Hour)},
+			},
+			expected: 200,
+		},
 	}
 
 	for _, tt := range tests {
