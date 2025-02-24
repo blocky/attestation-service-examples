@@ -1,8 +1,14 @@
-# Fetch and process API call
+# Hello World Example
 
-This example shows how to use the Blocky Attestation Service (Blocky AS) to
-fetch data from an API and process it. The example uses the Coingecko API to
-fetch the current price of Bitcoin in USD on the Binance market.
+This example shows you how to use the Blocky Attestation Service (Blocky AS) to
+attest a simple function calls.
+
+You'll learn how to:
+- Create a function that returns a "Hello, World!" message
+- Create a simple function that writes a message to a log and returns a
+user-defined error
+- Invoke functions in the Blocky AS using its `bky-as` CLI
+- Process Blocky AS attestations
 
 ## Setup
 
@@ -15,27 +21,27 @@ your system.
 - [Get a key for the CoinGecko API](https://docs.coingecko.com/reference/setting-up-your-api-key) 
 and set it in `fn-call.json` in the `api_key` field. 
 
-## Run 
+## Quick Start
 
-To run this example, all you need to do is call:
+To run this example, call the following command:
 
 ```bash
-make
+make FUNCTION=hello-world
 ```
 
-Your output should show the attested price of Bitcoin in USD on the Binance 
-market:
+You will see the following output:
 
 ```json
 {
   "Success": true,
-  "Value": {
-    "market": "Binance",
-    "coin_id": "BTC",
-    "currency": "USD",
-    "price": 97151,
-    "timestamp": "2025-02-14T23:09:00Z"
-  },
-  "Error": ""
+  "Error": "",
+  "Output": "Hello, World!"
 }
 ```
+
+where `Success` indicates whether the function call was successful, `Error`
+contains any error messages, and `Output` contains the output of the function, 
+in this case the string "Hello, World!".
+
+## Walkthrough
+
