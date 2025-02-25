@@ -4,7 +4,6 @@ package as
 import "C"
 
 import (
-	"encoding/json"
 	"unsafe"
 )
 
@@ -15,26 +14,6 @@ func bytesToOffsetSize(data []byte) (uint32, uint32) {
 	offset := uint32(uintptr(ptr))
 	size := uint32(len(data))
 	return offset, size
-}
-
-// bytesFromFatPtr takes a packed offset and size pointer in a format compatible
-// with WebAssembly numeric types and returns the corresponding byte slice.
-func bytesFromFatPtr(inPtr uint64) []byte {
-	offset := uint32(inPtr >> 32)
-	size := uint32(inPtr)
-	return unsafe.Slice((*byte)(unsafe.Pointer(uintptr(offset))), size)
-}
-
-func Bytes(inPtr uint64) []byte {
-	return bytesFromFatPtr(inPtr)
-}
-
-func Unmarshal(data []byte, v any) error {
-	return json.Unmarshal(data, v)
-}
-
-func Marshal(v any) ([]byte, error) {
-	return json.Marshal(v)
 }
 
 // leakToSharedMem is used to persist data in shared memory beyond the execution
