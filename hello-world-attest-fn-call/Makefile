@@ -1,5 +1,3 @@
-default: run
-
 tmp:
 	@mkdir -p tmp
 
@@ -30,6 +28,12 @@ run: build | check
 	if [ "$$LOG" != "null" ]; \
 	then echo "Logs:"; jq -r '.function_calls[0].logs | @base64d' tmp/out.json; \
 	fi
+
+hello-world:
+	@$(MAKE) --no-print-directory run FUNCTION="hello-world"
+
+hello-error:
+	@$(MAKE) --no-print-directory run FUNCTION="hello-error"
 
 clean:
 	@rm -rf tmp

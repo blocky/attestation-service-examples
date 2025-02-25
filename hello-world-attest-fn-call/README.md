@@ -25,7 +25,7 @@ You'll learn how to:
 To run this example, call the following command:
 
 ```bash
-make run FUNCTION=hello-world
+make hello-world
 ```
 
 You will see the following JSON output extracted from a Blocky AS attestation:
@@ -62,9 +62,12 @@ func helloWorld(inputPtr, secretPtr uint64) uint64 {
 You will notice a few things:
 
 - The `helloWorld` function is exported so that it can be invoked by the
-  Blocky AS server after it spins up a WASM runtime.
+  Blocky AS server in a WASM runtime.
 - The function takes two `uint64` arguments and returns a `uint64`. These are
-  pointers to memory managed by the Blocky AS server. The `inputPtr` and
+  fat pointers to shared memory managed by the Blocky AS server, where the first
+  32 bits are a memory address and the second 32 bits are the size of the data.
+  The memory space is sandboxed and shared between the TEE host program (Blocky
+  AS server) and the WASM runtime (your function). The `inputPtr` and
   `secretPtr` arguments used to pass user-defined function input and secrets,
   through we don't make use of them in this example. The output of the function
   is also a pointer to memory, whose value will be returned to the user.
@@ -81,12 +84,12 @@ In [`main.go`](./main.go), you'll also see a function called `helloError`:
 ```go
 //export helloError
 func helloError(inputPtr, secretPtr uint64) uint64 {
-    as.Logf("Returning an expected error")
+    as.Log("Returning an expected error")
     return as.WriteError("expected error")
 }
 ```
 
-You will notice a call to `as.Logf` to write a message to the Blocky AS server's
+You will notice a call to `as.Log` to write a message to the Blocky AS server's
 log. This is useful for debugging and monitoring the function's behavior.
 You'll also see a call to `as.WriteError` to return an error message to the
 user.
@@ -139,13 +142,13 @@ where `code_file` is the path to the WASM file we compiled earlier, and
 To run these functions, you can call:
 
 ```bash
-make run FUNCTION=hello-world
+make hello-world
 ```
 
 or
 
 ```bash
-make run FUNCTION=hello-error
+make hello-error
 ```
 
 __Step 4: Extract function output from the Blocky AS attestation__
@@ -154,7 +157,7 @@ The `run` target will extract the attested output of the function calls.
 And so, for:
 
 ```bash
-make run FUNCTION=hello-world
+make hello-world
 ```
 
 the output will show the `Result:` section:
@@ -175,7 +178,7 @@ where `"Success": true` indicates that the function call was successful,
 Likewise, when we call:
 
 ```bash
-make run FUNCTION=hello-error
+make hello-error
 ```
 
 The output shows:
