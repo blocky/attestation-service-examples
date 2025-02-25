@@ -11,7 +11,7 @@ func helloWorld(inputPtr, secretPtr uint64) uint64 {
 
 //export helloError
 func helloError(inputPtr, secretPtr uint64) uint64 {
-	as.Logf("Returning an expected error")
+	as.Log("Returning an expected error")
 	return as.WriteError("expected error")
 }
 
