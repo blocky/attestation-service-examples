@@ -91,8 +91,12 @@ it into a WASM file. If you inspect the `build` target in the
 ```
 
 where we use `docker` to run [`tinygo`](https://tinygo.org/) to compile 
-[`main.go`](./main.go) to WASM and save it to `tmp/x.wasm`.
+[`main.go`](./main.go) to WASM and save it to `tmp/x.wasm`. You can build our
+function by calling:
 
+```bash
+make build
+```
 
 __Step 3: Invoke the function on the Blocky AS server__
 
