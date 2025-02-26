@@ -16,15 +16,13 @@ tmp/x.wasm: main.go $(wildcard as/*.go) | tmp check
 
 build: tmp/x.wasm
 
-
 run: build | check
 	@echo "Running WASM module..."
-	@cat fn-call.json | bky-as attest-fn-call > tmp/out.json
+	@cat fn-call.json | bky-as attest-fn-call >tmp/out.json
 	@echo "Logs:"
-	@jq -r '.function_calls[0].logs | @base64d' tmp/out.json;
+	@jq -r '.function_calls[0].logs | @base64d' tmp/out.json
 	@echo "Result:"
 	@jq -r '.function_calls[0].claims.output | @base64d ' tmp/out.json
-
 
 clean:
 	@rm -rf tmp
