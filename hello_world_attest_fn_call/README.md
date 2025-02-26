@@ -31,7 +31,7 @@ You will see the following output extracted from a Blocky AS response:
 
 ```
 Log:
-Writing out "Hello, World!"
+Writing "Hello, World!" to host
 
 Output:
 Hello, World!
@@ -132,7 +132,7 @@ call. You should see:
 
 ```
 Log:
-Writing out "Hello, World!"
+Writing "Hello, World!" to host
 
 Output:
 Hello, World!
