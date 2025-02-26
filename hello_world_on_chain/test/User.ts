@@ -29,6 +29,34 @@ function loadEVMLinkData(jsonPath: string) {
     }
 }
 
+const loadUserDeployedAddress = () => {
+    try {
+        const dir = path.resolve(
+            __dirname,
+            "../.user_deployed_address"
+        )
+        const file = fs.readFileSync(dir, "utf8")
+
+        return file.toString()
+    } catch (e) {
+        console.log(`e`, e)
+    }
+}
+
+const loadUserContractABI = () => {
+    try {
+        const dir = path.resolve(
+            __dirname,
+            "../artifacts/contracts/User.sol/User.json"
+        )
+        const file = fs.readFileSync(dir, "utf8")
+        const json = JSON.parse(file)
+        return json.abi
+    } catch (e) {
+        console.log(`e`, e)
+    }
+}
+
 describe("Local Tests", function () {
     async function deployUser() {
         const contract = await hre.ethers.deployContract("User");
@@ -55,5 +83,37 @@ describe("Local Tests", function () {
     })
 });
 
+describe("Base Sepolia Tests", function () {
+    const url = 'https://sepolia.base.org';
+    const provider = new ethers.JsonRpcProvider(url);
+    const privateKey = process.env.WALLET_KEY as string
+    const signer = new ethers.Wallet(privateKey, provider)
+
+    const userContract = new ethers.Contract(
+        loadUserDeployedAddress(),
+        loadUserContractABI(),
+        signer
+    );
+
+    const evmLinkData = loadEVMLinkData("../inputs/out.json");
+
+    it("Set enclAppPubKey", async () => {
+        const publicKey = evmLinkData.publicKey;
+        const tx = await userContract.setTASigningKeyAddress(publicKey as any);
+        await tx.wait()
+    })
+
+    it("Process TA", async () => {
+        const ta = evmLinkData.transitiveAttestation;
+        const tx = await userContract.verifyAttestedFnCallClaims(ta)
+        // poll instead of tx.wait() to get the lowest possible delay
+        for (; ;) {
+            const txReceipt = await provider.getTransactionReceipt(tx.hash);
+            if (txReceipt && txReceipt.blockNumber) {
+                break
+            }
+        }
+    });
+});
 
 
