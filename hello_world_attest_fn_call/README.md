@@ -1,4 +1,4 @@
-# Hello World
+# Hello World - Attesting a Function Call
 
 This example shows you how to use the Blocky Attestation Service (Blocky AS) to
 attest a simple function calls.
@@ -39,7 +39,7 @@ Hello, World!
 
 ## Walkthrough
 
-__Step 1: Create a function that returns a "Hello, World!" message.__
+### Step 1: Create a function that returns a "Hello, World!" message.
 
 Our first goal is to create a simple function that returns a `"Hello, World!"`
 message. We will write this function in Go and compile it to WebAssembly (WASM)
@@ -76,7 +76,7 @@ You will notice a few things:
   `msg`) to shared memory. The host (Blocky AS server) will create an 
   attestation over that array as a part of its response.
 
-__Step 2: Compile the function to WebAssembly (WASM)__
+### Step 2: Compile the function to WebAssembly (WASM)
 
 To invoke our function in the Blocky AS server, we first need to compile
 it into a WASM file. If you inspect the `build` target in the
@@ -98,7 +98,7 @@ function by calling:
 make build
 ```
 
-__Step 3: Invoke the function on the Blocky AS server__
+### Step 3: Invoke the function on the Blocky AS server
 
 To invoke our function, we first need to define an invocation template.
 We have one set up already in [`fn-call.json`](./fn-call.json) that looks like:
@@ -132,7 +132,7 @@ So then to run our function, you can call:
 make run
 ```
 
-__Step 4: Extract function output from the Blocky AS attestation__
+### Step 4: Extract function output from the Blocky AS attestation
 
 The `run` target will extract the log and the attested output of the function 
 call. 
