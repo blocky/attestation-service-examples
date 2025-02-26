@@ -76,7 +76,7 @@ You will notice a few things:
   `msg`) to shared memory. The host (Blocky AS server) will create an 
   attestation over that array as a part of its response.
 
-__Step 2: Invoke functions in the Blocky AS using its `bky-as` CLI__
+__Step 2: Compile the function to WebAssembly (WASM)__
 
 To invoke our function in the Blocky AS server, we first need to compile
 it into a WASM file. If you inspect the `build` target in the
@@ -91,11 +91,13 @@ it into a WASM file. If you inspect the `build` target in the
 ```
 
 where we use `docker` to run [`tinygo`](https://tinygo.org/) to compile 
-[`main.go`](./main.go) to WASM saved to `tmp/x.wasm`.
+[`main.go`](./main.go) to WASM and save it to `tmp/x.wasm`.
 
-Next, we use the `bky-as` CLI to invoke the function in the Blocky AS server.
-We will first define an invocation template in [`fn-call.json`](./fn-call.json)
-as:
+
+__Step 3: Invoke the function on the Blocky AS server__
+
+To invoke our function, we first need to define an invocation template.
+We have one set up already in [`fn-call.json`](./fn-call.json) that looks like:
 
 ```json
 [
@@ -109,6 +111,7 @@ as:
 where `code_file` is the path to the WASM file we compiled earlier, and
 `function` is the name of the exported function we want to call.
 
+To invoke our function, we need to pass the invocation template to `bky-as`.
 If you inspect the `run` target in the [`Makefile`](./Makefile), you'll see the
 command:
 
@@ -119,16 +122,23 @@ cat fn-call.json | bky-as attest-fn-call > tmp/out.json
 where we use `cat` to read the [`fn-call.json`](./fn-call.json), pipe it to
 `bky-as attest-fn-call`, and save the output to `tmp/out.json`.
 
-To run our function, you can call:
+So then to run our function, you can call:
 
 ```bash
 make run
 ```
 
-__Step 3: Extract function output from the Blocky AS attestation__
+__Step 4: Extract function output from the Blocky AS attestation__
 
 The `run` target will extract the log and the attested output of the function 
-call. You should see:
+call. 
+After running:
+
+```bash
+make run
+```
+
+you should see:
 
 ```
 Log:
@@ -176,7 +186,7 @@ To dive deeper, let's again look at the `run` target in the
 }
 ```
 
-There you will see the `enclave_attested_application_public_key` that contains
+The `enclave_attested_application_public_key` that contains
 the `enclave_attestation` over the Blocky AS server public key. You will also
 see the `function_calls` section that contains the `transitive_attestation` over
 the function call. The `bky-as` CLI verifies the `enclave_attestation`, extracts
