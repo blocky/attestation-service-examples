@@ -30,10 +30,10 @@ make run
 You will see the following output extracted from a Blocky AS response:
 
 ```
-Logs:
+Log:
 Writing out "Hello, World!"
 
-Result:
+Output:
 Hello, World!
 ```
 
@@ -131,10 +131,10 @@ The `run` target will extract the log and the attested output of the function
 call. You should see:
 
 ```
-Logs:
+Log:
 Writing out "Hello, World!"
 
-Result:
+Output:
 Hello, World!
 ```
 

@@ -21,7 +21,7 @@ run: build | check
 	@cat fn-call.json | bky-as attest-fn-call >tmp/out.json
 	@echo "Log:"
 	@jq -r '.function_calls[0].logs | @base64d' tmp/out.json
-	@echo "Result:"
+	@echo "Output:"
 	@jq -r '.function_calls[0].claims.output | @base64d ' tmp/out.json
 
 clean:
