@@ -49,11 +49,11 @@ our function there:
 ```go
 //export helloWorld
 func helloWorld(inputPtr, secretPtr uint64) uint64 {
-	msg := "Hello, World!"
+msg := "Hello, World!"
 
-	as.Log(fmt.Sprintf("Writing out \"%s\"\n", msg))
+as.Log(fmt.Sprintf("Writing \"%s\" to host\n", msg))
 
-	return as.WriteToHost([]byte(msg))
+return as.WriteToHost([]byte(msg))
 }
 ```
 
