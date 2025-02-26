@@ -190,9 +190,9 @@ To dive deeper, let's again look at the `run` target in the
 }
 ```
 
-The `enclave_attested_application_public_key` that contains
-the `enclave_attestation` over the Blocky AS server public key. You will also
-see the `function_calls` section that contains the `transitive_attestation` over
+The `enclave_attested_application_public_key` contains
+the `enclave_attestation` over the Blocky AS server public key. 
+The `function_calls` section contains the `transitive_attestation` over
 the function call. The `bky-as` CLI verifies the `enclave_attestation`, extracts
 the Blocky AS server public key and uses it to verify the
 `transitive_attestation` to extract the `claims`. You can learn more about this
