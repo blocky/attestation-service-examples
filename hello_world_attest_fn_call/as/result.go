@@ -29,5 +29,5 @@ func WriteResult(result Result) uint64 {
 	if err != nil {
 		panic("Fatal error: could not marshal output data")
 	}
-	return ShareWithHost(outputData)
+	return WriteToHost(outputData)
 }

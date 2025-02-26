@@ -25,6 +25,6 @@ func leakToSharedMem(v []byte) uint64 {
 	return (uint64(uintptr(ptr)) << uint64(32)) | uint64(size)
 }
 
-func ShareWithHost(v []byte) uint64 {
+func WriteToHost(v []byte) uint64 {
 	return leakToSharedMem(v)
 }
