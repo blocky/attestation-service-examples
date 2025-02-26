@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.10;
 
-import {JsmnSolLib} from "../lib/JsmnSolLib.sol";
 import {TAParser} from "./TAParser.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {console} from "hardhat/console.sol";
@@ -26,65 +25,21 @@ contract User is Ownable, TAParser {
     function verifyAttestedFnCallClaims(
         string calldata taData
     )
-    private view returns (TAParser.FnCallClaims memory)
+    public
     {
         TAParser.FnCallClaims memory claims = parseTA(
             taData,
             taSigningKeyAddress
         );
 
-        return claims;
-    }
+        console.log("Verified attest-fn-call claims:");
+        console.log("\tFunction: %s", claims.Function);
+        console.log("\tHash of code: %s", claims.HashOfCode);
+        console.log("\tHash of input: %s", claims.HashOfInput);
+        console.log("\tHash of secrets: %s", claims.HashOfSecrets);
+        console.log("\tOutput: %s", claims.Output);
 
-    function parseFnCallClaims(
-        TAParser.FnCallClaims memory claims
-    ) public
-    {
-        string memory out = base64d(claims.Output);
-
-        JsmnSolLib.Token[] memory tokens;
-        uint number;
-        uint success;
-        (success, tokens, number) = JsmnSolLib.parse(out, 50);
-
-        uint successIdx = 2;
-        bool resultSuccess = JsmnSolLib.parseBool(
-            JsmnSolLib.getBytes(
-                out,
-                tokens[successIdx].start,
-                tokens[successIdx].end
-            )
-        );
-
-        uint errorIdx = 4;
-        string memory resultError = JsmnSolLib.getBytes(
-            out,
-            tokens[errorIdx].start,
-            tokens[errorIdx].end
-        );
-
-        require(resultSuccess, resultError);
-
-        uint outputIdx = 6;
-        string memory resultOutput = JsmnSolLib.getBytes(
-            out,
-            tokens[outputIdx].start,
-            tokens[outputIdx].end
-        );
-
-        emit AttestedFunctionCallOutput(resultOutput);
-    }
-
-    function processAttestedFnCallClaims(
-        string calldata taData
-    ) public {
-        console.log("\n> Processing attested function call claims");
-
-        TAParser.FnCallClaims memory claims = verifyAttestedFnCallClaims(taData);
-
-        parseFnCallClaims(claims);
-
-        console.log("Processed attested function call claims");
+        emit AttestedFunctionCallOutput(claims.Output);
     }
 }
 

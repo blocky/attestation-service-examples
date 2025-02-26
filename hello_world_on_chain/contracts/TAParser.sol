@@ -103,7 +103,7 @@ contract TAParser {
         claims.HashOfCode = base64d(JsmnSolLib.getBytes(b64, tokens[1].start, tokens[1].end));
         claims.Function = base64d(JsmnSolLib.getBytes(b64, tokens[2].start, tokens[2].end));
         claims.HashOfInput = base64d(JsmnSolLib.getBytes(b64, tokens[3].start, tokens[3].end));
-        claims.Output = JsmnSolLib.getBytes(b64, tokens[4].start, tokens[4].end);
+        claims.Output = base64d(JsmnSolLib.getBytes(b64, tokens[4].start, tokens[4].end));
         claims.HashOfSecrets = base64d(JsmnSolLib.getBytes(b64, tokens[5].start, tokens[5].end));
 
         return claims;

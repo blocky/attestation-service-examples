@@ -37,7 +37,7 @@ describe("Local Tests", function () {
 
     it("process TA", async () => {
         // given
-        const evmLinkData = loadEVMLinkData("../inputs/hello-world.json");
+        const evmLinkData = loadEVMLinkData("../inputs/out.json");
         const publicKey = evmLinkData.publicKey;
 
         const {userContract} = await loadFixture(deployUser);
@@ -45,29 +45,13 @@ describe("Local Tests", function () {
 
         // when
         const ta = evmLinkData.transitiveAttestation;
-        const tx = await userContract.processAttestedFnCallClaims(ta as any)
+        const tx = await userContract.verifyAttestedFnCallClaims(ta as any)
 
         // then
         await expect(tx).to.emit(
             userContract,
             'AttestedFunctionCallOutput'
         )
-    })
-
-    it("process TA with revert", async () => {
-        // given
-        const evmLinkData = loadEVMLinkData("../inputs/hello-error.json");
-        const publicKey = evmLinkData.publicKey;
-
-        const {userContract} = await loadFixture(deployUser);
-        await userContract.setTASigningKeyAddress(publicKey as any);
-
-        // when
-        const ta = evmLinkData.transitiveAttestation;
-        const tx = userContract.processAttestedFnCallClaims(ta as any)
-
-        // then
-        await expect(tx).to.revertedWith("expected error")
     })
 });
 
