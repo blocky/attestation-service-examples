@@ -125,7 +125,7 @@ where we use `cat` to read the function call JSON from a file, pipe it to
 `bky-as attest-fn-call`, and save the output to `tmp/out.json`.
 The input JSON file in this example will be either `hello-world-call.json` or
 `hello-error-call.json`, depending on the value of the `FUNCTION` variable.
-If you inspect [`hello-world-call.json`](./hello-world-call.json), you'll see:
+If you inspect [`hello-world-call.json`](./fn-call.json), you'll see:
 
 ```json
 [

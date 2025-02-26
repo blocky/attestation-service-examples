@@ -16,24 +16,15 @@ tmp/x.wasm: main.go $(wildcard as/*.go) | tmp check
 
 build: tmp/x.wasm
 
-FUNCTION := "hello-world"
 
 run: build | check
 	@echo "Running WASM module..."
-	@cat $(FUNCTION)-call.json \
-	| bky-as attest-fn-call > tmp/out.json
+	@cat fn-call.json | bky-as attest-fn-call > tmp/out.json
+	@echo "Logs:"
+	@jq -r '.function_calls[0].logs | @base64d' tmp/out.json;
 	@echo "Result:"
-	@jq -r '.function_calls[0].claims.output | @base64d | fromjson' tmp/out.json
-	@LOG=$$(jq -r '.function_calls[0].logs' tmp/out.json); \
-	if [ "$$LOG" != "null" ]; \
-	then echo "Logs:"; jq -r '.function_calls[0].logs | @base64d' tmp/out.json; \
-	fi
+	@jq -r '.function_calls[0].claims.output | @base64d ' tmp/out.json
 
-hello-world:
-	@$(MAKE) --no-print-directory run FUNCTION="hello-world"
-
-hello-error:
-	@$(MAKE) --no-print-directory run FUNCTION="hello-error"
 
 clean:
 	@rm -rf tmp

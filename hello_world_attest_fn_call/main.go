@@ -1,18 +1,18 @@
 package main
 
 import (
+	"fmt"
+
 	"github.com/blocky/as-demo/as"
 )
 
 //export helloWorld
 func helloWorld(inputPtr, secretPtr uint64) uint64 {
-	return as.WriteOutput("Hello, World!")
-}
+	msg := "Hello, World!"
 
-//export helloError
-func helloError(inputPtr, secretPtr uint64) uint64 {
-	as.Log("Returning an expected error")
-	return as.WriteError("expected error")
+	as.Log(fmt.Sprintf("Writing out \"%s\"\n", msg))
+
+	return as.WriteToHost([]byte(msg))
 }
 
 func main() {}

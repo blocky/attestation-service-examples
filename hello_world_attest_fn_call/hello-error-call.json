@@ -1,6 +1,0 @@
-[
-    {
-        "code_file": "tmp/x.wasm",
-        "function": "helloError"
-    }
-]
