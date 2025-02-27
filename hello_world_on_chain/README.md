@@ -208,6 +208,13 @@ event with `"Hello, World!"` as input.
 
 ### Step 4: Deploy the Smart Contract to Base Sepolia
 
+> Note that this step is optional in this tutorial. You can skip to 
+> [Step 5](#step-5-test-the-user-contract-on-base-sepolia) to test the
+> [`User.sol`](contracts/User.sol) contract on Base Sepolia using
+> deployed contract address in the 
+> [`.user_deployed_address`](.user_deployed_address) 
+> file.
+
 You can also deploy the [`User.sol`](contracts/User.sol) contract to Base
 Sepolia. To do so, we need to do a bit more setup:
 
@@ -229,11 +236,11 @@ Notice the output of the command similar to:
 
 ```
 Successfully verified contract User on the block explorer.
-https://sepolia.basescan.org/address/0x38a12afaC365E279dec68E9382E3E3dE9D030897#code
+https://sepolia.basescan.org/address/0xEcfB40e2A4F7F1E9E651b9961aE854086434743D#code
 ```
 
 which includes a link to the 
-[deployed `User` contract on Basescan](https://sepolia.basescan.org/address/0x38a12afaC365E279dec68E9382E3E3dE9D030897).
+[deployed `User` contract on Basescan](https://sepolia.basescan.org/address/0xEcfB40e2A4F7F1E9E651b9961aE854086434743D).
 
 ### Step 5: Test the `User` contract on Base Sepolia
 
@@ -255,7 +262,7 @@ You will see the test output similar to:
 which show that the [`User.sol`](contracts/User.sol) contract was able to
 verify the TA in just over 2 seconds.
 If you go to Basescan to see 
-[contract transaction logs](https://sepolia.basescan.org/tx/0x85d8de2861f75de56f6515174e6e6f3d2bd593f593a857a9cd67df9e296980d2#eventlog)
+[contract transaction logs](https://sepolia.basescan.org/tx/0x87206998d4c09c280778868a7f4c7dbf591f1ede8390d20f21fd3e0a850919cc#eventlog)
 you can see that the `verifyAttestedFnCallClaims` emitted the
 `AttestedFunctionCallOutput` event containing the expected `"Hello, World!"` 
 WASM function output.
