@@ -8,8 +8,7 @@ import {console} from "hardhat/console.sol";
 contract User is Ownable, TAParser {
     event AttestedFunctionCallOutput(string output);
 
-    address public _verifierAddress;
-    address public taSigningKeyAddress;
+    address private taSigningKeyAddress;
 
     constructor() Ownable(msg.sender) {
     }

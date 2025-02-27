@@ -63,7 +63,7 @@ describe("Local Tests", function () {
         return {userContract: contract};
     }
 
-    it("process TA", async () => {
+    it("Set signing key and verify TA", async () => {
         // given
         const evmLinkData = loadEVMLinkData("../inputs/out.json");
         const publicKey = evmLinkData.publicKey;
@@ -79,7 +79,7 @@ describe("Local Tests", function () {
         await expect(tx).to.emit(
             userContract,
             'AttestedFunctionCallOutput'
-        )
+        ).withArgs("Hello, World!")
     })
 });
 
@@ -97,13 +97,13 @@ describe("Base Sepolia Tests", function () {
 
     const evmLinkData = loadEVMLinkData("../inputs/out.json");
 
-    it("Set enclAppPubKey", async () => {
+    it("Set signing key", async () => {
         const publicKey = evmLinkData.publicKey;
         const tx = await userContract.setTASigningKeyAddress(publicKey as any);
         await tx.wait()
     })
 
-    it("Process TA", async () => {
+    it("Verify TA", async () => {
         const ta = evmLinkData.transitiveAttestation;
         const tx = await userContract.verifyAttestedFnCallClaims(ta)
         // poll instead of tx.wait() to get the lowest possible delay

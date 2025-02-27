@@ -52,8 +52,6 @@ contract TAParser {
     {
         TA memory ta = decodeTA(taData);
 
-        FnCallClaims memory claims = decodeFnCallClaims(ta.Data);
-
         bytes memory sigAsBytes = Base64.decode(ta.Sig);
         bytes32 r = BytesLib.toBytes32(sigAsBytes, 0);
         bytes32 s = BytesLib.toBytes32(sigAsBytes, 32);
@@ -64,6 +62,8 @@ contract TAParser {
         address recovered = ecrecover(dataHash, v, r, s);
 
         require(publicKeyAddress == recovered, "Could not verify signature");
+
+        FnCallClaims memory claims = decodeFnCallClaims(ta.Data);
 
         return claims;
     }
