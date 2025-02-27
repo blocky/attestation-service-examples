@@ -3,14 +3,15 @@
 This example shows you how to bring a Blocky AS function call attestation
 on chain. It builds on the 
 [Hello World - Attesting a Function Call](../hello_world_attest_fn_call)
-example, which shows you how to attest a simple function.
+example, which shows you how to attest a WASM function.
 
-You'll learn how to:
+In this example, you'll learn how to:
 
 - Write a smart contract to verify and parse a function call attestation
 - Test the smart contract locally
-- Deploy the smart contract to Base Sepolia and verify a parse a function call
-  attestation on chain
+- Deploy the smart contract to Base Sepolia to verify a function call
+  attestation on chain and use the attested function output in your smart
+  contract
 
 ## Setup
 
@@ -28,19 +29,19 @@ To run this example, call:
 make test-local
 ```
 
-which will test verifying attested function calls in the 
-[User](contracts/User.sol)
-in a local test environment.
+which will test verifying an attested function call in 
+[`contracts/User.sol`](contracts/User.sol) 
+within a local test environment.
 
 ## Walkthrough
 
-### Step 1: Attest a Function Call
+### Step 1: Attest a function call
 
 In the [Hello World - Attesting a Function Call](../hello_world_attest_fn_call)
-example we walked through a process of attesting a simple WASM function call. 
-The result of that process was JSON file, `out.json`, containing the enclave attested 
+example we walked through a process of attesting a WASM function call. 
+The result of that process was an `out.json` file containing the enclave attested 
 application public key and a transitive attestation of the function call.
-The contents of `out.json` has been verified by the Blocky AS CLI. 
+The contents of `out.json` have been verified by the Blocky AS CLI. 
 To learn more about that process, revisit the
 [Hello World - Attesting a Function Call](../hello_world_attest_fn_call)
 example, or read about
@@ -49,13 +50,14 @@ in our documentation.
 
 For this example, we have copied `out.json` from the previous example into
 [`inputs/out.json`](inputs/out.json).
-To verify the output of the WASM function call in a smart contract, we will extract from `out.json`
-the transitive attestation of function call, as well as the enclave attested
-application public key of the Blocky AS server.
-As you'll see later, this example is driven by tests in 
-[tests/User.ts](test/User.ts). In that file, we use the `loadEVMLinkData` function
-to extract the transitive attestation and enclave attested application public key.
-If you like, you can see these values now by running:
+To verify the output of the WASM function call in a smart contract, we will
+extract from `out.json` the transitive attestation of function call, as well as
+the enclave attested application public key of the Blocky AS server. As you'll
+see later, this example is driven by tests in
+[tests/User.ts](test/User.ts). In that file, we use the `loadEVMLinkData`
+function to extract the transitive attestation and enclave attested application
+public key from [`inputs/out.json`](inputs/out.json). If you like, you can see
+these values now by running:
 
 ```bash
 jq -r '.function_calls[0].transitive_attestation' inputs/out.json
@@ -66,13 +68,17 @@ and
 jq -r '.enclave_attested_application_public_key.public_key.data' inputs/out.json
 ```
 
-### Step 2: Write a Smart Contract to Verify and Parse a Function Call Attestation
+### Step 2: Write a smart contract to verify a function call attestation
 
-The goal of the user smart contract is to verify the transitive attestation has
+For this example, we have created user contract in 
+[`contracts/User.sol`](contracts/User.sol).
+Its goal is to verify that a transitive attestation has
 been signed by the enclave attested application public key of the Blocky AS
-server. We define the user smart contract for this example
-in [User.sol](contracts/User.sol) and set the enclave attested
-application public key using the `setTASigningKeyAddress` function:
+server and parse out the attested function output. 
+
+The first step in that process, is to set the enclave attested application
+public key, used to sign transitive attestations, in contract memory. We do this
+by calling the `setTASigningKeyAddress` function:
 
 ```solidity
     address private taSigningKeyAddress;
@@ -86,23 +92,24 @@ application public key using the `setTASigningKeyAddress` function:
     }
 ```
 
-The `setTASigningKeyAddress` uses 
+The `setTASigningKeyAddress` function uses 
 [OpenZeppelin's Ownable contract](https://docs.openzeppelin.com/contracts/2.x/access-control#ownership-and-ownable)
-to allow only the owner (publisher) of the `User` contract to set transitive
-attestation signing key in contract memory. This is important, since the owner
-is the one who obtained and verified the enclave application public key using
-the `bky-as` CLI. For now users of the `User` contract have to trust the owner
-to set the correct transitive attestation signing key. In the future, we will
-make this process fully trustless, by allowing smart contracts to verify enclave
-attestations directly before setting the transitive attestation signing key.
+to allow only the owner (publisher) of the [`User`](contracts/User.sol) contract
+to set transitive attestation signing key in contract memory. This step is
+important, since the owner is the one who obtained and verified the enclave
+application public key using the `bky-as` CLI. For now, users of the 
+[`User`](contracts/User.sol) contract have to trust the contract owner to set
+the correct transitive attestation signing key. In the future, we will make this
+process fully trustless, by allowing smart contracts to verify enclave
+attestations directly to extract and set the transitive attestation signing key.
 
-The `User` contract extends the Blocky-provided 
-[`TAParser.sol`](contracts/TAParser.sol) contract, which provides several utility
-functions. One of these is `publicKeyToAddress` function converts the enclave 
-attested application public key to an Ethereum address. 
+The [`User`](contracts/User.sol) contract extends the Blocky-provided
+[`contracts/TAParser.sol`](contracts/TAParser.sol) contract, which provides
+several utility functions. One of these is `publicKeyToAddress` function
+converts the enclave attested application public key to an Ethereum address.
 
-The next step is to verify the transitive attestation. The 
-[User.sol](contracts/User.sol) contract provides the `verifyTransitiveAttestation`
+The next step is to verify the transitive attestation. The
+[`User`](contracts/User.sol) contract provides the `verifyAttestedFnCallClaims`
 function:
 
 ```solidity
@@ -127,7 +134,7 @@ function:
     }
 ```
 
-to parse the transitive attestation passed in as `taData`. The bulk of the work
+to verify a transitive attestation passed in as `taData`. The bulk of the work
 takes place in [`TAParser.sol`](contracts/TAParser.sol) `parseTA` function:
 
 ```solidity
@@ -152,8 +159,6 @@ takes place in [`TAParser.sol`](contracts/TAParser.sol) `parseTA` function:
     {
         TA memory ta = decodeTA(taData);
 
-        FnCallClaims memory claims = decodeFnCallClaims(ta.Data);
-
         bytes memory sigAsBytes = Base64.decode(ta.Sig);
         bytes32 r = BytesLib.toBytes32(sigAsBytes, 0);
         bytes32 s = BytesLib.toBytes32(sigAsBytes, 32);
@@ -165,37 +170,41 @@ takes place in [`TAParser.sol`](contracts/TAParser.sol) `parseTA` function:
 
         require(publicKeyAddress == recovered, "Could not verify signature");
 
+        FnCallClaims memory claims = decodeFnCallClaims(ta.Data);
+
         return claims;
     }
 ```
 
-where we decode `taData` the `TA` struct withs into its `Data` and `Sig` 
+where we decode `taData` into a `TA` struct withs its `Data` and `Sig`
 components, use them to obtain the `recovered` signing key address, and finally
-compare it to the `publicKeyAddress`, set at `taSigningKeyAddress` in the
-`User` contract.
-If we are able to verify the `TA` signature, we parse out its `claims`, and 
-return them to the `verifyAttestedFnCallClaims` function. 
+compare it against the `publicKeyAddress` parameter, passed from the
+`taSigningKeyAddress` in the [`User`](contracts/User.sol) contract
+`verifyAttestedFnCallClaims` function. If we are able to verify the `TA`
+signature, we parse out its `claims`, and return them to the
+`verifyAttestedFnCallClaims` function.
 
-At this point, you could extend the [`User.sol`](contracts/User.sol) contract
-to verify the various `claims` fields to make sure that the transitive
-attestation is over the function and inputs expected by your smart contract.
-You then also take actions based on the output of the function to trigger
-further smart contract logic.
+At this point, you may want to extend the [`User`](contracts/User.sol)
+contract `verifyAttestedFnCallClaims` function to do more than just print the
+transitive attestation `claims` to the console. You may want to add additional
+logic to verify the various `claims` fields to make sure that the transitive
+attestation is over the function and inputs expected by your smart contract. You
+may also take actions based on the output of the function to trigger further
+smart contract logic.
 
-In our [`User.sol`](contracts/User.sol) example, we simply print the
-`claims` to the console and emit an `AttestedFunctionCallOutput` event with
-the `Output` field of the `claims`.
+In our [`User.sol`](contracts/User.sol) contract `verifyAttestedFnCallClaims`
+function example, we simply print the `claims` to the console and emit an
+`AttestedFunctionCallOutput` event with the `Output` field of the `claims`.
 
 ### Step 3: Test the `User` contract locally
 
 To test the smart contract locally, we use the
 [Hardhat](https://hardhat.org/) framework.
-We define the `"Local Tests"` in [test/User.ts](test/User.ts) that loads
+We define the `"Local Tests"` in [`test/User.ts`](test/User.ts) that loads
 [`inputs/out.json`](inputs/out.json), calls the `setTASigningKeyAddress`
-and `verifyAttestedFnCallClaims` functions on the `User` contract, and checks
-that the contract emits the `AttestedFunctionCallOutput` event with 
-`"Hello, World!"` as input.
-
+and `verifyAttestedFnCallClaims` functions on the [`User`](contracts/User.sol)
+contract, and checks that the contract emits the `AttestedFunctionCallOutput`
+event with `"Hello, World!"` as input.
 
 ### Step 4: Deploy the Smart Contract to Base Sepolia
 
@@ -205,7 +214,7 @@ Sepolia. To do so, we need to do a bit more setup:
 - Create a wallet and fund it with Base Sepolia ETH. You can find several
   Base Sepolia faucets in the
   [Base Sepolia documentation](https://docs.base.org/chain/network-faucets).
-  Set your wallets private key in the [`.env`](.env) file under `WALLET_KEY`.
+  Set your wallet's private key in the [`.env`](.env) file under `WALLET_KEY`.
 - Get a
   [Basescan API key](https://docs.basescan.org/getting-started/viewing-api-usage-statistics#creating-an-api-key)
   and set it in the [`.env`](.env) file under `BASESCAN_KEY`.
@@ -216,13 +225,15 @@ To deploy the smart contract, call:
 make deploy-base-sepolia
 ```
 
-Notice the output of the command, which includes a link to the deployed contract
-on Basescan:
+Notice the output of the command similar to: 
 
 ```
 Successfully verified contract User on the block explorer.
 https://sepolia.basescan.org/address/0x38a12afaC365E279dec68E9382E3E3dE9D030897#code
 ```
+
+which includes a link to the 
+[deployed `User` contract on Basescan](https://sepolia.basescan.org/address/0x38a12afaC365E279dec68E9382E3E3dE9D030897).
 
 ### Step 5: Test the `User` contract on Base Sepolia
 
@@ -232,8 +243,8 @@ To test the [`User.sol`](contracts/User.sol) contract on Base Sepolia, call:
 make test-base-sepolia
 ```
 
-which will invoke the `"Base Sepolia Tests"` in [test/User.ts](test/User.ts).
-You will see the test output like:
+which will invoke the `"Base Sepolia Tests"` in [`test/User.ts`](test/User.ts).
+You will see the test output similar to:
 
 ```
   Base Sepolia Tests
@@ -246,6 +257,14 @@ verify the TA in just over 2 seconds.
 If you go to Basescan to see 
 [contract transaction logs](https://sepolia.basescan.org/tx/0x85d8de2861f75de56f6515174e6e6f3d2bd593f593a857a9cd67df9e296980d2#eventlog)
 you can see that the `verifyAttestedFnCallClaims` emitted the
-`AttestedFunctionCallOutput` event with `"Hello, World!"` as input.
+`AttestedFunctionCallOutput` event containing the expected `"Hello, World!"` 
+WASM function output.
 
 ![Transaction Logs](images/transaction_logs.png)
+
+
+## Next steps
+
+Now that you have successfully run the example, you can start modifying it to
+fit your own needs. Check out other examples in this repository, to learn what
+else you can do with Blocky AS.

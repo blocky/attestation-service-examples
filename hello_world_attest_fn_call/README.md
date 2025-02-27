@@ -229,6 +229,8 @@ see that we use `jq` to extract the `output` and the `logs` fields from
 
 Now that you have successfully run the example, you can start modifying it to
 fit your own needs. Check out other examples in this repository, to learn what
-else you can do with Blocky AS.
+else you can do with Blocky AS, and in particular the 
+[Hello World - Bringing A Blocky AS Function Call Attestation On Chain](../hello_world_on_chain)
+example.
 
 
