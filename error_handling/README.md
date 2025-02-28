@@ -3,15 +3,17 @@
 This example shows you a useful pattern for reporting errors during the 
 execution of functions in the Blocky Attestation Service (Blocky AS).
 
-You'll learn how to:
+Before starting this example, make sure you are familiar with the
+[Hello World - Attesting a Function Call](../hello_world_attest_fn_call/README.md)
+example.
 
-- 
+In this example, you'll learn how to:
 
-- Create a function that returns a `"Hello, World!"` message
-- Log messages from the function
-- Invoke functions in the Blocky AS using its `bky-as` CLI
-- Extract function output from the Blocky AS attestation
-
+- Use the [result pattern](https://en.wikipedia.org/wiki/Result_type) in your
+functions
+- Return structured data from your functions
+- Report errors from your functions
+  
 ## Setup
 
 - Install the Blocky AS CLI by following the
@@ -26,213 +28,181 @@ You'll learn how to:
 To run this example, call:
 
 ```bash
-make run
+make run-success
 ```
 
 You will see the following output extracted from a Blocky AS response:
 
 ```
-Log:
-Writing "Hello, World!" to host
-
 Output:
-Hello, World!
+{
+  "Success": true,
+  "Value": {
+    "Number": 42
+  }
+}
 ```
 
 ## Walkthrough
 
-### Step 1: Create a function that returns a "Hello, World!" message.
+### Step 1: Create success and error functions
 
-Our first goal is to create a simple function that returns a `"Hello, World!"`
-message. We will write this function in Go and compile it to WebAssembly (WASM)
-to run on the Blocky AS server. If you open [`main.go`](./main.go) you'll see
-our function there:
+Before we get to error handling, let's create a function that successfully
+returns structured data. In [`main.go`](./main.go), we define the
+`successFunc` function:
 
 ```go
-//export helloWorld
-func helloWorld(inputPtr, secretPtr uint64) uint64 {
-	msg := "Hello, World!"
-
-	as.Log(fmt.Sprintf("Writing \"%s\" to host\n", msg))
-
-	return as.WriteToHost([]byte(msg))
+func successFunc(inputPtr, secretPtr uint64) uint64 {
+	type Output struct {
+		Number int `json:"number"`
+	}
+	output := Output{42}
+	return writeOutput(output)
 }
 ```
 
-You will notice a few things:
+This function creates an `Output` struct with a single field, `Number`, and
+sets it to 42. It then calls the `writeOutput` function to return it to the user
+using the `writeOutput` function.
 
-- The `helloWorld` function is exported so that it can be invoked by the
-  Blocky AS server in a WASM runtime.
-- The function takes two `uint64` arguments and returns a `uint64`. These are
-  fat pointers to shared memory managed by the Blocky AS server, where the first
-  32 bits are a memory address and the second 32 bits are the size of the data.
-  The memory space is sandboxed and shared between the TEE host program (Blocky
-  AS server) and the WASM runtime (your function). The `inputPtr` and
-  `secretPtr` arguments carry user-defined function input and secrets,
-  though we don't make use of them in this example. The output of the function
-  is also a memory pointer, whose value will be returned to the user.
-- The function uses `as.Log` to write a message to the Blocky AS server log, 
-  maintained separately for each function invocation. You can log messages
-  to debug or monitor your function's behavior.
-- The function calls `as.WriteToHost` to write a byte array (serialized from
-  `msg`) to shared memory. The host (Blocky AS server) will create an 
-  attestation over that array as a part of its response.
+Let's say, however, that you want to write a function that fail depending on its
+starting conditions, or while processing the data it fetches from the web. For
+the purpose of this example, we define the `errorFunc` in [`main.go`](./main.go)
+that will always fail:
 
-### Step 2: Compile the function to WebAssembly (WASM)
+```go
+func errorFunc(inputPtr, secretPtr uint64) uint64 {
+	err := errors.New("expected error")
+	return writeError(err)
+}
+```
 
-To invoke our function in the Blocky AS server, we first need to compile
-it into a WASM file. If you inspect the `build` target in the
-[`Makefile`](./Makefile), you'll see the build command:
+Both of these functions will successfully complete their execution on the 
+Blocky AS server and produce an attestation over their output. What we'd like
+is an easy way to tell whether the function succeeded or failed due to a runtime
+error.
+
+### Step 2: Use the result pattern
+
+To do this, we can use the [result pattern](https://en.wikipedia.org/wiki/Result_type).
+In [`main.go`](./main.go), we define a `Result` struct that can hold either
+a successful result or an error:
+
+```go
+type Result struct {
+	Success bool
+	Value   any
+}
+```
+
+The `Success` field indicates whether the function succeeded or failed, and the
+`Value` field holds the result of the function if it succeeded, or an error
+string if it failed.
+
+To return a `Result` to user, we need to serialize to bytes and send them to
+the `as.WriteToHost` function. Let's say that we want to use JSON to serialize
+the `Result` struct. 
+
+We can define the `writeOutput` function to take in our function output, as 
+`any`, put it in a `Result` struct, serialize it, and send it to 
+`as.WriteToHost`:
+
+```go
+func writeOutput(output any) uint64 {
+	result := Result{
+		Success: true,
+		Value:   output,
+	}
+	data, err := json.Marshal(result)
+	if err != nil {
+		as.Log(fmt.Sprintf("Error marshalling result: %s", err))
+		return writeError(err)
+	}
+	return as.WriteToHost(data)
+}
+```
+
+As you see, we have a challenge here in that the `json.Marshal` function itself
+can fail. In this case, we can use the `writeError` function to report that 
+error. But wouldn't we run into the same, chicken and egg problem if we
+encountered an error in the `writeError` function? Let's take a look.
+
+Our `writeError` function is defined as:
+
+```go
+func writeError(err error) uint64 {
+	data := Result{}.jsonMarshalWithError(err)
+	return as.WriteToHost(data)
+}
+```
+
+and uses the receiver function `jsonMarshalWithError`:
+
+```go
+func (r Result) jsonMarshalWithError(err error) []byte {
+	resultStr := fmt.Sprintf(`{ "Success": false, "Value": "%s" }`, err)
+	data := []byte(resultStr)
+	return data
+}
+```
+
+to JSON serialize the `Result` struct with the error string. Because we
+hand-roll the JSON serialization, we no longer have to worry about the
+serialization failing.
+
+### Step 3: Run the functions
+
+To run the `successFunc` function, we can call:
 
 ```bash
-@docker run --rm \
-  -v .:/src \
-  -w /src \
-  tinygo/tinygo:0.31.2 \
-  tinygo build -o tmp/x.wasm -target=wasi main.go
+make run-success
 ```
 
-where we use `docker` to run [`tinygo`](https://tinygo.org/) to compile 
-[`main.go`](./main.go) to WASM and save it to `tmp/x.wasm`. You can build our
-function by calling:
-
-```bash
-make build
-```
-
-### Step 3: Invoke the function on the Blocky AS server
-
-To invoke our function, we first need to define an invocation template.
-We have one set up already in [`fn-call.json`](./fn-call.json) that looks like:
-
-```json
-[
-  {
-    "code_file": "tmp/x.wasm",
-    "function": "helloWorld"
-  }
-]
-```
-
-where `code_file` is the path to the WASM file we compiled earlier, and
-`function` is the name of the exported function we want to call.
-
-To invoke our function, we need to pass the invocation template to `bky-as`.
-If you inspect the `run` target in the [`Makefile`](./Makefile), you'll see the
-command:
-
-```bash
-cat fn-call.json | bky-as attest-fn-call > tmp/out.json
-```
-
-where we use `cat` to read the [`fn-call.json`](./fn-call.json), pipe it to
-`bky-as attest-fn-call`, and save the output to `tmp/out.json`.
-
-So then to run our function, you can call:
-
-```bash
-make run
-```
-
-### Step 4: Extract function output from the Blocky AS attestation
-
-The `run` target will extract the log and the attested output of the function 
-call. 
-After running:
-
-```bash
-make run
-```
-
-you should see:
+which will produce:
 
 ```
-Log:
-Writing "Hello, World!" to host
-
 Output:
-Hello, World!
-```
-
-To dive deeper, let's again look at the `run` target in the 
-[`Makefile`](./Makefile). There you will see that we save the output of the
-`bky-as attest-fn-call` command to `tmp/out.json`, which contains:
-
-```json
 {
-  "enclave_attested_application_public_key": {
-    "enclave_attestation": {
-      "Platform": "plain",
-      "PlAttests": [
-        "eyJEYXRhIjoiZXlKamRYSjJaVj...", 
-        "eyJEYXRhIjoiUzIxMWNuRjRTWE...", 
-        "eyJEYXRhIjoiVTJ0MlFubDZha2...",
-        "eyJEYXRhIjoiVEc5TFUwNU5Sal...",
-        "eyJEYXRhIjoidHgyUmlmeEVITy..."
-      ]
-    },
-    "public_key": {
-      "curve_type": "p256k1",
-      "data": "BKmurqxIrdHeTwJN0YCV/4xbOv1iCA5jdSkvByzjH6UccaRDrB8KM295IkeihMQJOLoKSNMF5/mKypRbUp7Lkcs="
-    }
-  },
-  "function_calls": [
-    {
-      "transitive_attestation": "WyJXeUpOTWtab1QxUlNhRTV...",
-      "claims": {
-        "hash_of_code": "3aa94a482d4c37fb86a913f499ddcd22c316cd26293285bf063d015c160121e1f8821019d4e141ac1eb17030f556368a7edbd3d4cc24f159107b2bb07fb27a05",
-        "function": "helloWorld",
-        "hash_of_input": "a69f73cca23a9ac5c8b567dc185a756e97c982164fe25859e0d1dcc1475c80a615b2123af1f5f94c11e3e9402c3ac558f500199d95b6d3e301758586281dcd26",
-        "output": "SGVsbG8sIFdvcmxkIQ==",
-        "hash_of_secrets": "9375447cd5307bf7473b8200f039b60a3be491282f852df9f42ce31a8a43f6f8e916c4f8264e7d233add48746a40166eec588be8b7b9b16a5eb698d4c3b06e00"
-      },
-      "logs": "V3JpdGluZyBvdXQgIkhlbGxvLCBXb3JsZCEiCg=="
-    }
-  ]
+  "Success": true,
+  "Value": {
+    "number": 42
+  }
 }
 ```
 
-The `enclave_attested_application_public_key` contains the `enclave_attestation`
-over the Blocky AS server public key. The `function_calls` section contains the
-`transitive_attestation` over the function call. The `bky-as` CLI verifies the
-`enclave_attestation` by making sure that it has been signed by the TEE hardware
-manufacturer's private key and that the code measurement of the Blocky AS server
-running inside our TEE matches one in the `acceptable_measurements` list in 
-[`config.toml`](../config.toml). The `bky-as` CLI then extracts the enclave
-attested application public key, generated by the Blocky AS server on startup,
-and uses it to verify the signature of the `transitive_attestation` and extract
-its `claims`. You can learn more about this process in
-the [Attestations in the Blocky Attestation Service](https://blocky-docs.redocly.app/attestation-service/concepts#attestations-in-the-blocky-attestation-service)
-section in our documentation.
+You can see that the `Success` field is set to `true`, which means we can
+read the `Value` field as the JSON serialized `Output` struct.
 
-The `claims` section contains attested information about the execution of
-the function.
-You can see:
+To run the `errorFunc` function, we can call:
 
-- `hash_of_code`: The hash of the WASM code executed by the Blocky AS server
-- `function`: The name of the function executed by the Blocky AS server
-- `hash_of_input`: The hash of the input data used by the function. In this
-  example this is the hash of the empty string, since we didn't specify any
-  input.
-- `hash_of_secrets`: The hash of the secrets used by the function. In this
-  example this is the hash of the empty string, since we didn't specify any
-  secrets.
-- `output`: The output of the function encoded in base64.
+```bash
+make run-error
+```
 
-Finally, the `logs` field contains the logs generated by the function execution
-and encoded in base64. Notice that while `output` is a part of the attested
-`claims`, the `logs` are not attested and are only a part of the server response. 
+which will produce:
 
-If you look at the `run` target in the [Makefile](./Makefile) again, you will
-see that we use `jq` to extract the `output` and the `logs` fields from
-`tmp/out.json` and decode them from base64.
+```
+Output:
+{
+  "Success": false,
+  "Value": "expected error"
+}
+```
 
-## Next steps
+Now the `Success` field is set to `false`, which means that we can read the
+`Value` field as the error string.
+
+## Next Steps
 
 Now that you have successfully run the example, you can start modifying it to
-fit your own needs. Check out other examples in this repository, to learn what
-else you can do with Blocky AS, and in particular the 
-[Hello World - Bringing A Blocky AS Function Call Attestation On Chain](../hello_world_on_chain)
-example.
+fit your own needs. 
 
+If you explored the 
+[Hello World - Bringing A Blocky AS Function Call Attestation On Chain](../hello_world_on_chain/README.md)
+example, you can use `Result.Success` to decide whether you want to bring the
+attestation on chain or not. You can also extend the example, so that
+transactions calling the `User.sol` `verifyAttestedFnCallClaims` function revert
+if the `Result.Success` field is set to `false`.
 
+You can also check out other examples in this repository, to learn what
+else you can do with Blocky AS.

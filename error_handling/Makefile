@@ -25,8 +25,6 @@ run-success: build | check
 run-error: build | check
 	@echo "Running WASM module..."
 	@cat errorFunc.json | bky-as attest-fn-call >tmp/errorout.json
-	@echo "Log:"
-	@jq -r '.function_calls[0].logs | @base64d' tmp/errorout.json
 	@echo "Output:"
 	@jq -r '.function_calls[0].claims.output | @base64d | fromjson' tmp/errorout.json
 
