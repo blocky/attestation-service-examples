@@ -13,14 +13,8 @@ type Result struct {
 	Value   any
 }
 
-func (r Result) jsonMarshalWithError(err string) []byte {
-	resultStr := fmt.Sprintf(
-		`{
-					"Success": false,
-					"Value": "%s"
-				}`,
-		err,
-	)
+func (r Result) jsonMarshalWithError(err error) []byte {
+	resultStr := fmt.Sprintf(`{ "Success": false, "Value": "%s" }`, err)
 	data := []byte(resultStr)
 	return data
 }
@@ -32,13 +26,13 @@ func writeOutput(output any) uint64 {
 	}
 	data, err := json.Marshal(result)
 	if err != nil {
-		as.Log(fmt.Sprintf("Error marshalling result: %s", err.Error()))
-		return writeError(err.Error())
+		as.Log(fmt.Sprintf("Error marshalling result: %s", err))
+		return writeError(err)
 	}
 	return as.WriteToHost(data)
 }
 
-func writeError(err string) uint64 {
+func writeError(err error) uint64 {
 	data := Result{}.jsonMarshalWithError(err)
 	return as.WriteToHost(data)
 }
@@ -55,7 +49,7 @@ func successFunc(inputPtr, secretPtr uint64) uint64 {
 //export errorFunc
 func errorFunc(inputPtr, secretPtr uint64) uint64 {
 	err := errors.New("expected error")
-	return writeError(err.Error())
+	return writeError(err)
 }
 
 func main() {}
