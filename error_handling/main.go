@@ -10,16 +10,14 @@ import (
 
 type Result struct {
 	Success bool
-	Error   string
-	Output  any
+	Value   any
 }
 
 func (r Result) jsonMarshalWithError(err string) []byte {
 	resultStr := fmt.Sprintf(
 		`{
 					"Success": false,
-					"Error": "%s",
-					"Output": null
+					"Value": "%s"
 				}`,
 		err,
 	)
@@ -30,8 +28,7 @@ func (r Result) jsonMarshalWithError(err string) []byte {
 func writeOutput(output any) uint64 {
 	result := Result{
 		Success: true,
-		Error:   "",
-		Output:  output,
+		Value:   output,
 	}
 	data, err := json.Marshal(result)
 	if err != nil {
@@ -48,15 +45,16 @@ func writeError(err string) uint64 {
 
 //export successFunc
 func successFunc(inputPtr, secretPtr uint64) uint64 {
-	successMsg := "Output from successFunc"
-	return writeOutput(successMsg)
+	type Output struct {
+		Number int `json:"number"`
+	}
+	output := Output{42}
+	return writeOutput(output)
 }
 
 //export errorFunc
 func errorFunc(inputPtr, secretPtr uint64) uint64 {
 	err := errors.New("expected error")
-	as.Log(fmt.Sprintf("Error in errorFunc: %s", err.Error()))
-	// todo: add log to host to show output in server
 	return writeError(err.Error())
 }
 
