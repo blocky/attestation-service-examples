@@ -239,11 +239,11 @@ Notice the output of the command similar to:
 
 ```
 Successfully verified contract User on the block explorer.
-https://sepolia.basescan.org/address/0xEcfB40e2A4F7F1E9E651b9961aE854086434743D#code
+https://sepolia.basescan.org/address/0x41BC1d75EB319573B8e3071e0C5B611eD458e21a#code
 ```
 
 which includes a link to the 
-[deployed `User` contract on Basescan](https://sepolia.basescan.org/address/0xEcfB40e2A4F7F1E9E651b9961aE854086434743D).
+[deployed `User` contract on Basescan](https://sepolia.basescan.org/address/0x41BC1d75EB319573B8e3071e0C5B611eD458e21a).
 
 ### Step 5: Test the `User` contract on Base Sepolia
 
@@ -265,7 +265,7 @@ You will see the test output similar to:
 which show that the [`User.sol`](contracts/User.sol) contract was able to
 verify the TA in just over 2 seconds.
 If you go to Basescan to see 
-[contract transaction logs](https://sepolia.basescan.org/tx/0x87206998d4c09c280778868a7f4c7dbf591f1ede8390d20f21fd3e0a850919cc#eventlog)
+[contract transaction logs](https://sepolia.basescan.org/tx/0x82eb1d2cd500a1e236678a04f9ee8361e2fda11224d0791612ae2244d294bf78#eventlog)
 you can see that the `verifyAttestedFnCallClaims` emitted the
 `AttestedFunctionCallOutput` event containing the expected `"Hello, World!"` 
 WASM function output.
