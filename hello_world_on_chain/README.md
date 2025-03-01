@@ -54,7 +54,7 @@ To verify the output of the WASM function call in a smart contract, we will
 extract from `out.json` the transitive attestation of function call, as well as
 the enclave attested application public key of the Blocky AS server. As you'll
 see later, this example is driven by tests in
-[tests/User.ts](test/User.ts). In that file, we use the `loadEVMLinkData`
+[tests/user.ts](test/user.ts). In that file, we use the `loadEVMLinkData`
 function to extract the transitive attestation and enclave attested application
 public key from [`inputs/out.json`](inputs/out.json). If you like, you can see
 these values now by running:
@@ -200,7 +200,7 @@ function example, we simply print the `claims` to the console and emit an
 
 To test the smart contract locally, we use the
 [Hardhat](https://hardhat.org/) framework.
-We define the `"Local Tests"` in [`test/User.ts`](test/User.ts) that loads
+We define the `"Local Tests"` in [`test/user.ts`](test/user.ts) that loads
 [`inputs/out.json`](inputs/out.json), calls the `setTASigningKeyAddress`
 and `verifyAttestedFnCallClaims` functions on the [`User`](contracts/User.sol)
 contract, and checks that the contract emits the `AttestedFunctionCallOutput`
@@ -250,7 +250,7 @@ To test the [`User.sol`](contracts/User.sol) contract on Base Sepolia, call:
 make test-base-sepolia
 ```
 
-which will invoke the `"Base Sepolia Tests"` in [`test/User.ts`](test/User.ts).
+which will invoke the `"Base Sepolia Tests"` in [`test/user.ts`](test/user.ts).
 You will see the test output similar to:
 
 ```
