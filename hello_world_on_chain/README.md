@@ -103,8 +103,8 @@ the correct transitive attestation signing key. In the future, we will make this
 process fully trustless, by allowing smart contracts to verify enclave
 attestations directly to extract and set the transitive attestation signing key.
 
-The [`User`](contracts/User.sol) contract extends the Blocky-provided
-[`contracts/TAParser.sol`](lib/TAParserLib.sol) contract, which provides
+The [`User`](contracts/User.sol) contract uses the Blocky-provided
+[`lib/TAParserLib.sol`](lib/TAParserLib.sol) library, which provides
 several utility functions. One of these is `publicKeyToAddress` function
 converts the enclave attested application public key to an Ethereum address.
 
@@ -135,7 +135,7 @@ function:
 ```
 
 to verify a transitive attestation passed in as `taData`. The bulk of the work
-takes place in [`TAParser.sol`](lib/TAParserLib.sol) `parseTA` function:
+takes place in [`TAParserLib.sol`](lib/TAParserLib.sol) `parseTA` function:
 
 ```solidity
     struct TA {
@@ -216,15 +216,18 @@ event with `"Hello, World!"` as input.
 > file.
 
 You can also deploy the [`User.sol`](contracts/User.sol) contract to Base
-Sepolia. To do so, we need to do a bit more setup:
+Sepolia testnet. To do so, we need to do a bit more setup:
 
-- Create a wallet and fund it with Base Sepolia ETH. You can find several
-  Base Sepolia faucets in the
-  [Base Sepolia documentation](https://docs.base.org/chain/network-faucets).
-  Set your wallet's private key in the [`.env`](.env) file under `WALLET_KEY`.
+- Create a wallet and fund it with Base Sepolia ETH.
+  - If you'd like to user Metamask as your wallet, you can follow this
+    [guide](https://getblock.io/blog/add-base-sepolia-testnet-metamask/)
+    to configure it with Base Sepolia.
+  - To fund your wallet, you can tap on of the Base Sepolia faucets listed in
+      [Base Sepolia documentation](https://docs.base.org/chain/network-faucets).
+- Set your wallet's private key in the [`.env`](.env) file under `WALLET_KEY`.
 - Get a
   [Basescan API key](https://docs.basescan.org/getting-started/viewing-api-usage-statistics#creating-an-api-key)
-  and set it in the [`.env`](.env) file under `BASESCAN_KEY`.
+- Set your Basescan API key in the [`.env`](.env) file under `BASESCAN_KEY`.
 
 To deploy the smart contract, call:
 
