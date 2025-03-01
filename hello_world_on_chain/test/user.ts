@@ -33,7 +33,7 @@ const loadUserDeployedAddress = () => {
     try {
         const dir = path.resolve(
             __dirname,
-            "../.user_deployed_address"
+            "../deployments/user_deployed_address"
         )
         const file = fs.readFileSync(dir, "utf8")
 

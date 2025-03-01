@@ -18,7 +18,7 @@ In this example, you'll learn how to:
 Set up the project dependencies:
 
 ```bash
-npm install
+npm install --dd
 ```
 
 ## Quick Start
@@ -212,7 +212,7 @@ event with `"Hello, World!"` as input.
 > [Step 5](#step-5-test-the-user-contract-on-base-sepolia) to test the
 > [`User.sol`](contracts/User.sol) contract on Base Sepolia using
 > deployed contract address in the 
-> [`.user_deployed_address`](.user_deployed_address) 
+> [`deploymnets/user_deployed_address`](deployments/user_deployed_addressoyed_address) 
 > file.
 
 You can also deploy the [`User.sol`](contracts/User.sol) contract to Base

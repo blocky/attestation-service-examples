@@ -10,7 +10,7 @@ async function main() {
 
     console.log('User Contract Deployed at ' + contract.target);
 
-    fs.writeFile(".user_deployed_address", contract.target, err => {
+    fs.writeFile("deployments/user_deployed_address", contract.target, err => {
         if(err) {
             console.log(err)
         }

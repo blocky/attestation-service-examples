@@ -9,7 +9,7 @@ compile:
 .PHONY: deploy-base-sepolia
 deploy-base-sepolia: compile
 	npx hardhat run scripts/deployUser.ts --network base-sepolia
-	npx hardhat verify --network base-sepolia $$(cat .user_deployed_address)
+	npx hardhat verify --network base-sepolia $$(cat deployments/user_deployed_address)
 
 .PHONY: test-base-sepolia
 test-base-sepolia:
