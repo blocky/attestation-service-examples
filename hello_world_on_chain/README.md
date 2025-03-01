@@ -76,7 +76,7 @@ Its goal is to verify that a transitive attestation has
 been signed by the enclave attested application public key of the Blocky AS
 server and parse out the attested function output. 
 
-The first step in that process, is to set the enclave attested application
+The first step in that process is to set the enclave attested application
 public key, used to sign transitive attestations, in contract memory. We do this
 by calling the `setTASigningKeyAddress` function:
 
@@ -104,7 +104,7 @@ process fully trustless, by allowing smart contracts to verify enclave
 attestations directly to extract and set the transitive attestation signing key.
 
 The [`User`](contracts/User.sol) contract extends the Blocky-provided
-[`contracts/TAParser.sol`](contracts/TAParser.sol) contract, which provides
+[`contracts/TAParser.sol`](lib/TAParserLib.sol) contract, which provides
 several utility functions. One of these is `publicKeyToAddress` function
 converts the enclave attested application public key to an Ethereum address.
 
@@ -135,7 +135,7 @@ function:
 ```
 
 to verify a transitive attestation passed in as `taData`. The bulk of the work
-takes place in [`TAParser.sol`](contracts/TAParser.sol) `parseTA` function:
+takes place in [`TAParser.sol`](lib/TAParserLib.sol) `parseTA` function:
 
 ```solidity
     struct TA {

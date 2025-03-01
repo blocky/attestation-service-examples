@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.10;
 
-import {TAParser} from "./TAParser.sol";
+import {TAParserLib} from "../lib/TAParserLib.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {console} from "hardhat/console.sol";
 
-contract User is Ownable, TAParser {
+contract User is Ownable {
     event AttestedFunctionCallOutput(string output);
 
     address private taSigningKeyAddress;
@@ -18,7 +18,7 @@ contract User is Ownable, TAParser {
     )
     public onlyOwner
     {
-        taSigningKeyAddress = publicKeyToAddress(taSigningKey);
+        taSigningKeyAddress = TAParserLib.publicKeyToAddress(taSigningKey);
     }
 
     function verifyAttestedFnCallClaims(
@@ -26,7 +26,7 @@ contract User is Ownable, TAParser {
     )
     public
     {
-        TAParser.FnCallClaims memory claims = parseTA(
+        TAParserLib.FnCallClaims memory claims = TAParserLib.parseTA(
             taData,
             taSigningKeyAddress
         );

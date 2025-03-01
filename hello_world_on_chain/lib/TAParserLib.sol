@@ -1,13 +1,11 @@
 //  SPDX-License-Identifier: MIT
 pragma solidity ^0.8.10;
 
-import {JsmnSolLib} from "../lib/JsmnSolLib.sol";
-
-import {BytesLib} from "solidity-bytes-utils/contracts/BytesLib.sol";
-import {console} from "hardhat/console.sol";
+import {JsmnSolLib} from "./JsmnSolLib.sol";
 import {Base64} from "base64-sol/base64.sol";
+import {BytesLib} from "solidity-bytes-utils/contracts/BytesLib.sol";
 
-contract TAParser {
+library TAParserLib {
 
     struct TA {
         string Data;
@@ -20,14 +18,6 @@ contract TAParser {
         string HashOfInput;
         string HashOfSecrets;
         string Output;
-    }
-
-    function base64d(
-        string memory base64Input
-    ) 
-    internal pure returns (string memory) {
-        bytes memory decodedBytes = Base64.decode(base64Input);
-        return string(decodedBytes);
     }
 
     function publicKeyToAddress(
@@ -66,6 +56,14 @@ contract TAParser {
         FnCallClaims memory claims = decodeFnCallClaims(ta.Data);
 
         return claims;
+    }
+
+    function base64d(
+        string memory base64Input
+    )
+    private pure returns (string memory) {
+        bytes memory decodedBytes = Base64.decode(base64Input);
+        return string(decodedBytes);
     }
 
     function decodeTA(
