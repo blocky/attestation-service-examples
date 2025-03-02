@@ -44,8 +44,8 @@ type PandaScoreMatchResponse struct {
 	WinnerId int       `json:"winner_id"`
 	Id       int       `json:"id"`
 	Results  []struct {
-		TeamId int `json:"team_id"`
-		Score  int `json:"score"`
+		PlayerId int `json:"player_id"`
+		Score    int `json:"score"`
 	} `json:"results"`
 	Opponents []struct {
 		Opponent struct {
@@ -110,7 +110,7 @@ func getMatchResult(matchID string, apiKey string) (MatchResult, error) {
 	var winnerScore int
 	var loserScore int
 	for _, result := range match.Results {
-		if result.TeamId == match.WinnerId {
+		if result.PlayerId == match.WinnerId {
 			winnerScore = result.Score
 		} else {
 			loserScore = result.Score
