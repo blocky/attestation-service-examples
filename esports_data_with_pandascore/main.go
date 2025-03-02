@@ -38,69 +38,91 @@ func writeError(err error) uint64 {
 	return as.WriteToHost(data)
 }
 
-type CoinGeckoResponse struct {
-	Tickers []struct {
-		Base   string `json:"base"`
-		Market struct {
+type PandaScoreMatchResponse struct {
+	EndAt    time.Time `json:"end_at"`
+	Status   string    `json:"status"`
+	WinnerId int       `json:"winner_id"`
+	Id       int       `json:"id"`
+	Results  []struct {
+		TeamId int `json:"team_id"`
+		Score  int `json:"score"`
+	} `json:"results"`
+	Opponents []struct {
+		Opponent struct {
+			Id   int    `json:"id"`
 			Name string `json:"name"`
-		} `json:"market"`
-		ConvertedLast struct {
-			USD float64 `json:"usd"`
-		} `json:"converted_last"`
-		Timestamp time.Time `json:"timestamp"`
-	} `json:"tickers"`
+		} `json:"opponent"`
+	} `json:"opponents"`
 }
 
-type Price struct {
-	Market    string    `json:"market"`
-	CoinID    string    `json:"coin_id"`
-	Currency  string    `json:"currency"`
-	Price     float64   `json:"price"`
-	Timestamp time.Time `json:"timestamp"`
+type MatchResult struct {
+	Winner string `json:"winner"`
+	Loser  string `json:"loser"`
+	Score  string `json:"score"`
+	EndAt  string `json:"end_at"`
 }
 
-func getPrice(market string, coinID string, apiKey string) (Price, error) {
+func getMatchResult(matchID string, apiKey string) (MatchResult, error) {
 	req := as.HostHTTPRequestInput{
 		Method: "GET",
-		URL:    fmt.Sprintf("https://api.coingecko.com/api/v3/coins/%s/tickers", coinID),
+		URL:    fmt.Sprintf("https://api.pandascore.co/matches/%s", matchID),
 		Headers: map[string][]string{
-			"x-cg-demo-api-key": []string{apiKey},
+			"Accept":        {"application/json"},
+			"Authorization": {"Bearer " + apiKey},
 		},
 	}
 	resp, err := as.HostFuncHTTPRequest(req)
 	if err != nil {
-		return Price{}, fmt.Errorf("making http request: %w", err)
+		return MatchResult{}, fmt.Errorf("making http request: %w", err)
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		return Price{}, fmt.Errorf(
+		return MatchResult{}, fmt.Errorf(
 			"http request failed with status code %d",
 			resp.StatusCode,
 		)
 	}
 
-	coinGeckoResponse := CoinGeckoResponse{}
-	err = json.Unmarshal(resp.Body, &coinGeckoResponse)
+	match := PandaScoreMatchResponse{}
+	err = json.Unmarshal(resp.Body, &match)
 	if err != nil {
-		return Price{}, fmt.Errorf(
+		return MatchResult{}, fmt.Errorf(
 			"unmarshaling  data: %w...%s", err,
 			resp.Body,
 		)
 	}
 
-	for _, ticker := range coinGeckoResponse.Tickers {
-		if ticker.Market.Name == market {
-			return Price{
-				Market:    ticker.Market.Name,
-				CoinID:    ticker.Base,
-				Currency:  "USD",
-				Price:     ticker.ConvertedLast.USD,
-				Timestamp: ticker.Timestamp,
-			}, nil
+	if match.Status != "finished" {
+		return MatchResult{}, fmt.Errorf("match is not finished")
+	}
+
+	var winner string
+	var loser string
+	for _, opponent := range match.Opponents {
+		if opponent.Opponent.Id == match.WinnerId {
+			winner = opponent.Opponent.Name
+		} else {
+			loser = opponent.Opponent.Name
 		}
 	}
 
-	return Price{}, fmt.Errorf("market %s not found", market)
+	// Get the score
+	var winnerScore int
+	var loserScore int
+	for _, result := range match.Results {
+		if result.TeamId == match.WinnerId {
+			winnerScore = result.Score
+		} else {
+			loserScore = result.Score
+		}
+	}
+
+	return MatchResult{
+		Winner: winner,
+		Loser:  loser,
+		Score:  fmt.Sprintf("%d - %d", winnerScore, loserScore),
+		EndAt:  match.EndAt.Format(time.RFC3339),
+	}, nil
 }
 
 type Args struct {
@@ -108,7 +130,7 @@ type Args struct {
 }
 
 type SecretArgs struct {
-	CoinGeckoAPIKey string `json:"api_key"`
+	PandaScoreAPIKey string `json:"api_key"`
 }
 
 //export oracleFunc
@@ -129,15 +151,13 @@ func oracleFunc(inputPtr, secretPtr uint64) uint64 {
 		return writeError(outErr)
 	}
 
-	// price, err := getPrice(input.Market, input.CoinID, secret.CoinGeckoAPIKey)
-	// if err != nil {
-	// 	outErr := fmt.Errorf("getting price: %w", err)
-	// 	return writeError(outErr)
-	// }
+	result, err := getMatchResult(input.MatchID, secret.PandaScoreAPIKey)
+	if err != nil {
+		outErr := fmt.Errorf("getting price: %w", err)
+		return writeError(outErr)
+	}
 
-	as.Log(fmt.Sprintf("Match ID: %s", input.MatchID))
-
-	return writeOutput(nil)
+	return writeOutput(result)
 }
 
 func main() {}
