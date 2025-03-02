@@ -1,0 +1,12 @@
+[
+    {
+        "code_file": "tmp/x.wasm",
+        "function": "oracleFunc",
+        "input": {
+            "match_id": "PandaScore match ID"
+        },
+        "secret": {
+            "api_key": "PandaScore API key"
+        }
+    }
+]
