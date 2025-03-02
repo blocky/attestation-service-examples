@@ -14,7 +14,7 @@ type Result struct {
 }
 
 func (r Result) jsonMarshalWithError(err error) []byte {
-	resultStr := fmt.Sprintf(`{ "Success": false, "Value": "%s" }`, err)
+	resultStr := fmt.Sprintf(`{ "Success": false, "Value": "%v" }`, err)
 	data := []byte(resultStr)
 	return data
 }
@@ -26,7 +26,7 @@ func writeOutput(output any) uint64 {
 	}
 	data, err := json.Marshal(result)
 	if err != nil {
-		as.Log(fmt.Sprintf("Error marshalling result: %s", err))
+		as.Log(fmt.Sprintf("Error marshalling result: %v", err))
 		return writeError(err)
 	}
 	return as.WriteToHost(data)
