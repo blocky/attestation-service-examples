@@ -9,22 +9,13 @@ import (
 	"github.com/blocky/as-demo/as"
 )
 
-type Args struct {
-	Market string `json:"market"`
-	CoinID string `json:"coin_id"`
-}
-
-type SecretArgs struct {
-	CoinGeckoAPIKey string `json:"api_key"`
-}
-
 type Result struct {
 	Success bool
 	Value   any
 }
 
 func (r Result) jsonMarshalWithError(err error) []byte {
-	resultStr := fmt.Sprintf(`{ "Success": false, "Value": "%s" }`, err)
+	resultStr := fmt.Sprintf(`{ "Success": false, "Value": "%v" }`, err)
 	data := []byte(resultStr)
 	return data
 }
@@ -36,7 +27,7 @@ func writeOutput(output any) uint64 {
 	}
 	data, err := json.Marshal(result)
 	if err != nil {
-		as.Log(fmt.Sprintf("Error marshalling result: %s", err))
+		as.Log(fmt.Sprintf("Error marshalling result: %v", err))
 		return writeError(err)
 	}
 	return as.WriteToHost(data)
@@ -112,8 +103,17 @@ func getPrice(market string, coinID string, apiKey string) (Price, error) {
 	return Price{}, fmt.Errorf("market %s not found", market)
 }
 
-//export myOracleFunc
-func myOracleFunc(inputPtr, secretPtr uint64) uint64 {
+type Args struct {
+	Market string `json:"market"`
+	CoinID string `json:"coin_id"`
+}
+
+type SecretArgs struct {
+	CoinGeckoAPIKey string `json:"api_key"`
+}
+
+//export oracleFunc
+func oracleFunc(inputPtr, secretPtr uint64) uint64 {
 	var input Args
 	inputData := as.Bytes(inputPtr)
 	err := json.Unmarshal(inputData, &input)
@@ -127,16 +127,16 @@ func myOracleFunc(inputPtr, secretPtr uint64) uint64 {
 	err = json.Unmarshal(secretData, &secret)
 	if err != nil {
 		outErr := fmt.Errorf("could not unmarshal secret args: %w", err)
-		return writeErr(outErr.Error())
+		return writeError(outErr)
 	}
 
 	price, err := getPrice(input.Market, input.CoinID, secret.CoinGeckoAPIKey)
 	if err != nil {
 		outErr := fmt.Errorf("getting price: %w", err)
-		return writeErr(outErr.Error())
+		return writeError(outErr)
 	}
 
-	return writePrice(price)
+	return writeOutput(price)
 }
 
 func main() {}
