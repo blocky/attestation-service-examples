@@ -20,9 +20,9 @@ build: tmp/x.wasm
 
 run: build | check
 	@echo "Running WASM module..."
-	@cat fn-call.json \
-	| bky-as attest-fn-call \
-	| jq -r '.function_calls[0].claims.output | @base64d | fromjson'
+	@cat fn-call.json | bky-as attest-fn-call >tmp/out.json
+	@echo "Output:"
+	@jq -r '.function_calls[0].claims.output | @base64d | fromjson' tmp/out.json
 
 clean:
 	@rm -rf tmp

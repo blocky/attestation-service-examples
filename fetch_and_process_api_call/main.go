@@ -18,18 +18,33 @@ type SecretArgs struct {
 	CoinGeckoAPIKey string `json:"api_key"`
 }
 
-type Price struct {
-	Market    string    `json:"market"`
-	CoinID    string    `json:"coin_id"`
-	Currency  string    `json:"currency"`
-	Price     float64   `json:"price"`
-	Timestamp time.Time `json:"timestamp"`
-}
-
 type Result struct {
 	Success bool
-	Value   Price
-	Error   string
+	Value   any
+}
+
+func (r Result) jsonMarshalWithError(err error) []byte {
+	resultStr := fmt.Sprintf(`{ "Success": false, "Value": "%s" }`, err)
+	data := []byte(resultStr)
+	return data
+}
+
+func writeOutput(output any) uint64 {
+	result := Result{
+		Success: true,
+		Value:   output,
+	}
+	data, err := json.Marshal(result)
+	if err != nil {
+		as.Log(fmt.Sprintf("Error marshalling result: %s", err))
+		return writeError(err)
+	}
+	return as.WriteToHost(data)
+}
+
+func writeError(err error) uint64 {
+	data := Result{}.jsonMarshalWithError(err)
+	return as.WriteToHost(data)
 }
 
 type CoinGeckoResponse struct {
@@ -43,6 +58,14 @@ type CoinGeckoResponse struct {
 		} `json:"converted_last"`
 		Timestamp time.Time `json:"timestamp"`
 	} `json:"tickers"`
+}
+
+type Price struct {
+	Market    string    `json:"market"`
+	CoinID    string    `json:"coin_id"`
+	Currency  string    `json:"currency"`
+	Price     float64   `json:"price"`
+	Timestamp time.Time `json:"timestamp"`
 }
 
 func getPrice(market string, coinID string, apiKey string) (Price, error) {
@@ -96,7 +119,7 @@ func myOracleFunc(inputPtr, secretPtr uint64) uint64 {
 	err := json.Unmarshal(inputData, &input)
 	if err != nil {
 		outErr := fmt.Errorf("could not unmarshal input args: %w", err)
-		return writeErr(outErr.Error())
+		return writeError(outErr)
 	}
 
 	var secret SecretArgs
@@ -117,28 +140,3 @@ func myOracleFunc(inputPtr, secretPtr uint64) uint64 {
 }
 
 func main() {}
-
-func writeErr(err string) uint64 {
-	result := Result{
-		Success: false,
-		Error:   err,
-	}
-	return writeOutput(result)
-}
-
-func writePrice(price Price) uint64 {
-	result := Result{
-		Success: true,
-		Value:   price,
-	}
-	return writeOutput(result)
-}
-
-func writeOutput(output any) uint64 {
-	outputData, err := as.Marshal(output)
-	if err != nil {
-		// We panic on errors we cannot communicate back to function caller
-		panic("Fatal error: could not marshal output data")
-	}
-	return as.ShareWithHost(outputData)
-}
