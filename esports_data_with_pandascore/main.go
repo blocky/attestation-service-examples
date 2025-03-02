@@ -104,8 +104,7 @@ func getPrice(market string, coinID string, apiKey string) (Price, error) {
 }
 
 type Args struct {
-	Market string `json:"market"`
-	CoinID string `json:"coin_id"`
+	MatchID string `json:"match_id"`
 }
 
 type SecretArgs struct {
@@ -130,13 +129,15 @@ func oracleFunc(inputPtr, secretPtr uint64) uint64 {
 		return writeError(outErr)
 	}
 
-	price, err := getPrice(input.Market, input.CoinID, secret.CoinGeckoAPIKey)
-	if err != nil {
-		outErr := fmt.Errorf("getting price: %w", err)
-		return writeError(outErr)
-	}
+	// price, err := getPrice(input.Market, input.CoinID, secret.CoinGeckoAPIKey)
+	// if err != nil {
+	// 	outErr := fmt.Errorf("getting price: %w", err)
+	// 	return writeError(outErr)
+	// }
 
-	return writeOutput(price)
+	as.Log(fmt.Sprintf("Match ID: %s", input.MatchID))
+
+	return writeOutput(nil)
 }
 
 func main() {}
