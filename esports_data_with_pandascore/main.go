@@ -43,7 +43,17 @@ type PandaScoreMatchResponse struct {
 	Status   string    `json:"status"`
 	WinnerId int       `json:"winner_id"`
 	Id       int       `json:"id"`
-	Results  []struct {
+	Slug     string    `json:"slug"`
+	League   struct {
+		Slug string `json:"slug"`
+	} `json:"league"`
+	Serie struct {
+		Slug string `json:"slug"`
+	}
+	Tournament struct {
+		Slug string `json:"slug"`
+	}
+	Results []struct {
 		PlayerId int `json:"player_id"`
 		Score    int `json:"score"`
 	} `json:"results"`
@@ -56,10 +66,15 @@ type PandaScoreMatchResponse struct {
 }
 
 type MatchResult struct {
-	Winner string `json:"winner"`
-	Loser  string `json:"loser"`
-	Score  string `json:"score"`
-	EndAt  string `json:"end_at"`
+	League     string `json:"league"`
+	Serie      string `json:"serie"`
+	Tournament string `json:"tournament"`
+	Match      string `json:"match"`
+	MatchID    int    `json:"match_id"`
+	Winner     string `json:"winner"`
+	Loser      string `json:"loser"`
+	Score      string `json:"score"`
+	EndAt      string `json:"end_at"`
 }
 
 func getMatchResult(matchID string, apiKey string) (MatchResult, error) {
@@ -106,7 +121,6 @@ func getMatchResult(matchID string, apiKey string) (MatchResult, error) {
 		}
 	}
 
-	// Get the score
 	var winnerScore int
 	var loserScore int
 	for _, result := range match.Results {
@@ -118,10 +132,15 @@ func getMatchResult(matchID string, apiKey string) (MatchResult, error) {
 	}
 
 	return MatchResult{
-		Winner: winner,
-		Loser:  loser,
-		Score:  fmt.Sprintf("%d - %d", winnerScore, loserScore),
-		EndAt:  match.EndAt.Format(time.RFC3339),
+		League:     match.League.Slug,
+		Serie:      match.Serie.Slug,
+		Tournament: match.Tournament.Slug,
+		Match:      match.Slug,
+		MatchID:    match.Id,
+		Winner:     winner,
+		Loser:      loser,
+		Score:      fmt.Sprintf("%d - %d", winnerScore, loserScore),
+		EndAt:      match.EndAt.Format(time.RFC3339),
 	}, nil
 }
 
