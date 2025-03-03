@@ -162,13 +162,6 @@ event with `"Hello, World!"` as input.
 
 ### Step 4: Deploy the Smart Contract to Base Sepolia
 
-> Note that this step is optional in this tutorial. You can skip to 
-> [Step 5](#step-5-test-the-user-contract-on-base-sepolia) to test the
-> [`User.sol`](contracts/User.sol) contract on Base Sepolia using
-> deployed contract address in the 
-> [`deploymnets/user_deployed_address`](deployments/user_deployed_addressoyed_address) 
-> file.
-
 You can also deploy the [`User.sol`](contracts/User.sol) contract to Base
 Sepolia testnet. To do so, we need to do a bit more setup:
 
@@ -182,6 +175,14 @@ Sepolia testnet. To do so, we need to do a bit more setup:
 - Get a
   [Basescan API key](https://docs.basescan.org/getting-started/viewing-api-usage-statistics#creating-an-api-key)
 - Set your Basescan API key in the [`.env`](.env) file under `BASESCAN_KEY`.
+
+> Now you are ready to deploy and test the [ `User.sol`](contracts/User.sol) 
+> contract on Base Sepolia. However, you can skip this step and go directly to
+> [Step 5](#step-5-test-the-user-contract-on-base-sepolia) to test the
+> [`User.sol`](contracts/User.sol) contract on Base Sepolia using
+> deployed contract address in the
+> [`deploymnets/user_deployed_address`](deployments/user_deployed_addressoyed_address)
+> file.
 
 To deploy the smart contract, call:
 
