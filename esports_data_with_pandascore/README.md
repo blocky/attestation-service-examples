@@ -1,4 +1,4 @@
-# Getting Esports Data with PandaScore
+# Getting Esports Data From PandaScore
 
 This example shows you how to use the Blocky Attestation Service (Blocky AS) to
 attest a function call that fetches data from the PandScore API and processes

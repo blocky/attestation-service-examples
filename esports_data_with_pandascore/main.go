@@ -9,6 +9,7 @@ import (
 	"github.com/blocky/as-demo/as"
 )
 
+// todo: udpate this pattern
 type Result struct {
 	Success bool
 	Value   any
