@@ -1,4 +1,4 @@
-# Fetch and Process A Call to CoinGecko API
+# Getting Coin Prices From CoinGecko
 
 This example shows you how to use the Blocky Attestation Service (Blocky AS) to
 attest a function call that fetches data from the CoinGecko API and processes

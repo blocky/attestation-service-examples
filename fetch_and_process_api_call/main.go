@@ -9,6 +9,9 @@ import (
 	"github.com/blocky/as-demo/as"
 )
 
+// todo: rename the folder `coin_prices_from_coingecko`
+
+// todo: udpate based on the error
 type Result struct {
 	Success bool
 	Value   any
