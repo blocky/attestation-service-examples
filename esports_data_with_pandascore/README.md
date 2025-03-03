@@ -85,6 +85,11 @@ which will print
 1121861
 ```
 
+If you're curious about PandaScore's APIs used throughout this example, check 
+out its 
+[documentation](https://developers.pandascore.co/reference/get_matches)
+page.
+
 ### Step 1: Create a parameterized oracle function
 
 We'll implement the oracle as `oracleFunc` in
