@@ -57,7 +57,7 @@ const loadUserContractABI = () => {
     }
 }
 
-describe("Local Tests", function () {
+describe("Local Test", function () {
     async function deployUser() {
         const contract = await hre.ethers.deployContract("User");
         return {userContract: contract};

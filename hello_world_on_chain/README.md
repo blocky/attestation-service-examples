@@ -154,7 +154,7 @@ function example, we simply print the `claims` to the console and emit an
 
 To test the smart contract locally, we use the
 [Hardhat](https://hardhat.org/) framework.
-We define the `"Local Tests"` in [`test/user.ts`](test/user.ts) that loads
+We define the `"Local Test"` in [`test/user.ts`](test/user.ts) that loads
 [`inputs/out.json`](inputs/out.json), calls the `setTASigningKeyAddress`
 and `verifyAttestedFnCallClaims` functions on the [`User`](contracts/User.sol)
 contract, and checks that the contract emits the `AttestedFunctionCallOutput`
