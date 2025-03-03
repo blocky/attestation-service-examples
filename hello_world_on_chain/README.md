@@ -104,7 +104,7 @@ process fully trustless, by allowing smart contracts to verify enclave
 attestations directly to extract and set the transitive attestation signing key.
 
 The [`User`](contracts/User.sol) contract uses the Blocky-provided
-[`lib/TAParserLib.sol`](lib/TAParserLib.sol) library, which provides
+[`lib/TAParserLib.sol`](lib/TAParserLib.sol) library, which offers
 several utility functions. One of these is `publicKeyToAddress` function
 converts the enclave attested application public key to an Ethereum address.
 
@@ -134,55 +134,9 @@ function:
     }
 ```
 
-to verify a transitive attestation passed in as `taData`. The bulk of the work
-takes place in [`TAParserLib.sol`](lib/TAParserLib.sol) `parseTA` function:
-
-```solidity
-    struct TA {
-        string Data;
-        string Sig;
-    }
-
-    struct FnCallClaims {
-        string HashOfCode;
-        string Function;
-        string HashOfInput;
-        string HashOfSecrets;
-        string Output;
-    }
-    
-    function parseTA(
-        string calldata taData,
-        address publicKeyAddress
-    )
-    internal pure returns (FnCallClaims memory)
-    {
-        TA memory ta = decodeTA(taData);
-
-        bytes memory sigAsBytes = Base64.decode(ta.Sig);
-        bytes32 r = BytesLib.toBytes32(sigAsBytes, 0);
-        bytes32 s = BytesLib.toBytes32(sigAsBytes, 32);
-        uint8 v = 27 + uint8(sigAsBytes[64]);
-
-        bytes memory dataAsBytes = Base64.decode(ta.Data);
-        bytes32 dataHash = keccak256(dataAsBytes);
-        address recovered = ecrecover(dataHash, v, r, s);
-
-        require(publicKeyAddress == recovered, "Could not verify signature");
-
-        FnCallClaims memory claims = decodeFnCallClaims(ta.Data);
-
-        return claims;
-    }
-```
-
-where we decode `taData` into a `TA` struct withs its `Data` and `Sig`
-components, use them to obtain the `recovered` signing key address, and finally
-compare it against the `publicKeyAddress` parameter, passed from the
-`taSigningKeyAddress` in the [`User`](contracts/User.sol) contract
-`verifyAttestedFnCallClaims` function. If we are able to verify the `TA`
-signature, we parse out its `claims`, and return them to the
-`verifyAttestedFnCallClaims` function.
+to verify a transitive attestation passed in as `taData`. The bulk of that work
+takes place in [`TAParserLib.sol`](lib/TAParserLib.sol) `parseTA` function where
+we decode `taData` and check that it is signed by `taSigningKeyAddress`.
 
 At this point, you may want to extend the [`User`](contracts/User.sol)
 contract `verifyAttestedFnCallClaims` function to do more than just print the
