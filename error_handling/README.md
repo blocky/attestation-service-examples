@@ -33,12 +33,12 @@ make run-success
 
 You will see the following output extracted from a Blocky AS response:
 
-```
-Output:
+```json
 {
   "Success": true,
+  "Error": "",
   "Value": {
-    "Number": 42
+    "number": 42
   }
 }
 ```
@@ -62,8 +62,8 @@ func successFunc(inputPtr, secretPtr uint64) uint64 {
 ```
 
 This function creates an `Output` struct with a single field, `Number`, and
-sets it to 42. It then calls the `writeOutput` function to return it to the user
-using the `writeOutput` function.
+sets it to `42`. It then calls the `writeOutput` function to return it to the
+user using the `writeOutput` function.
 
 Let's say, however, that you want to write a function that fail depending on its
 starting conditions, or while processing the data it fetches from the web. For
@@ -91,13 +91,21 @@ a successful result or an error:
 ```go
 type Result struct {
 	Success bool
+	Error   string
 	Value   any
 }
 ```
 
-The `Success` field indicates whether the function succeeded or failed, and the
-`Value` field holds the result of the function if it succeeded, or an error
-string if it failed.
+The `Success` field indicates whether the function succeeded or failed. The
+`Error` field holds an error message if the function failed (`Success` is
+`false`). If the function succeeds (`Success` is `true`), the `Error` field
+should be disregarded. The `Value` field holds the result of the function if it
+succeeded (`Success` is `true`). If the function fails (`Success` is `false`),
+the `Value` field should be disregarded. Note, that this three-field struct
+design of `Result` is a slight departure from the traditional result pattern, 
+where typically a `Value` field of type `any` might hold either an error message, or another return
+type. Having the three fields, however, allows for one pass parsing of `Result`
+structs in the client code.
 
 To return a `Result` to user, we need to serialize to bytes and send them to
 the `as.WriteToHost` function. Let's say that we want to use JSON to serialize
@@ -124,7 +132,7 @@ func writeOutput(output any) uint64 {
 
 As you see, we have a challenge here in that the `json.Marshal` function itself
 can fail. In this case, we can use the `writeError` function to report that 
-error. But wouldn't we run into the same, chicken and egg problem if we
+error. But wouldn't we run into the same, chicken-and-egg problem if we
 encountered an error in the `writeError` function? Let's take a look.
 
 Our `writeError` function is defined as:
@@ -140,13 +148,19 @@ and uses the receiver function `jsonMarshalWithError`:
 
 ```go
 func (r Result) jsonMarshalWithError(err error) []byte {
-	resultStr := fmt.Sprintf(`{ "Success": false, "Value": "%s" }`, err)
+	if err == nil {
+		err = errors.New("jsonMarshalWithError invoked with nil error")
+	}
+	resultStr := fmt.Sprintf(
+		`{ "Success": false, "Error": "%v" , "Value": null }`,
+		err,
+	)
 	data := []byte(resultStr)
 	return data
 }
 ```
 
-to JSON serialize the `Result` struct with the error string. Because we
+to JSON serialize the `Result` struct with an error. Because we
 hand-roll the JSON serialization, we no longer have to worry about the
 serialization failing.
 
@@ -160,10 +174,10 @@ make run-success
 
 which will produce:
 
-```
-Output:
+```json
 {
   "Success": true,
+  "Error": "",
   "Value": {
     "number": 42
   }
@@ -171,7 +185,8 @@ Output:
 ```
 
 You can see that the `Success` field is set to `true`, which means we can
-read the `Value` field as the JSON serialized `Output` struct.
+disregard the `Error` field and read the `Value` field as the JSON serialized
+`Output` struct.
 
 To run the `errorFunc` function, we can call:
 
@@ -181,16 +196,16 @@ make run-error
 
 which will produce:
 
-```
-Output:
+```json
 {
   "Success": false,
-  "Value": "expected error"
+  "Error": "expected error",
+  "Value": null
 }
 ```
 
 Now the `Success` field is set to `false`, which means that we can read the
-`Value` field as the error string.
+error message from the`Error` field and disregard the `Value` field.
 
 ## Next Steps
 
@@ -199,8 +214,8 @@ fit your own needs.
 
 If you explored the 
 [Hello World - Bringing A Blocky AS Function Call Attestation On Chain](../hello_world_on_chain/README.md)
-example, you can use `Result.Success` to decide whether you want to bring the
-attestation on chain or not. You can also extend the example, so that
+example, you can extend it to use `Result.Success` to decide whether you want to
+bring the attestation on chain or not. You can also extend the example, so that
 transactions calling the `User.sol` `verifyAttestedFnCallClaims` function revert
 if the `Result.Success` field is set to `false`.
 
