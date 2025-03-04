@@ -1,7 +1,7 @@
 # Getting Esports Data From PandaScore
 
 This example shows you how to use the Blocky Attestation Service (Blocky AS) to
-attest a function call that fetches data from the PandScore API and processes
+attest a function call that fetches data from the PandaScore API and processes
 it.
 
 Before starting this example, make sure you are familiar with the
@@ -58,7 +58,9 @@ you the price of Bitcoin in USD on the Binance market:
 
 Let's say you're implementing an onchain betting application that allows players
 to bet on the outcome of esports matches. In particular, let's say you set up a 
-bet on the outcome of the StartCraft II PL Invitational 2025 final match.
+bet on the outcome of the 
+[StartCraft II PL Invitational 2025](https://liquipedia.net/starcraft2/PL_Invitational) 
+final match.
 
 ### Step 1: Get match ID for the PandaScore API
 
@@ -115,14 +117,14 @@ file contents:
 Replace `match ID` with the match ID you got from the previous step and
 `PandaScore API Key` with your PandaScore API key.
 
-Next, we define the `scoreFunc` function in ['main.go'](./main.go), which calls
+Next, we define the `scoreFunc` function in [`main.go`](./main.go), which calls
 the `getMatchResult` function to fetch and parse the match data from the 
 PandaScore API. If you're curious how internals of such functions work, visit 
 the
-[Fetch and Process A Call to CoinGecko API](../fetch_and_process_api_call/README.md)
+[Fetch and Process A Call to CoinGecko API](../coin_prices_from_coingecko/README.md)
 example. At a high level, he `getMatchResult` function takes the `matchID` and
 `apiKey` as arguments, uses them to fetch and parse the match data from
-`https://api.pandascore.co/matches` and returns the `MatchResult` struct 
+`https://api.pandascore.co/matches`, and returns the `MatchResult` struct 
 populated with PandaScore data. The `scoreFunc` function returns a `Result`
 containing the `MatchResult` to the Blocky AS server to create an
 attestation over the function call and the `Result` struct.
@@ -162,8 +164,7 @@ also lists the `match_id` of 1121861. Finally, we get the `winner`, `loser`,
 ## Next steps
 
 Now that you have successfully run the example, you can start modifying it to
-fit your own needs.
-You may also want to explore the
+fit your own needs. You may also want to explore the
 [Hello World - Bringing A Blocky AS Function Call Attestation On Chain](../hello_world_on_chain/README.md)
 example to learn you can bring the `MatchResult` struct into a smart contract
 to settle the bet there.
