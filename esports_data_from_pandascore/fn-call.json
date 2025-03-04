@@ -3,7 +3,7 @@
         "code_file": "tmp/x.wasm",
         "function": "scoreFunc",
         "input": {
-            "match_id": "PandaScore match ID"
+            "match_id": "1121861"
         },
         "secret": {
             "api_key": "PandaScore API key"
