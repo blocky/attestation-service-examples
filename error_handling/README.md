@@ -139,17 +139,17 @@ Our `WriteError` function in [`output.go`](./output.go) is defined as:
 
 ```go
 func WriteError(err error) uint64 {
-	data := Result{}.jsonMarshalWithError(err)
+	data := Result{}.JSONMarshalWithError(err)
 	return as.WriteToHost(data)
 }
 ```
 
-and uses the receiver function `jsonMarshalWithError` in:
+and uses the receiver function `JSONMarshalWithError` in:
 
 ```go
-func (r Result) jsonMarshalWithError(err error) []byte {
+func (r Result) JSONMarshalWithError(err error) []byte {
 	if err == nil {
-		err = errors.New("jsonMarshalWithError invoked with nil error")
+		err = errors.New("JSONMarshalWithError invoked with nil error")
 	}
 	resultStr := fmt.Sprintf(
 		`{ "Success": false, "Error": "%s" , "Value": null }`,
