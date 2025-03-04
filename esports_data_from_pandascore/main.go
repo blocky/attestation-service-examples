@@ -123,8 +123,8 @@ type SecretArgs struct {
 	PandaScoreAPIKey string `json:"api_key"`
 }
 
-//export oracleFunc
-func oracleFunc(inputPtr, secretPtr uint64) uint64 {
+//export scoreFunc
+func scoreFunc(inputPtr, secretPtr uint64) uint64 {
 	var input Args
 	inputData := as.Bytes(inputPtr)
 	err := json.Unmarshal(inputData, &input)

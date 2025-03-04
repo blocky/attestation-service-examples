@@ -92,7 +92,7 @@ page.
 
 ### Step 1: Create a parameterized oracle function
 
-We'll implement the oracle as `oracleFunc` in
+We'll implement the oracle as `scoreFunc` in
 [`main.go`](./main.go). As in previous examples, we will call this function
 using the `bky-as` CLI by passing in the [`fn-call.json`](./fn-call.json) 
 file contents:
@@ -101,7 +101,7 @@ file contents:
 [
   {
     "code_file": "tmp/x.wasm",
-    "function": "oracleFunc",
+    "function": "scoreFunc",
     "input": {
       "match_id": "match ID"
     },
@@ -115,7 +115,7 @@ file contents:
 Replace `match ID` with the match ID you got from the previous step and
 `PandaScore API Key` with your PandaScore API key.
 
-Next, we define the `oracleFunc` function in ['main.go'](./main.go), which calls
+Next, we define the `scoreFunc` function in ['main.go'](./main.go), which calls
 the `getMatchResult` function to fetch and parse the match data from the 
 PandaScore API. If you're curious how internals of such functions work, visit 
 the
@@ -123,13 +123,13 @@ the
 example. At a high level, he `getMatchResult` function takes the `matchID` and
 `apiKey` as arguments, uses them to fetch and parse the match data from
 `https://api.pandascore.co/matches` and returns the `MatchResult` struct 
-populated with PandaScore data. The `oracleFunc` function returns a `Result`
+populated with PandaScore data. The `scoreFunc` function returns a `Result`
 containing the `MatchResult` to the Blocky AS server to create an
 attestation over the function call and the `Result` struct.
 
 ### Step 3: Run the oracle
 
-To run `oracleFunc`, you need call:
+To run `scoreFunc`, you need call:
 
 ```bash
 make run
@@ -140,6 +140,7 @@ You'll see output similar to the following:
 ```json
 {
   "Success": true,
+  "Error": "",
   "Value": {
     "league": "starcraft-2-pl-invitational",
     "serie": "starcraft-2-pl-invitational-2025",
