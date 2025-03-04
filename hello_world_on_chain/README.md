@@ -31,7 +31,18 @@ make test-local
 
 which will test verifying an attested function call in 
 [`contracts/User.sol`](contracts/User.sol) 
-within a local test environment.
+within a local test environment:
+
+```
+  Local Test
+Verified attest-fn-call claims:
+        Function: helloWorld
+        Hash of code: cbbb8adc3826e63c4bc5be6ec88b8bfb0301dcffc64951322ee946b8d99ffe2260333010bab215a3777e1b401f50a3810d7516fe5d42d19eb9e3ee3019ec234e
+        Hash of input: a69f73cca23a9ac5c8b567dc185a756e97c982164fe25859e0d1dcc1475c80a615b2123af1f5f94c11e3e9402c3ac558f500199d95b6d3e301758586281dcd26
+        Hash of secrets: 9375447cd5307bf7473b8200f039b60a3be491282f852df9f42ce31a8a43f6f8e916c4f8264e7d233add48746a40166eec588be8b7b9b16a5eb698d4c3b06e00
+        Output: Hello, World!
+    ✔ Set signing key and verify TA (1459ms)
+```
 
 ## Walkthrough
 
@@ -146,7 +157,7 @@ attestation is over the function and inputs expected by your smart contract. You
 may also take actions based on the output of the function to trigger further
 smart contract logic.
 
-In our [`User.sol`](contracts/User.sol) contract `verifyAttestedFnCallClaims`
+In our [`User`](contracts/User.sol) contract `verifyAttestedFnCallClaims`
 function example, we simply print the `claims` to the console and emit an
 `AttestedFunctionCallOutput` event with the `Output` field of the `claims`.
 
@@ -158,11 +169,22 @@ We define the `"Local Test"` in [`test/user.ts`](test/user.ts) that loads
 [`inputs/out.json`](inputs/out.json), calls the `setTASigningKeyAddress`
 and `verifyAttestedFnCallClaims` functions on the [`User`](contracts/User.sol)
 contract, and checks that the contract emits the `AttestedFunctionCallOutput`
-event with `"Hello, World!"` as input.
+event with `"Hello, World!"` as input. You will see the test output:
+
+```
+  Local Test
+Verified attest-fn-call claims:
+        Function: helloWorld
+        Hash of code: cbbb8adc3826e63c4bc5be6ec88b8bfb0301dcffc64951322ee946b8d99ffe2260333010bab215a3777e1b401f50a3810d7516fe5d42d19eb9e3ee3019ec234e
+        Hash of input: a69f73cca23a9ac5c8b567dc185a756e97c982164fe25859e0d1dcc1475c80a615b2123af1f5f94c11e3e9402c3ac558f500199d95b6d3e301758586281dcd26
+        Hash of secrets: 9375447cd5307bf7473b8200f039b60a3be491282f852df9f42ce31a8a43f6f8e916c4f8264e7d233add48746a40166eec588be8b7b9b16a5eb698d4c3b06e00
+        Output: Hello, World!
+    ✔ Set signing key and verify TA (1459ms)
+```
 
 ### Step 4: Deploy the Smart Contract to Base Sepolia
 
-You can also deploy the [`User.sol`](contracts/User.sol) contract to Base
+You can also deploy the [`User`](contracts/User.sol) contract to Base
 Sepolia testnet. To do so, we need to do a bit more setup:
 
 - Create a wallet and fund it with Base Sepolia ETH.
@@ -179,7 +201,7 @@ Sepolia testnet. To do so, we need to do a bit more setup:
 > Now you are ready to deploy and test the [ `User.sol`](contracts/User.sol) 
 > contract on Base Sepolia. However, you can skip this step and go directly to
 > [Step 5](#step-5-test-the-user-contract-on-base-sepolia) to test the
-> [`User.sol`](contracts/User.sol) contract on Base Sepolia using
+> [`User`](contracts/User.sol) contract on Base Sepolia using
 > deployed contract address in the
 > [`deploymnets/user_deployed_address`](deployments/user_deployed_addressoyed_address)
 > file.
@@ -202,7 +224,7 @@ which includes a link to the
 
 ### Step 5: Test the `User` contract on Base Sepolia
 
-To test the [`User.sol`](contracts/User.sol) contract on Base Sepolia, call:
+To test the [`User`](contracts/User.sol) contract on Base Sepolia, call:
 
 ```bash
 make test-base-sepolia
@@ -217,7 +239,7 @@ You will see the test output similar to:
     ✔ Verify TA (2174ms)
 ```
 
-which show that the [`User.sol`](contracts/User.sol) contract was able to
+which show that the [`User`](contracts/User.sol) contract was able to
 verify the TA in just over 2 seconds.
 If you go to Basescan to see 
 [contract transaction logs](https://sepolia.basescan.org/tx/0x82eb1d2cd500a1e236678a04f9ee8361e2fda11224d0791612ae2244d294bf78#eventlog)
