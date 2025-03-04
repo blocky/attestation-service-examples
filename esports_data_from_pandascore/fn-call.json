@@ -1,7 +1,7 @@
 [
     {
         "code_file": "tmp/x.wasm",
-        "function": "oracleFunc",
+        "function": "scoreFunc",
         "input": {
             "match_id": "PandaScore match ID"
         },
