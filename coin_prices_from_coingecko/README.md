@@ -41,12 +41,13 @@ you the price of Bitcoin in USD on the Binance market:
 ```json
 {
   "Success": true,
+  "Error": "",
   "Value": {
     "market": "Binance",
     "coin_id": "BTC",
     "currency": "USD",
-    "price": 86222,
-    "timestamp": "2025-03-02T01:56:00Z"
+    "price": 83799,
+    "timestamp": "2025-03-04T03:20:35Z"
   }
 }
 ```
@@ -114,7 +115,7 @@ func priceFunc(inputPtr, secretPtr uint64) uint64 {
 	err := json.Unmarshal(inputData, &input)
 	if err != nil {
 		outErr := fmt.Errorf("could not unmarshal input args: %w", err)
-		return writeError(outErr)
+		return WriteError(outErr)
 	}
 
 	var secret SecretArgs
@@ -122,7 +123,7 @@ func priceFunc(inputPtr, secretPtr uint64) uint64 {
 	err = json.Unmarshal(secretData, &secret)
 	if err != nil {
 		outErr := fmt.Errorf("could not unmarshal secret args: %w", err)
-		return writeError(outErr)
+		return WriteError(outErr)
 	}
 
 	price, err := getPriceFromCoinGecko(
@@ -132,10 +133,10 @@ func priceFunc(inputPtr, secretPtr uint64) uint64 {
 	)
 	if err != nil {
 		outErr := fmt.Errorf("getting price: %w", err)
-		return writeError(outErr)
+		return WriteError(outErr)
 	}
 
-	return writeOutput(price)
+	return WriteOutput(price)
 }
 ```
 
@@ -153,7 +154,7 @@ for the `secret` data.
 Next, we call the `getPriceFromCoinGecko` function to fetch the price of `input.CoinID` in
 the `input.Market` market using the `secret.CoinGeckoAPIKey` API key.
 Finally, we return the `price` to user by converting its data to fat pointer
-using the `writeOutput` function and returning the pointer from `priceFunc`
+using the `WriteOutput` function and returning the pointer from `priceFunc`
 to the Blocky AS server host runtime.
 
 ### Step 2: Make a request to the CoinGecko API
@@ -258,18 +259,19 @@ You'll see output similar to the following:
 ```json
 {
   "Success": true,
+  "Error": "",
   "Value": {
     "market": "Binance",
     "coin_id": "BTC",
     "currency": "USD",
-    "price": 86222,
-    "timestamp": "2025-03-02T01:56:00Z"
+    "price": 83799,
+    "timestamp": "2025-03-04T03:20:35Z"
   }
 }
 ```
 
-where `"Success": true,` tells you that the function call was successful and
-you can interpret `Value` as JSON-serialized `Price` struct.
+where `"Success": true,` tells you that the function call was successful and 
+the `Value` field gives you a JSON-serialized `Price` struct.
 
 ## Next steps
 
