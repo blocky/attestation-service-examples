@@ -21,9 +21,13 @@ test-twap-fn-call:
 	@make -C time_weighted_average_price/attest_fn_call iteration > /dev/null 2>&1
 	@make -C time_weighted_average_price/attest_fn_call twap > /dev/null 2>&1
 
+test-esports-data-from-pandascore:
+	@echo "Running test-esports-data-from-pandascore..."
+	@make -C esports_data_from_pandascore run > /dev/null 2>&1
+
 test-twap-on-chain:
 	@echo "Running test-twap-on-chain..."
 	@make -C time_weighted_average_price/on_chain test-local > /dev/null
 
-test-all: test-hello-world-attest-fn-call test-hello-world-on-chain test-error-handling test-coin-prices-from-coingecko test-twap-fn-call test-twap-on-chain
+test-all: test-hello-world-attest-fn-call test-hello-world-on-chain test-error-handling test-coin-prices-from-coingecko test-twap-fn-call test-esports-data-from-pandascore test-twap-on-chain
 	@echo "All tests passed!"
