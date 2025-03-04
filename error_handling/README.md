@@ -56,7 +56,7 @@ func successFunc(inputPtr, secretPtr uint64) uint64 {
 	type Output struct {
 		Number int `json:"number"`
 	}
-	output := Output{42}
+	output := Output{Number: 42}
 	return writeOutput(output)
 }
 ```
@@ -65,10 +65,10 @@ This function creates an `Output` struct with a single field, `Number`, and
 sets it to `42`. It then calls the `writeOutput` function to return it to the
 user using the `writeOutput` function.
 
-Let's say, however, that you want to write a function that fail depending on its
-starting conditions, or while processing the data it fetches from the web. For
-the purpose of this example, we define the `errorFunc` in [`main.go`](./main.go)
-that will always fail:
+Let's say, however, that you want to write a function that may fail depending on
+its starting conditions, or while processing the data it fetches from the web.
+For the purpose of this example, we define the `errorFunc` in 
+[`main.go`](./main.go) that will always fail:
 
 ```go
 func errorFunc(inputPtr, secretPtr uint64) uint64 {
@@ -152,11 +152,10 @@ func (r Result) jsonMarshalWithError(err error) []byte {
 		err = errors.New("jsonMarshalWithError invoked with nil error")
 	}
 	resultStr := fmt.Sprintf(
-		`{ "Success": false, "Error": "%v" , "Value": null }`,
-		err,
+		`{ "Success": false, "Error": "%s" , "Value": null }`,
+		err.Error(),
 	)
-	data := []byte(resultStr)
-	return data
+	return []byte(resultStr)
 }
 ```
 

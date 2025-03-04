@@ -19,11 +19,10 @@ func (r Result) jsonMarshalWithError(err error) []byte {
 		err = errors.New("jsonMarshalWithError invoked with nil error")
 	}
 	resultStr := fmt.Sprintf(
-		`{ "Success": false, "Error": "%v" , "Value": null }`,
-		err,
+		`{ "Success": false, "Error": "%s" , "Value": null }`,
+		err.Error(),
 	)
-	data := []byte(resultStr)
-	return data
+	return []byte(resultStr)
 }
 
 func writeOutput(output any) uint64 {
@@ -49,7 +48,7 @@ func successFunc(inputPtr, secretPtr uint64) uint64 {
 	type Output struct {
 		Number int `json:"number"`
 	}
-	output := Output{42}
+	output := Output{Number: 42}
 	return writeOutput(output)
 }
 
