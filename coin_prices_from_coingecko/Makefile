@@ -14,7 +14,7 @@ tmp/x.wasm: main.go $(wildcard as/*.go) | tmp check
         -v .:/src \
         -w /src \
         tinygo/tinygo:0.31.2 \
-        tinygo build -o tmp/x.wasm -target=wasi main.go
+        tinygo build -o tmp/x.wasm -target=wasi ./...
 
 build: tmp/x.wasm
 

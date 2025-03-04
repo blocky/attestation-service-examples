@@ -57,13 +57,13 @@ func successFunc(inputPtr, secretPtr uint64) uint64 {
 		Number int `json:"number"`
 	}
 	output := Output{Number: 42}
-	return writeOutput(output)
+	return WriteOutput(output)
 }
 ```
 
 This function creates an `Output` struct with a single field, `Number`, and
-sets it to `42`. It then calls the `writeOutput` function to return it to the
-user using the `writeOutput` function.
+sets it to `42`. It then calls the `WriteOutput` function to return it to the
+user using the `WriteOutput` function.
 
 Let's say, however, that you want to write a function that may fail depending on
 its starting conditions, or while processing the data it fetches from the web.
@@ -73,7 +73,7 @@ For the purpose of this example, we define the `errorFunc` in
 ```go
 func errorFunc(inputPtr, secretPtr uint64) uint64 {
 	err := errors.New("expected error")
-	return writeError(err)
+	return WriteError(err)
 }
 ```
 
@@ -85,7 +85,7 @@ error.
 ### Step 2: Use the result pattern
 
 To do this, we can use the [result pattern](https://en.wikipedia.org/wiki/Result_type).
-In [`result.go`](./result.go), we define a `Result` struct that can hold either
+In [`output.go`](./output.go), we define a `Result` struct that can hold either
 a successful result or an error:
 
 ```go
@@ -111,12 +111,12 @@ To return a `Result` to user, we need to serialize to bytes and send them to
 the `as.WriteToHost` function. Let's say that we want to use JSON to serialize
 the `Result` struct. 
 
-We can define the `writeOutput` function in [`output.go`](./output.go) to take
+We can define the `WriteOutput` function in [`output.go`](./output.go) to take
 in our function output, as `any`, put it in a `Result` struct, serialize it, and
 send it to `as.WriteToHost`:
 
 ```go
-func writeOutput(output any) uint64 {
+func WriteOutput(output any) uint64 {
 	result := Result{
 		Success: true,
 		Value:   output,
@@ -124,28 +124,27 @@ func writeOutput(output any) uint64 {
 	data, err := json.Marshal(result)
 	if err != nil {
 		as.Log(fmt.Sprintf("Error marshalling result: %s", err))
-		return writeError(err)
+		return WriteError(err)
 	}
 	return as.WriteToHost(data)
 }
 ```
 
 As you see, we have a challenge here in that the `json.Marshal` function itself
-can fail. In this case, we can use the `writeError` function to report that 
+can fail. In this case, we can use the `WriteError` function to report that 
 error. But wouldn't we run into the same, chicken-and-egg problem if we
-encountered an error in the `writeError` function? Let's take a look.
+encountered an error in the `WriteError` function? Let's take a look.
 
-Our `writeError` function in [`output.go`](./output.go) is defined as:
+Our `WriteError` function in [`output.go`](./output.go) is defined as:
 
 ```go
-func writeError(err error) uint64 {
+func WriteError(err error) uint64 {
 	data := Result{}.jsonMarshalWithError(err)
 	return as.WriteToHost(data)
 }
 ```
 
-and uses the receiver function `jsonMarshalWithError` in 
-[`result.go`](./result.go):
+and uses the receiver function `jsonMarshalWithError` in:
 
 ```go
 func (r Result) jsonMarshalWithError(err error) []byte {

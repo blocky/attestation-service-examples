@@ -90,7 +90,7 @@ func priceFunc(inputPtr, secretPtr uint64) uint64 {
 	err := json.Unmarshal(inputData, &input)
 	if err != nil {
 		outErr := fmt.Errorf("could not unmarshal input args: %w", err)
-		return writeError(outErr)
+		return WriteError(outErr)
 	}
 
 	var secret SecretArgs
@@ -98,7 +98,7 @@ func priceFunc(inputPtr, secretPtr uint64) uint64 {
 	err = json.Unmarshal(secretData, &secret)
 	if err != nil {
 		outErr := fmt.Errorf("could not unmarshal secret args: %w", err)
-		return writeError(outErr)
+		return WriteError(outErr)
 	}
 
 	price, err := getPriceFromCoinGecko(
@@ -108,10 +108,10 @@ func priceFunc(inputPtr, secretPtr uint64) uint64 {
 	)
 	if err != nil {
 		outErr := fmt.Errorf("getting price: %w", err)
-		return writeError(outErr)
+		return WriteError(outErr)
 	}
 
-	return writeOutput(price)
+	return WriteOutput(price)
 }
 
 func main() {}

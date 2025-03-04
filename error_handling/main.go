@@ -10,13 +10,13 @@ func successFunc(inputPtr, secretPtr uint64) uint64 {
 		Number int `json:"number"`
 	}
 	output := Output{Number: 42}
-	return writeOutput(output)
+	return WriteOutput(output)
 }
 
 //export errorFunc
 func errorFunc(inputPtr, secretPtr uint64) uint64 {
 	err := errors.New("expected error")
-	return writeError(err)
+	return WriteError(err)
 }
 
 func main() {}
