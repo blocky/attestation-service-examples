@@ -85,7 +85,7 @@ error.
 ### Step 2: Use the result pattern
 
 To do this, we can use the [result pattern](https://en.wikipedia.org/wiki/Result_type).
-In [`main.go`](./main.go), we define a `Result` struct that can hold either
+In [`result.go`](./result.go), we define a `Result` struct that can hold either
 a successful result or an error:
 
 ```go
@@ -111,9 +111,9 @@ To return a `Result` to user, we need to serialize to bytes and send them to
 the `as.WriteToHost` function. Let's say that we want to use JSON to serialize
 the `Result` struct. 
 
-We can define the `writeOutput` function to take in our function output, as 
-`any`, put it in a `Result` struct, serialize it, and send it to 
-`as.WriteToHost`:
+We can define the `writeOutput` function in [`output.go`](./output.go) to take
+in our function output, as `any`, put it in a `Result` struct, serialize it, and
+send it to `as.WriteToHost`:
 
 ```go
 func writeOutput(output any) uint64 {
@@ -135,7 +135,7 @@ can fail. In this case, we can use the `writeError` function to report that
 error. But wouldn't we run into the same, chicken-and-egg problem if we
 encountered an error in the `writeError` function? Let's take a look.
 
-Our `writeError` function is defined as:
+Our `writeError` function in [`output.go`](./output.go) is defined as:
 
 ```go
 func writeError(err error) uint64 {
@@ -144,7 +144,8 @@ func writeError(err error) uint64 {
 }
 ```
 
-and uses the receiver function `jsonMarshalWithError`:
+and uses the receiver function `jsonMarshalWithError` in 
+[`result.go`](./result.go):
 
 ```go
 func (r Result) jsonMarshalWithError(err error) []byte {
@@ -165,7 +166,7 @@ serialization failing.
 
 ### Step 3: Run the functions
 
-To run the `successFunc` function, we can call:
+To run the `successFunc` in [`main.go](./main.go) function, we can call:
 
 ```bash
 make run-success
