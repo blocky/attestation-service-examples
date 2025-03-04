@@ -1,7 +1,7 @@
 # Hello World - Attesting a Function Call
 
 This example shows you how to use the Blocky Attestation Service (Blocky AS) to
-attest a simple function calls.
+attest simple function calls.
 
 You'll learn how to:
 

@@ -9,29 +9,6 @@ import (
 	"github.com/blocky/as-demo/as"
 )
 
-type Args struct {
-	Market string `json:"market"`
-	CoinID string `json:"coin_id"`
-}
-
-type SecretArgs struct {
-	CoinGeckoAPIKey string `json:"api_key"`
-}
-
-type Price struct {
-	Market    string    `json:"market"`
-	CoinID    string    `json:"coin_id"`
-	Currency  string    `json:"currency"`
-	Price     float64   `json:"price"`
-	Timestamp time.Time `json:"timestamp"`
-}
-
-type Result struct {
-	Success bool
-	Value   Price
-	Error   string
-}
-
 type CoinGeckoResponse struct {
 	Tickers []struct {
 		Base   string `json:"base"`
@@ -45,7 +22,15 @@ type CoinGeckoResponse struct {
 	} `json:"tickers"`
 }
 
-func getPrice(market string, coinID string, apiKey string) (Price, error) {
+type Price struct {
+	Market    string    `json:"market"`
+	CoinID    string    `json:"coin_id"`
+	Currency  string    `json:"currency"`
+	Price     float64   `json:"price"`
+	Timestamp time.Time `json:"timestamp"`
+}
+
+func getPriceFromCoinGecko(market string, coinID string, apiKey string) (Price, error) {
 	req := as.HostHTTPRequestInput{
 		Method: "GET",
 		URL:    fmt.Sprintf("https://api.coingecko.com/api/v3/coins/%s/tickers", coinID),
@@ -89,14 +74,23 @@ func getPrice(market string, coinID string, apiKey string) (Price, error) {
 	return Price{}, fmt.Errorf("market %s not found", market)
 }
 
-//export myOracleFunc
-func myOracleFunc(inputPtr, secretPtr uint64) uint64 {
+type Args struct {
+	Market string `json:"market"`
+	CoinID string `json:"coin_id"`
+}
+
+type SecretArgs struct {
+	CoinGeckoAPIKey string `json:"api_key"`
+}
+
+//export priceFunc
+func priceFunc(inputPtr, secretPtr uint64) uint64 {
 	var input Args
 	inputData := as.Bytes(inputPtr)
 	err := json.Unmarshal(inputData, &input)
 	if err != nil {
 		outErr := fmt.Errorf("could not unmarshal input args: %w", err)
-		return writeErr(outErr.Error())
+		return WriteError(outErr)
 	}
 
 	var secret SecretArgs
@@ -104,41 +98,20 @@ func myOracleFunc(inputPtr, secretPtr uint64) uint64 {
 	err = json.Unmarshal(secretData, &secret)
 	if err != nil {
 		outErr := fmt.Errorf("could not unmarshal secret args: %w", err)
-		return writeErr(outErr.Error())
+		return WriteError(outErr)
 	}
 
-	price, err := getPrice(input.Market, input.CoinID, secret.CoinGeckoAPIKey)
+	price, err := getPriceFromCoinGecko(
+		input.Market,
+		input.CoinID,
+		secret.CoinGeckoAPIKey,
+	)
 	if err != nil {
 		outErr := fmt.Errorf("getting price: %w", err)
-		return writeErr(outErr.Error())
+		return WriteError(outErr)
 	}
 
-	return writePrice(price)
+	return WriteOutput(price)
 }
 
 func main() {}
-
-func writeErr(err string) uint64 {
-	result := Result{
-		Success: false,
-		Error:   err,
-	}
-	return writeOutput(result)
-}
-
-func writePrice(price Price) uint64 {
-	result := Result{
-		Success: true,
-		Value:   price,
-	}
-	return writeOutput(result)
-}
-
-func writeOutput(output any) uint64 {
-	outputData, err := as.Marshal(output)
-	if err != nil {
-		// We panic on errors we cannot communicate back to function caller
-		panic("Fatal error: could not marshal output data")
-	}
-	return as.ShareWithHost(outputData)
-}

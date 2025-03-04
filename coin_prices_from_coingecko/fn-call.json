@@ -1,7 +1,7 @@
 [
     {
         "code_file": "tmp/x.wasm",
-        "function": "myOracleFunc",
+        "function": "priceFunc",
         "input": {
             "market": "Binance",
             "coin_id": "bitcoin"
