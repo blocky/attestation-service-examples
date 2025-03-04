@@ -1,23 +1,23 @@
 # iterate project ignores
-twap/bky-as
-twap/tmp
+time_weighted_average_price/attest_fn_call/bky-as
+time_weighted_average_price/attest_fn_call/tmp
 
 # on-chain project ignores
 # node/ts files
-on-chain/node_modules
-on-chain/.env
+time_weighted_average_price/on-chain/node_modules
+time_weighted_average_price/on-chain/.env
 
 # Hardhat files
-on-chain/cache
-on-chain/artifacts
+time_weighted_average_price/on-chain/cache
+time_weighted_average_price/on-chain/artifacts
 
 # TypeChain files
-on-chain/typechain
-on-chain/typechain-types
+time_weighted_average_price/on-chain/typechain
+time_weighted_average_price/on-chain/typechain-types
 
 # solidity-coverage files
-on-chain/coverage
-on-chain/coverage.json
+time_weighted_average_price/on-chain/coverage
+time_weighted_average_price/on-chain/coverage.json
 
 # Hardhat Ignition default folder for deployments against a local node
-on-chain/ignition/deployments/chain-31337
+time_weighted_average_price/on-chain/ignition/deployments/chain-31337
