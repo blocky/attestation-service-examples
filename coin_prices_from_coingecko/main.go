@@ -9,8 +9,6 @@ import (
 	"github.com/blocky/as-demo/as"
 )
 
-// todo: rename the folder `coin_prices_from_coingecko`
-
 type CoinGeckoResponse struct {
 	Tickers []struct {
 		Base   string `json:"base"`
@@ -32,7 +30,7 @@ type Price struct {
 	Timestamp time.Time `json:"timestamp"`
 }
 
-func getPrice(market string, coinID string, apiKey string) (Price, error) {
+func getPriceFromCoinGecko(market string, coinID string, apiKey string) (Price, error) {
 	req := as.HostHTTPRequestInput{
 		Method: "GET",
 		URL:    fmt.Sprintf("https://api.coingecko.com/api/v3/coins/%s/tickers", coinID),
@@ -85,8 +83,8 @@ type SecretArgs struct {
 	CoinGeckoAPIKey string `json:"api_key"`
 }
 
-//export oracleFunc
-func oracleFunc(inputPtr, secretPtr uint64) uint64 {
+//export priceFunc
+func priceFunc(inputPtr, secretPtr uint64) uint64 {
 	var input Args
 	inputData := as.Bytes(inputPtr)
 	err := json.Unmarshal(inputData, &input)
@@ -103,7 +101,11 @@ func oracleFunc(inputPtr, secretPtr uint64) uint64 {
 		return writeError(outErr)
 	}
 
-	price, err := getPrice(input.Market, input.CoinID, secret.CoinGeckoAPIKey)
+	price, err := getPriceFromCoinGecko(
+		input.Market,
+		input.CoinID,
+		secret.CoinGeckoAPIKey,
+	)
 	if err != nil {
 		outErr := fmt.Errorf("getting price: %w", err)
 		return writeError(outErr)

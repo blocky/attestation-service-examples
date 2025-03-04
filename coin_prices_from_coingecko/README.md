@@ -68,7 +68,7 @@ Binance entry, and parses out the price.
 
 ### Step 1: Create a parameterized oracle function
 
-We'll implement the oracle as `oracleFunc` in
+We'll implement the oracle as `priceFunc` in
 [`main.go`](./main.go). As in previous examples, we will call this function
 using the `bky-as` CLI by passing in the
 [`fn-call.json`](./fn-call.json) file contents:
@@ -77,7 +77,7 @@ using the `bky-as` CLI by passing in the
 [
   {
     "code_file": "tmp/x.wasm",
-    "function": "oracleFunc",
+    "function": "priceFunc",
     "input": {
       "market": "Binance",
       "coin_id": "bitcoin"
@@ -89,13 +89,13 @@ using the `bky-as` CLI by passing in the
 ]
 ```
 
-Notice the `input` section, which contains the parameters for `oracleFunc`,
+Notice the `input` section, which contains the parameters for `priceFunc`,
 specifically the `market` field set to "Binance" and the `coin_id` field set to
 "bitcoin". The `secret` section contains the `api_key` field, which you should
 set to your CoinGecko API key. Of course, you can change these values to get
 the price of other coins or from other markets.
 
-Next, we define the `oracleFunc` function:
+Next, we define the `priceFunc` function:
 
 ```go
 type Args struct {
@@ -107,8 +107,8 @@ type SecretArgs struct {
 	CoinGeckoAPIKey string `json:"api_key"`
 }
 
-//export oracleFunc
-func oracleFunc(inputPtr, secretPtr uint64) uint64 {
+//export priceFunc
+func priceFunc(inputPtr, secretPtr uint64) uint64 {
 	var input Args
 	inputData := as.Bytes(inputPtr)
 	err := json.Unmarshal(inputData, &input)
@@ -125,7 +125,11 @@ func oracleFunc(inputPtr, secretPtr uint64) uint64 {
 		return writeError(outErr)
 	}
 
-	price, err := getPrice(input.Market, input.CoinID, secret.CoinGeckoAPIKey)
+	price, err := getPriceFromCoinGecko(
+		input.Market,
+		input.CoinID,
+		secret.CoinGeckoAPIKey,
+	)
 	if err != nil {
 		outErr := fmt.Errorf("getting price: %w", err)
 		return writeError(outErr)
@@ -146,15 +150,15 @@ arguments carry serialized `input` and `secret` sections of
 To parse the `input` data, we first fetch the data pointed to by `inputPtr`
 using `as.Bytes` and then unmarshal it into the `Args` struct. We do the same
 for the `secret` data.
-Next, we call the `getPrice` function to fetch the price of `input.CoinID` in
+Next, we call the `getPriceFromCoinGecko` function to fetch the price of `input.CoinID` in
 the `input.Market` market using the `secret.CoinGeckoAPIKey` API key.
 Finally, we return the `price` to user by converting its data to fat pointer
-using the `writeOutput` function and returning the pointer from `oracleFunc`
+using the `writeOutput` function and returning the pointer from `priceFunc`
 to the Blocky AS server host runtime.
 
 ### Step 2: Make a request to the CoinGecko API
 
-The `getPrice` function, in `oracleFunc`, will make an HTTP request to the
+The `getPriceFromCoinGecko` function, in `priceFunc`, will make an HTTP request to the
 CoinGecko API to fetch the price of a coin in a specific market.
 
 Let's start by setting up a struct to parse the relevant fields from the
@@ -175,7 +179,7 @@ type CoinGeckoResponse struct {
 }
 ```
 
-Next, we'll define the `getPrice` function to fetch and parse the data from the
+Next, we'll define the `getPriceFromCoinGecko` function to fetch and parse the data from the
 CoinGecko API:
 
 ```go
@@ -187,7 +191,7 @@ type Price struct {
 	Timestamp time.Time `json:"timestamp"`
 }
 
-func getPrice(market string, coinID string, apiKey string) (Price, error) {
+func getPriceFromCoinGecko(market string, coinID string, apiKey string) (Price, error) {
 	req := as.HostHTTPRequestInput{
 		Method: "GET",
 		URL:    fmt.Sprintf("https://api.coingecko.com/api/v3/coins/%s/tickers", coinID),
@@ -232,7 +236,7 @@ func getPrice(market string, coinID string, apiKey string) (Price, error) {
 }
 ```
 
-The `getPrice` function takes the `market`, `coinID`, and `apiKey` as arguments.
+The `getPriceFromCoinGecko` function takes the `market`, `coinID`, and `apiKey` as arguments.
 First it constructs an HTTP request to the CoinGecko API using `coinID`
 in the URL and the `apiKey` in the headers. It then sends the request to the
 `as.HostFuncHTTPRequest` function, which makes the request through the Blocky AS
@@ -243,7 +247,7 @@ through the tickers in the response to find the ticker for the specified
 
 ### Step 3: Run the oracle
 
-To run `oracleFunc`, you need call:
+To run `priceFunc`, you need call:
 
 ```bash
 make run
@@ -271,7 +275,7 @@ you can interpret `Value` as JSON-serialized `Price` struct.
 
 Now that you have successfully run the example, you can start modifying it to
 fit your own needs. For example, you can try passing in different parameters to
-`oracleFunc`, or changing out the API endpoint in `getPrice` to fetch data from
+`priceFunc`, or changing out the API endpoint in `getPriceFromCoinGecko` to fetch data from
 a different API, or even multiple APIs. You may also want to explore the
 [Hello World - Bringing A Blocky AS Function Call Attestation On Chain](../hello_world_on_chain/README.md)
 example to learn you can bring the `Price` struct into a smart contract.
