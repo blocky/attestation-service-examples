@@ -139,7 +139,7 @@ non-TEE instance of the Blocky AS server to run our function in demo mode.
 You can confirm this by finding the following output:
 
 ```
-🚀 Starting local server at http://126.0.0.1:8081 ...success
+🚀 Starting local server at http://127.0.0.1:8081 ...success
 ```
 
 If you'd like to send our function for execution on a Blocky AS server hosted
