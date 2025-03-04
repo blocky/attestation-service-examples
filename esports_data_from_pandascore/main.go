@@ -9,36 +9,6 @@ import (
 	"github.com/blocky/as-demo/as"
 )
 
-// todo: udpate this pattern
-type Result struct {
-	Success bool
-	Value   any
-}
-
-func (r Result) jsonMarshalWithError(err error) []byte {
-	resultStr := fmt.Sprintf(`{ "Success": false, "Value": "%v" }`, err)
-	data := []byte(resultStr)
-	return data
-}
-
-func writeOutput(output any) uint64 {
-	result := Result{
-		Success: true,
-		Value:   output,
-	}
-	data, err := json.Marshal(result)
-	if err != nil {
-		as.Log(fmt.Sprintf("Error marshalling result: %v", err))
-		return writeError(err)
-	}
-	return as.WriteToHost(data)
-}
-
-func writeError(err error) uint64 {
-	data := Result{}.jsonMarshalWithError(err)
-	return as.WriteToHost(data)
-}
-
 type PandaScoreMatchResponse struct {
 	EndAt    time.Time `json:"end_at"`
 	Status   string    `json:"status"`
@@ -160,7 +130,7 @@ func oracleFunc(inputPtr, secretPtr uint64) uint64 {
 	err := json.Unmarshal(inputData, &input)
 	if err != nil {
 		outErr := fmt.Errorf("could not unmarshal input args: %w", err)
-		return writeError(outErr)
+		return WriteError(outErr)
 	}
 
 	var secret SecretArgs
@@ -168,16 +138,16 @@ func oracleFunc(inputPtr, secretPtr uint64) uint64 {
 	err = json.Unmarshal(secretData, &secret)
 	if err != nil {
 		outErr := fmt.Errorf("could not unmarshal secret args: %w", err)
-		return writeError(outErr)
+		return WriteError(outErr)
 	}
 
 	result, err := getMatchResult(input.MatchID, secret.PandaScoreAPIKey)
 	if err != nil {
 		outErr := fmt.Errorf("getting price: %w", err)
-		return writeError(outErr)
+		return WriteError(outErr)
 	}
 
-	return writeOutput(result)
+	return WriteOutput(result)
 }
 
 func main() {}
