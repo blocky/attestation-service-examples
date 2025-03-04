@@ -11,36 +11,6 @@ import (
 
 // todo: rename the folder `coin_prices_from_coingecko`
 
-// todo: udpate based on the error
-type Result struct {
-	Success bool
-	Value   any
-}
-
-func (r Result) jsonMarshalWithError(err error) []byte {
-	resultStr := fmt.Sprintf(`{ "Success": false, "Value": "%v" }`, err)
-	data := []byte(resultStr)
-	return data
-}
-
-func writeOutput(output any) uint64 {
-	result := Result{
-		Success: true,
-		Value:   output,
-	}
-	data, err := json.Marshal(result)
-	if err != nil {
-		as.Log(fmt.Sprintf("Error marshalling result: %v", err))
-		return writeError(err)
-	}
-	return as.WriteToHost(data)
-}
-
-func writeError(err error) uint64 {
-	data := Result{}.jsonMarshalWithError(err)
-	return as.WriteToHost(data)
-}
-
 type CoinGeckoResponse struct {
 	Tickers []struct {
 		Base   string `json:"base"`

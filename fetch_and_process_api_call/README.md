@@ -7,7 +7,7 @@ it.
 Before starting this example, make sure you are familiar with the
 [Hello World - Attesting a Function Call](../hello_world_attest_fn_call/README.md)
 and the
-[Error Handling](../error-handling/README.md)
+[Error Handling](../error_handling/README.md)
 examples.
 
 In this example, you'll learn how to:
@@ -270,10 +270,8 @@ you can interpret `Value` as JSON-serialized `Price` struct.
 ## Next steps
 
 Now that you have successfully run the example, you can start modifying it to
-fit your own needs.
-For example, you can try passing in different parameters to `oracleFunc`, or
-changing out the API endpoint in `getPrice` to fetch data from a different API,
-or even multiple APIs.
-You may also want to explore the
+fit your own needs. For example, you can try passing in different parameters to
+`oracleFunc`, or changing out the API endpoint in `getPrice` to fetch data from
+a different API, or even multiple APIs. You may also want to explore the
 [Hello World - Bringing A Blocky AS Function Call Attestation On Chain](../hello_world_on_chain/README.md)
 example to learn you can bring the `Price` struct into a smart contract.
