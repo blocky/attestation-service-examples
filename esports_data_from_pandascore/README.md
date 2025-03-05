@@ -101,7 +101,7 @@ file contents:
     "code_file": "tmp/x.wasm",
     "function": "scoreFunc",
     "input": {
-      "match_id": "match ID"
+      "match_id": "1121861"
     },
     "secret": {
       "api_key": "PandaScore API Key"
@@ -110,8 +110,11 @@ file contents:
 ]
 ```
 
-Replace `match ID` with the match ID you got from the previous step and
-`PandaScore API Key` with your PandaScore API key.
+As you see, we already have the `match_id` value from the previous step in
+[`fn-call.json`](./fn-call.json). If you want to look up the results for a 
+different match you update the `match_id` value to another id. 
+If you haven't already as part of the [Setup](#setup), go ahead and replace
+the `api_key` value with your PandaScore API key.
 
 Next, we define the `scoreFunc` function in [`main.go`](./main.go):
 
