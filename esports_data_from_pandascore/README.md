@@ -6,10 +6,7 @@ it.
 
 Before starting this example, make sure you are familiar with the
 [Hello World - Attesting a Function Call](../hello_world_attest_fn_call/README.md),
-[Error Handling](../error-handling/README.md),
-and
-[Fetch and Process A Call to CoinGecko API](../fetch_and_process_api_call/README.md)
-examples.
+and [Error Handling](../error_handling/README.md) examples.
 
 In this example, you'll learn how to:
 
