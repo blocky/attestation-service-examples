@@ -338,7 +338,9 @@ also lists the `match_id` of 1121861. Finally, we get the `winner`, `loser`,
 ## Next steps
 
 Now that you have successfully run the example, you can start modifying it to
-fit your own needs. You may also want to explore the
+fit your own needs. If you remember, the application we had in mind for this 
+example was to settle esports bets on chain. If you want to take expand this 
+example with an on chain component, you may explore the
 [Hello World - Bringing A Blocky AS Function Call Attestation On Chain](../hello_world_on_chain/README.md)
-example to learn you can bring the `MatchResult` struct into a smart contract
-to settle the bet there.
+example to learn you can bring the `MatchResult` struct into a smart contract,
+which you could extend to accept and settle esports bets.
