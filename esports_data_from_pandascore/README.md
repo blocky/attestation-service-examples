@@ -191,10 +191,10 @@ type PandaScoreMatchResponse struct {
 	} `json:"league"`
 	Serie struct {
 		Slug string `json:"slug"`
-	}
+	} `json:"serie"`
 	Tournament struct {
 		Slug string `json:"slug"`
-	}
+	} `json:"tournament"`
 	Results []struct {
 		PlayerId int `json:"player_id"`
 		Score    int `json:"score"`
