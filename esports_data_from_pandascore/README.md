@@ -183,7 +183,7 @@ PandaScore API response:
 type PandaScoreMatchResponse struct {
 	EndAt    time.Time `json:"end_at"`
 	Status   string    `json:"status"`
-	WinnerId int       `json:"winner_id"`
+	WinnerID int       `json:"winner_id"`
 	Id       int       `json:"id"`
 	Slug     string    `json:"slug"`
 	League   struct {
@@ -205,7 +205,7 @@ type PandaScoreMatchResponse struct {
 			Name string `json:"name"`
 		} `json:"opponent"`
 	} `json:"opponents"`
-}
+
 ```
 
 Next, we define the `getMatchResult` to fetch and parse the data from the
@@ -257,20 +257,18 @@ func getMatchResultFromPandaScore(matchID string, apiKey string) (MatchResult, e
 		return MatchResult{}, fmt.Errorf("match is not finished")
 	}
 
-	var winner string
-	var loser string
+	var winner, loser string
 	for _, opponent := range match.Opponents {
-		if opponent.Opponent.Id == match.WinnerId {
+		if opponent.Opponent.Id == match.WinnerID {
 			winner = opponent.Opponent.Name
 		} else {
 			loser = opponent.Opponent.Name
 		}
 	}
 
-	var winnerScore int
-	var loserScore int
+	var winnerScore, loserScore int
 	for _, result := range match.Results {
-		if result.PlayerId == match.WinnerId {
+		if result.PlayerId == match.WinnerID {
 			winnerScore = result.Score
 		} else {
 			loserScore = result.Score
