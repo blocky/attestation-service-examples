@@ -92,7 +92,7 @@ out its
 [documentation](https://developers.pandascore.co/reference/get_matches)
 page.
 
-### Step 1: Create a parameterized oracle function
+### Step 2: Create a parameterized oracle function
 
 We'll implement the oracle as `scoreFunc` in
 [`main.go`](./main.go). As in previous examples, we will call this function
@@ -117,19 +117,194 @@ file contents:
 Replace `match ID` with the match ID you got from the previous step and
 `PandaScore API Key` with your PandaScore API key.
 
-Next, we define the `scoreFunc` function in [`main.go`](./main.go), which calls
-the `getMatchResult` function to fetch and parse the match data from the 
-PandaScore API. If you're curious how internals of such functions work, visit 
-the
-[Fetch and Process A Call to CoinGecko API](../coin_prices_from_coingecko/README.md)
-example. At a high level, he `getMatchResult` function takes the `matchID` and
-`apiKey` as arguments, uses them to fetch and parse the match data from
-`https://api.pandascore.co/matches`, and returns the `MatchResult` struct 
-populated with PandaScore data. The `scoreFunc` function returns a `Result`
-containing the `MatchResult` to the Blocky AS server to create an
+Next, we define the `scoreFunc` function in [`main.go`](./main.go):
+
+```go
+type Args struct {
+	MatchID string `json:"match_id"`
+}
+
+type SecretArgs struct {
+	PandaScoreAPIKey string `json:"api_key"`
+}
+
+//export scoreFunc
+func scoreFunc(inputPtr, secretPtr uint64) uint64 {
+	var input Args
+	inputData := as.Bytes(inputPtr)
+	err := json.Unmarshal(inputData, &input)
+	if err != nil {
+		outErr := fmt.Errorf("could not unmarshal input args: %w", err)
+		return WriteError(outErr)
+	}
+
+	var secret SecretArgs
+	secretData := as.Bytes(secretPtr)
+	err = json.Unmarshal(secretData, &secret)
+	if err != nil {
+		outErr := fmt.Errorf("could not unmarshal secret args: %w", err)
+		return WriteError(outErr)
+	}
+
+	result, err := getMatchResult(input.MatchID, secret.PandaScoreAPIKey)
+	if err != nil {
+		outErr := fmt.Errorf("getting price: %w", err)
+		return WriteError(outErr)
+	}
+
+	return WriteOutput(result)
+}
+```
+
+The function takes two `uint64` arguments and returns a `uint64`. These are fat
+pointers to shared memory managed by the Blocky AS server, where the first 32
+bits are a memory address and the second 32 bits are the size of the data. The
+memory space is sandboxed and shared between the TEE host program (Blocky AS
+server) and the WASM runtime (your function). The `inputPtr` and `secretPtr`
+arguments carry serialized `input` and `secret` sections of
+[`fn-call.json`](./fn-call.json).
+
+To parse the `input` data, we first fetch the data pointed to by `inputPtr`
+using `as.Bytes` and then unmarshal it into the `Args` struct. We do the same
+for the `secret` data. Next, we call the `getMatchResultFromPandaScore` function
+to fetch the price of `input.MatchID` using the `secret.PandaScoreAPIKey` API
+key. Finally, we return the `matchResult` to user by converting its data to fat
+pointer using the `WriteOutput` function and returning the pointer from
+`scoreFunc` to the Blocky AS server host runtime.
+
+### Step 3: Make a request to the PandaScore API
+
+The `getMatchResult` function in `scoreFunc` will make an HTTP request to the
+PandaScore API to fetch match result data.
+
+Let's start by setting up a struct to parse the relevant fields from the
+PandaScore API response:
+
+```go
+type PandaScoreMatchResponse struct {
+	EndAt    time.Time `json:"end_at"`
+	Status   string    `json:"status"`
+	WinnerId int       `json:"winner_id"`
+	Id       int       `json:"id"`
+	Slug     string    `json:"slug"`
+	League   struct {
+		Slug string `json:"slug"`
+	} `json:"league"`
+	Serie struct {
+		Slug string `json:"slug"`
+	}
+	Tournament struct {
+		Slug string `json:"slug"`
+	}
+	Results []struct {
+		PlayerId int `json:"player_id"`
+		Score    int `json:"score"`
+	} `json:"results"`
+	Opponents []struct {
+		Opponent struct {
+			Id   int    `json:"id"`
+			Name string `json:"name"`
+		} `json:"opponent"`
+	} `json:"opponents"`
+}
+```
+
+Next, we define the `getMatchResult` to fetch and parse the data from the
+PandaScore API:
+
+```go
+type MatchResult struct {
+	League     string `json:"league"`
+	Serie      string `json:"serie"`
+	Tournament string `json:"tournament"`
+	Match      string `json:"match"`
+	MatchID    int    `json:"match_id"`
+	Winner     string `json:"winner"`
+	Loser      string `json:"loser"`
+	Score      string `json:"score"`
+	EndAt      string `json:"end_at"`
+}
+
+func getMatchResultFromPandaScore(matchID string, apiKey string) (MatchResult, error) {
+	req := as.HostHTTPRequestInput{
+		Method: "GET",
+		URL:    fmt.Sprintf("https://api.pandascore.co/matches/%s", matchID),
+		Headers: map[string][]string{
+			"Accept":        {"application/json"},
+			"Authorization": {"Bearer " + apiKey},
+		},
+	}
+	resp, err := as.HostFuncHTTPRequest(req)
+	if err != nil {
+		return MatchResult{}, fmt.Errorf("making http request: %w", err)
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		return MatchResult{}, fmt.Errorf(
+			"http request failed with status code %d",
+			resp.StatusCode,
+		)
+	}
+
+	match := PandaScoreMatchResponse{}
+	err = json.Unmarshal(resp.Body, &match)
+	if err != nil {
+		return MatchResult{}, fmt.Errorf(
+			"unmarshaling  data: %w...%s", err,
+			resp.Body,
+		)
+	}
+
+	if match.Status != "finished" {
+		return MatchResult{}, fmt.Errorf("match is not finished")
+	}
+
+	var winner string
+	var loser string
+	for _, opponent := range match.Opponents {
+		if opponent.Opponent.Id == match.WinnerId {
+			winner = opponent.Opponent.Name
+		} else {
+			loser = opponent.Opponent.Name
+		}
+	}
+
+	var winnerScore int
+	var loserScore int
+	for _, result := range match.Results {
+		if result.PlayerId == match.WinnerId {
+			winnerScore = result.Score
+		} else {
+			loserScore = result.Score
+		}
+	}
+
+	return MatchResult{
+		League:     match.League.Slug,
+		Serie:      match.Serie.Slug,
+		Tournament: match.Tournament.Slug,
+		Match:      match.Slug,
+		MatchID:    match.Id,
+		Winner:     winner,
+		Loser:      loser,
+		Score:      fmt.Sprintf("%d - %d", winnerScore, loserScore),
+		EndAt:      match.EndAt.Format(time.RFC3339),
+	}, nil
+}
+```
+
+The `getMatchResult` function takes in the `matchID` and `apiKey` as arguments.
+First, it constructs an HTTP request to the PandaScore API using the `matchID`
+in the URL and the `apiKey` in the headers. It then sends the request to the
+`as.HostFuncHTTPRequest` function, which makes the request through the Blocky AS
+server networking stack. Next, it checks the response status code and
+unmarshalls the JSON response into the `PandaScoreMatchResponse` struct.
+Finally, it processes the response to populate the `MatchResult` struct and
+returns it to the `scoreFunc` function. The `scoreFunc` function returns a
+`Result` containing the `MatchResult` to the Blocky AS server to create an
 attestation over the function call and the `Result` struct.
 
-### Step 3: Run the oracle
+### Step 4: Run the oracle
 
 To run `scoreFunc`, you need call:
 

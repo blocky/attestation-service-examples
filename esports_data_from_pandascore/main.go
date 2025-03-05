@@ -48,7 +48,7 @@ type MatchResult struct {
 	EndAt      string `json:"end_at"`
 }
 
-func getMatchResult(matchID string, apiKey string) (MatchResult, error) {
+func getMatchResultFromPandaScore(matchID string, apiKey string) (MatchResult, error) {
 	req := as.HostHTTPRequestInput{
 		Method: "GET",
 		URL:    fmt.Sprintf("https://api.pandascore.co/matches/%s", matchID),
@@ -141,13 +141,16 @@ func scoreFunc(inputPtr, secretPtr uint64) uint64 {
 		return WriteError(outErr)
 	}
 
-	result, err := getMatchResult(input.MatchID, secret.PandaScoreAPIKey)
+	matchResult, err := getMatchResultFromPandaScore(
+		input.MatchID,
+		secret.PandaScoreAPIKey,
+	)
 	if err != nil {
 		outErr := fmt.Errorf("getting price: %w", err)
 		return WriteError(outErr)
 	}
 
-	return WriteOutput(result)
+	return WriteOutput(matchResult)
 }
 
 func main() {}
