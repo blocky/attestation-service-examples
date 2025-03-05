@@ -32,7 +32,7 @@ make run
 ```
 
 You will see the following output extracted from a Blocky AS response showing
-you the price of Bitcoin in USD on the Binance market:
+you the result of the StartCraft II PL Invitational 2025 tournament final match:
 
 ```json
 {
@@ -55,8 +55,7 @@ you the price of Bitcoin in USD on the Binance market:
 
 Let's say you're implementing an onchain betting application that allows players
 to bet on the outcome of esports matches. In particular, let's say you set up a 
-bet on the outcome of the 
-[StartCraft II PL Invitational 2025](https://liquipedia.net/starcraft2/PL_Invitational) 
+bet on the outcome of the StartCraft II PL Invitational 2025 tournament
 final match.
 
 ### Step 1: Get match ID for the PandaScore API
