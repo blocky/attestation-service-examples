@@ -96,7 +96,7 @@ specifically the `market` field set to "Binance" and the `coin_id` field set to
 set to your CoinGecko API key. Of course, you can change these values to get
 the price of other coins or from other markets.
 
-Next, we define the `priceFunc` function:
+Next, we define the `priceFunc` function in [`main.go`](./main.go):
 
 ```go
 type Args struct {
@@ -150,17 +150,16 @@ arguments carry serialized `input` and `secret` sections of
 
 To parse the `input` data, we first fetch the data pointed to by `inputPtr`
 using `as.Bytes` and then unmarshal it into the `Args` struct. We do the same
-for the `secret` data.
-Next, we call the `getPriceFromCoinGecko` function to fetch the price of `input.CoinID` in
-the `input.Market` market using the `secret.CoinGeckoAPIKey` API key.
-Finally, we return the `price` to user by converting its data to fat pointer
-using the `WriteOutput` function and returning the pointer from `priceFunc`
-to the Blocky AS server host runtime.
+for the `secret` data. Next, we call the `getPriceFromCoinGecko` function to
+fetch the price of `input.CoinID` in the `input.Market` market using the
+`secret.CoinGeckoAPIKey` API key. Finally, we return the `price` to user by
+converting its data to fat pointer using the `WriteOutput` function and
+returning the pointer from `priceFunc` to the Blocky AS server host runtime.
 
 ### Step 2: Make a request to the CoinGecko API
 
-The `getPriceFromCoinGecko` function, in `priceFunc`, will make an HTTP request to the
-CoinGecko API to fetch the price of a coin in a specific market.
+The `getPriceFromCoinGecko` function, in `priceFunc`, will make an HTTP request
+to the CoinGecko API to fetch the price of a coin in a specific market.
 
 Let's start by setting up a struct to parse the relevant fields from the
 CoinGecko API response JSON:
@@ -237,14 +236,17 @@ func getPriceFromCoinGecko(market string, coinID string, apiKey string) (Price, 
 }
 ```
 
-The `getPriceFromCoinGecko` function takes the `market`, `coinID`, and `apiKey` as arguments.
-First it constructs an HTTP request to the CoinGecko API using `coinID`
-in the URL and the `apiKey` in the headers. It then sends the request to the
-`as.HostFuncHTTPRequest` function, which makes the request through the Blocky AS
-server networking stack. Next, it checks the response status code and unmarshals
-the JSON response into the `CoinGeckoResponse` struct. Finally, it iterates
-through the tickers in the response to find the ticker for the specified
-`market` and returns the price as a `Price` struct.
+The `getPriceFromCoinGecko` function takes the `market`, `coinID`, and `apiKey`
+as arguments. First it constructs an HTTP request to the CoinGecko API using
+`coinID` in the URL and the `apiKey` in the headers. It then sends the request
+to the `as.HostFuncHTTPRequest` function, which makes the request through the
+Blocky AS server networking stack. Next, it checks the response status code and
+unmarshalls the JSON response into the `CoinGeckoResponse` struct. Finally, it
+iterates through the tickers in the response to find the ticker for the
+specified `market` and returns the price as a `Price` struct to the `priceFunc`
+function. The `priceFunc` function returns a `Result` containing the `Price` to
+the Blocky AS server to create an attestation over the function call and the
+`Result` struct.
 
 ### Step 3: Run the oracle
 
