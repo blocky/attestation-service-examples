@@ -257,22 +257,14 @@ func getMatchResultFromPandaScore(matchID string, apiKey string) (MatchResult, e
 		return MatchResult{}, fmt.Errorf("match is not finished")
 	}
 
-	var winner, loser string
-	for _, opponent := range match.Opponents {
-		if opponent.Opponent.Id == match.WinnerID {
-			winner = opponent.Opponent.Name
-		} else {
-			loser = opponent.Opponent.Name
-		}
+	winnerOpponent, loserOpponent := match.Opponents[0].Opponent, match.Opponents[1].Opponent
+	if winnerOpponent.Id != match.WinnerID {
+		winnerOpponent, loserOpponent = loserOpponent, winnerOpponent
 	}
 
-	var winnerScore, loserScore int
-	for _, result := range match.Results {
-		if result.PlayerId == match.WinnerID {
-			winnerScore = result.Score
-		} else {
-			loserScore = result.Score
-		}
+	winnerResult, loserResult := match.Results[0], match.Results[1]
+	if winnerResult.PlayerId != winnerOpponent.Id {
+		winnerResult, loserResult = loserResult, winnerResult
 	}
 
 	return MatchResult{
@@ -281,9 +273,9 @@ func getMatchResultFromPandaScore(matchID string, apiKey string) (MatchResult, e
 		Tournament: match.Tournament.Slug,
 		Match:      match.Slug,
 		MatchID:    match.Id,
-		Winner:     winner,
-		Loser:      loser,
-		Score:      fmt.Sprintf("%d - %d", winnerScore, loserScore),
+		Winner:     winnerOpponent.Name,
+		Loser:      loserOpponent.Name,
+		Score:      fmt.Sprintf("%d - %d", winnerResult.Score, loserResult.Score),
 		EndAt:      match.EndAt.Format(time.RFC3339),
 	}, nil
 }
