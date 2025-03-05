@@ -1,0 +1,12 @@
+[
+    {
+        "code_file": "tmp/x.wasm",
+        "function": "scoreFunc",
+        "input": {
+            "match_id": "1121861"
+        },
+        "secret": {
+            "api_key": "PandaScore API key"
+        }
+    }
+]

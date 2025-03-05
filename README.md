@@ -24,11 +24,14 @@ following order:
      attestation on chain and use the attested function output in your smart
      contract
 - [Getting Coin Prices From CoinGecko](./coin_prices_from_coingecko) shows you
-  how to user Blocky AS to fetch data and process data from the CoinGecko API.
-  You'll learn how to:
+  how to use Blocky AS to fetch and process coin price data from the CoinGecko 
+  API. You'll learn how to:
    - Pass in parameters and secrets to your function
    - Make an HTTP request to an external API in your function
    - Parse a JSON response from an API
+- [Getting Esports Data From PandaScore](./esports_data_from_pandascore) shows
+  you how to use Blocky AS to attest and process esports data from the 
+  PandaScore API. 
 - [Time Weighted Average Price](./time_weighted_average_price) is a more
   advanced example that shows you how to calculate the time weighted average
   price of an asset through iterative calls to Blocky AS.
