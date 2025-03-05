@@ -200,11 +200,10 @@ func getPriceFromCoinGecko(market string, coinID string, apiKey string) (Price, 
 		},
 	}
 	resp, err := as.HostFuncHTTPRequest(req)
-	if err != nil {
+	switch {
+	case err != nil:
 		return Price{}, fmt.Errorf("making http request: %w", err)
-	}
-
-	if resp.StatusCode != http.StatusOK {
+	case resp.StatusCode != http.StatusOK:
 		return Price{}, fmt.Errorf(
 			"http request failed with status code %d",
 			resp.StatusCode,

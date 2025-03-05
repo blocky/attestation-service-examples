@@ -58,11 +58,10 @@ func getMatchResultFromPandaScore(matchID string, apiKey string) (MatchResult, e
 		},
 	}
 	resp, err := as.HostFuncHTTPRequest(req)
-	if err != nil {
+	switch {
+	case err != nil:
 		return MatchResult{}, fmt.Errorf("making http request: %w", err)
-	}
-
-	if resp.StatusCode != http.StatusOK {
+	case resp.StatusCode != http.StatusOK:
 		return MatchResult{}, fmt.Errorf(
 			"http request failed with status code %d",
 			resp.StatusCode,
