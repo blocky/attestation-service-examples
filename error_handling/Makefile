@@ -20,13 +20,19 @@ run-success: build | check
 	@echo "Running WASM module..."
 	@cat successFunc.json | bky-as attest-fn-call >tmp/successout.json
 	@echo "Output:"
-	@jq -r '.function_calls[0].claims.output | @base64d | fromjson' tmp/successout.json
+	@jq -r '.transitive_attested_function_call.claims.output | @base64d | fromjson' tmp/successout.json
 
 run-error: build | check
 	@echo "Running WASM module..."
 	@cat errorFunc.json | bky-as attest-fn-call >tmp/errorout.json
 	@echo "Output:"
-	@jq -r '.function_calls[0].claims.output | @base64d | fromjson' tmp/errorout.json
+	@jq -r '.transitive_attested_function_call.claims.output | @base64d | fromjson' tmp/errorout.json
+
+run-panic: build | check
+	@echo "Running WASM module..."
+	@cat panicFunc.json | bky-as attest-fn-call >tmp/panicout.json
+	@echo "Output:"
+	@jq -r '.transitive_attested_function_call.claims.output | @base64d | fromjson' tmp/errorout.json
 
 clean:
 	@rm -rf tmp
