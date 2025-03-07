@@ -1,0 +1,6 @@
+github.com/blocky/basm-go-sdk v0.0.0-20250304161520-4cf4f3d83f8e h1:lsh2RRBJv8qTTHZ3DW4esR30Kt6sdWr+tx18j5j/gRo=
+github.com/blocky/basm-go-sdk v0.0.0-20250304161520-4cf4f3d83f8e/go.mod h1://MZVNCtY1AiIrMuLY6tCzFAVE8AshknCZHqielUpYU=
+github.com/josharian/intern v1.0.0 h1:vlS4z54oSdjm0bgjRigI+G1HpF+tI+9rE5LLzOg8HmY=
+github.com/josharian/intern v1.0.0/go.mod h1:5DoeVV0s6jJacbCEi61lwdGj/aVlrQvzHFFd8Hwg//Y=
+github.com/mailru/easyjson v0.9.0 h1:PrnmzHw7262yW8sTBwxi1PdJA3Iw/EKBa8psRf7d9a4=
+github.com/mailru/easyjson v0.9.0/go.mod h1:1+xMtQp2MRNVL/V1bOzuP3aP8VNwRW55fQUto+XFtTU=
