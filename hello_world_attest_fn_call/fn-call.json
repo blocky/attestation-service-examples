@@ -1,6 +1,4 @@
-[
-    {
-        "code_file": "tmp/x.wasm",
-        "function": "helloWorld"
-    }
-]
+{
+  "code_file": "tmp/x.wasm",
+  "function": "helloWorld"
+}

@@ -51,9 +51,9 @@ our function there:
 func helloWorld(inputPtr, secretPtr uint64) uint64 {
 	msg := "Hello, World!"
 
-	as.Log(fmt.Sprintf("Writing \"%s\" to host\n", msg))
+	basm.Log(fmt.Sprintf("Writing \"%s\" to host\n", msg))
 
-	return as.WriteToHost([]byte(msg))
+	return basm.WriteToHost([]byte(msg))
 }
 ```
 
@@ -69,10 +69,12 @@ You will notice a few things:
   `secretPtr` arguments carry user-defined function input and secrets,
   though we don't make use of them in this example. The output of the function
   is also a memory pointer, whose value will be returned to the user.
-- The function uses `as.Log` to write a message to the Blocky AS server log, 
+- The function uses `basm`
+  [Blocky Attestation Service WASM Go SDK](https://github.com/blocky/basm-go-sdk)
+  `basm.Log` function to write a message to the Blocky AS server log, 
   maintained separately for each function invocation. You can log messages
   to debug or monitor your function's behavior.
-- The function calls `as.WriteToHost` to write a byte array (serialized from
+- The function calls `basm.WriteToHost` to write a byte array (serialized from
   `msg`) to shared memory. The host (Blocky AS server) will create an 
   attestation over that array as a part of its response.
 
@@ -84,10 +86,10 @@ it into a WASM file. If you inspect the `build` target in the
 
 ```bash
 @docker run --rm \
-  -v .:/src \
-  -w /src \
-  tinygo/tinygo:0.31.2 \
-  tinygo build -o tmp/x.wasm -target=wasi main.go
+    -v .:/src \
+    -w /src \
+    tinygo/tinygo:0.31.2 \
+    tinygo build -o tmp/x.wasm -target=wasi ./...
 ```
 
 where we use `docker` to run [`tinygo`](https://tinygo.org/) to compile 
