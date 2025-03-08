@@ -4,35 +4,29 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/blocky/as-demo/as"
 	"github.com/blocky/as-demo/price"
+	"github.com/blocky/basm-go-sdk"
 )
 
 type ArgsIterate struct {
-	TokenAddress string          `json:"token_address"`
-	ChainID      string          `json:"chain_id"`
-	NumSamples   int             `json:"num_samples"`
-	EAttest      json.RawMessage `json:"eAttest"`
-	TAttest      json.RawMessage `json:"tAttest"`
-	Whitelist    json.RawMessage `json:"whitelist"`
+	TokenAddress string                    `json:"token_address"`
+	ChainID      string                    `json:"chain_id"`
+	NumSamples   int                       `json:"num_samples"`
+	EAttest      json.RawMessage           `json:"eAttest"`
+	TAttest      json.RawMessage           `json:"tAttest"`
+	Whitelist    []basm.EnclaveMeasurement `json:"whitelist"`
 }
 
 type ArgsTWAP struct {
-	EAttest   json.RawMessage `json:"eAttest"`
-	TAttest   json.RawMessage `json:"tAttest"`
-	Whitelist json.RawMessage `json:"whitelist"`
-}
-
-type Result struct {
-	Success bool
-	Error   string
-	Value   any
+	EAttest   json.RawMessage           `json:"eAttest"`
+	TAttest   json.RawMessage           `json:"tAttest"`
+	Whitelist []basm.EnclaveMeasurement `json:"whitelist"`
 }
 
 func extractPriceSamples(
-	eAttest,
-	tAttest,
-	whitelist json.RawMessage,
+	eAttest json.RawMessage,
+	tAttest json.RawMessage,
+	whitelist []basm.EnclaveMeasurement,
 ) (
 	[]price.Price,
 	error,
@@ -42,11 +36,11 @@ func extractPriceSamples(
 		return []price.Price{}, nil
 	}
 
-	verifyOut, err := as.VerifyAttestation(
-		as.HostVerifyAttestationInput{
-			EnclaveAttestedKey:    eAttest,
-			TransitiveAttestation: tAttest,
-			AcceptableMeasures:    whitelist,
+	verifyOut, err := basm.VerifyAttestation(
+		basm.VerifyAttestationInput{
+			EnclaveAttestedKey:       eAttest,
+			TransitiveAttestedClaims: tAttest,
+			AcceptableMeasures:       whitelist,
 		},
 	)
 	if err != nil {
@@ -59,7 +53,7 @@ func extractPriceSamples(
 		return nil, fmt.Errorf("could not unmarshal previous claims: %w", err)
 	}
 
-	prevResultData := fixedRep[as.AttestFnCallOutputIdx]
+	prevResultData := fixedRep[basm.RawClaimsAttestFnCallOutputIdx]
 	var prevResult Result
 	err = json.Unmarshal(prevResultData, &prevResult)
 	switch {
@@ -86,7 +80,7 @@ func extractPriceSamples(
 }
 
 func getNewPriceSample(tokenAddress string, chainID string) (price.Price, error) {
-	req := as.HostHTTPRequestInput{
+	req := basm.HTTPRequestInput{
 		Method: "GET",
 		URL: fmt.Sprintf(
 			"https://app.steer.finance/api/token/price?tokenAddress=%s&chainId=%s",
@@ -94,7 +88,7 @@ func getNewPriceSample(tokenAddress string, chainID string) (price.Price, error)
 			chainID,
 		),
 	}
-	resp, err := as.HostFuncHTTPRequest(req)
+	resp, err := basm.HTTPRequest(req)
 	if err != nil {
 		return price.Price{}, fmt.Errorf("making http request: %w", err)
 	}
@@ -112,7 +106,7 @@ func getNewPriceSample(tokenAddress string, chainID string) (price.Price, error)
 		)
 	}
 
-	now, err := as.TimeNow()
+	now, err := TimeNow()
 	if err != nil {
 		return price.Price{}, fmt.Errorf("getting current time: %w", err)
 	}
@@ -126,23 +120,23 @@ func getNewPriceSample(tokenAddress string, chainID string) (price.Price, error)
 //export iteration
 func iteration(inputPtr, secretPtr uint64) uint64 {
 	var args ArgsIterate
-	inputData := as.Bytes(inputPtr)
+	inputData := basm.ReadFromHost(inputPtr)
 	err := json.Unmarshal(inputData, &args)
 	if err != nil {
 		outErr := fmt.Errorf("could not unmarshal args args: %w", err)
-		return writeErr(outErr.Error())
+		return WriteError(outErr)
 	}
 
 	priceSamples, err := extractPriceSamples(args.EAttest, args.TAttest, args.Whitelist)
 	if err != nil {
 		outErr := fmt.Errorf("extracting priceSamples: %w", err)
-		return writeErr(outErr.Error())
+		return WriteError(outErr)
 	}
 
 	newPriceSample, err := getNewPriceSample(args.TokenAddress, args.ChainID)
 	if err != nil {
 		outErr := fmt.Errorf("getting new sample: %w", err)
-		return writeErr(outErr.Error())
+		return WriteError(outErr)
 	}
 
 	nextPriceSamples := append(priceSamples, newPriceSample)
@@ -151,68 +145,32 @@ func iteration(inputPtr, secretPtr uint64) uint64 {
 		nextPriceSamples = nextPriceSamples[numToRemove:]
 	}
 
-	return writePriceSamples(nextPriceSamples)
+	return WriteOutput(nextPriceSamples)
 }
 
 //export twap
 func twap(inputPtr, secretPtr uint64) uint64 {
 	var args ArgsTWAP
-	inputData := as.Bytes(inputPtr)
+	inputData := basm.ReadFromHost(inputPtr)
 	err := json.Unmarshal(inputData, &args)
 	if err != nil {
 		outErr := fmt.Errorf("could not unmarshal args args: %w", err)
-		return writeErr(outErr.Error())
+		return WriteError(outErr)
 	}
 
 	priceSamples, err := extractPriceSamples(args.EAttest, args.TAttest, args.Whitelist)
 	if err != nil {
 		outErr := fmt.Errorf("extracting samples: %w", err)
-		return writeErr(outErr.Error())
+		return WriteError(outErr)
 	}
 
 	twap, err := price.TWAP(priceSamples)
 	if err != nil {
 		outErr := fmt.Errorf("computing TWAP: %w", err)
-		return writeErr(outErr.Error())
+		return WriteError(outErr)
 	}
 
-	return writeTWAP(twap)
+	return WriteOutput(twap)
 }
 
 func main() {}
-
-func writeErr(err string) uint64 {
-	result := Result{
-		Success: false,
-		Error:   err,
-		Value:   nil,
-	}
-	return writeOutput(result)
-}
-
-func writePriceSamples(priceSamples []price.Price) uint64 {
-	result := Result{
-		Success: true,
-		Error:   "",
-		Value:   priceSamples,
-	}
-	return writeOutput(result)
-}
-
-func writeTWAP(twap float64) uint64 {
-	result := Result{
-		Success: true,
-		Error:   "",
-		Value:   twap,
-	}
-	return writeOutput(result)
-}
-
-func writeOutput(output any) uint64 {
-	outputData, err := as.Marshal(output)
-	if err != nil {
-		// We panic on errors we cannot communicate back to function caller
-		panic("Fatal error: could not marshal output data")
-	}
-	return as.ShareWithHost(outputData)
-}

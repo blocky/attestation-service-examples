@@ -1,19 +1,21 @@
-package as
+package main
 
 import (
 	"encoding/json"
 	"fmt"
 	"time"
+
+	"github.com/blocky/basm-go-sdk"
 )
 
 // TimeNow fetches the current UTC time from an external API.
 // In the future this will be implemented as a host function.
 func TimeNow() (time.Time, error) {
-	req := HostHTTPRequestInput{
+	req := basm.HTTPRequestInput{
 		Method: "GET",
 		URL:    "https://timeapi.io/api/time/current/zone?timeZone=UTC",
 	}
-	resp, err := HostFuncHTTPRequest(req)
+	resp, err := basm.HTTPRequest(req)
 	if err != nil {
 		return time.Time{}, fmt.Errorf("making http request: %w", err)
 	}
