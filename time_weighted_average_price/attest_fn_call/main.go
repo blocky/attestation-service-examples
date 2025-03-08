@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 
 	"github.com/blocky/as-demo/price"
@@ -171,6 +172,12 @@ func twap(inputPtr, secretPtr uint64) uint64 {
 	}
 
 	return WriteOutput(twap)
+}
+
+//export errorFunc
+func errorFunc(inputPtr, secretPtr uint64) uint64 {
+	err := errors.New("Expected error for testing")
+	return WriteError(err)
 }
 
 func main() {}

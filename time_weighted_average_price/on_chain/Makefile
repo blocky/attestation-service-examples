@@ -5,7 +5,8 @@ test-local:
 .PHONY: copy-from-twap
 copy-from-twap:
 	@mkdir -p inputs/
-	@cp ../twap/tmp/twap.json inputs/
+	@cp ../attest_fn_call/tmp/twap.json inputs/
+	@cp ../attest_fn_call/tmp/error.json inputs/
 
 .PHONY: very-clean
 very-clean:

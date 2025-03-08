@@ -42,6 +42,12 @@ twap: build | check
 	@jq -r '.transitive_attested_function_call.claims.output | @base64d | fromjson' tmp/twap.json
 	@jq -r '.transitive_attested_function_call.logs | @base64d' tmp/twap.json
 
+run-error: build | check
+	@echo "Running WASM module..."
+	@cat errorFunc.json | bky-as attest-fn-call >tmp/error.json
+	@echo "Output:"
+	@jq -r '.transitive_attested_function_call.claims.output | @base64d | fromjson' tmp/error.json
+
 clean:
 	@rm -rf tmp
 
