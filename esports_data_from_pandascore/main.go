@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/blocky/as-demo/as"
+	"github.com/blocky/basm-go-sdk"
 )
 
 type PandaScoreMatchResponse struct {
@@ -49,7 +49,7 @@ type MatchResult struct {
 }
 
 func getMatchResultFromPandaScore(matchID string, apiKey string) (MatchResult, error) {
-	req := as.HostHTTPRequestInput{
+	req := basm.HTTPRequestInput{
 		Method: "GET",
 		URL:    fmt.Sprintf("https://api.pandascore.co/matches/%s", matchID),
 		Headers: map[string][]string{
@@ -57,7 +57,7 @@ func getMatchResultFromPandaScore(matchID string, apiKey string) (MatchResult, e
 			"Authorization": {"Bearer " + apiKey},
 		},
 	}
-	resp, err := as.HostFuncHTTPRequest(req)
+	resp, err := basm.HTTPRequest(req)
 	switch {
 	case err != nil:
 		return MatchResult{}, fmt.Errorf("making http request: %w", err)
@@ -115,7 +115,7 @@ type SecretArgs struct {
 //export scoreFunc
 func scoreFunc(inputPtr, secretPtr uint64) uint64 {
 	var input Args
-	inputData := as.Bytes(inputPtr)
+	inputData := basm.ReadFromHost(inputPtr)
 	err := json.Unmarshal(inputData, &input)
 	if err != nil {
 		outErr := fmt.Errorf("could not unmarshal input args: %w", err)
@@ -123,7 +123,7 @@ func scoreFunc(inputPtr, secretPtr uint64) uint64 {
 	}
 
 	var secret SecretArgs
-	secretData := as.Bytes(secretPtr)
+	secretData := basm.ReadFromHost(secretPtr)
 	err = json.Unmarshal(secretData, &secret)
 	if err != nil {
 		outErr := fmt.Errorf("could not unmarshal secret args: %w", err)
