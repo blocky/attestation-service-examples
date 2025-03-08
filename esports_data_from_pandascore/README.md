@@ -53,10 +53,10 @@ you the result of the StartCraft II PL Invitational 2025 tournament final match:
 
 ## Walkthrough
 
-Let's say you're implementing an onchain betting application that allows players
-to bet on the outcome of esports matches. In particular, let's say you set up a 
-bet on the outcome of the StartCraft II PL Invitational 2025 tournament
-final match.
+Let's say you're implementing an on chain fantasy application that needs to
+access esports data such as player statistics, or match results. In particular,
+let's say want to bring on chain the outcome of the StartCraft II PL
+Invitational 2025 tournament final match.
 
 ### Step 1: Get match ID for the PandaScore API
 
@@ -327,9 +327,7 @@ also lists the `match_id` of 1121861. Finally, we get the `winner`, `loser`,
 ## Next steps
 
 Now that you have successfully run the example, you can start modifying it to
-fit your own needs. If you remember, the application we had in mind for this 
-example was to settle esports bets on chain. If you want to take expand this 
+fit your own needs. If you want to take expand this 
 example with an on chain component, you may explore the
 [Hello World - Bringing A Blocky AS Function Call Attestation On Chain](../hello_world_on_chain/README.md)
-example to learn you can bring the `MatchResult` struct into a smart contract,
-which you could extend to accept and settle esports bets.
+example to learn you can bring the `MatchResult` struct into a smart contract.
