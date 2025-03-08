@@ -24,7 +24,6 @@ run: build | check
 	@echo "Output:"
 	@jq -r '.function_calls[0].claims.output | @base64d | fromjson' tmp/out.json
 
-
 clean:
 	@rm -rf tmp
 

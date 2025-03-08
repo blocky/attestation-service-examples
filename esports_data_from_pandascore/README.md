@@ -64,29 +64,15 @@ You can use
 [PandaScore API](https://developers.pandascore.co/docs/introduction)
 to get the tournament results. PandaScore organizes its results into 
 [leagues, series, tournaments, and matches](https://developers.pandascore.co/docs/fundamentals).
-Our first step is to get the match ID for the StarCraft II PL Invitational 2025
-final match.
-
-If you look at [`scripts/get_match_id.sh`](./scripts/get_match_id.sh), 
-you'll see a series of `curl` and `jq` commands that look up, using the
-PandaScore API, the match ID for final match in the
-`starcraft-2-pl-invitational` league in 2025. You can get the match ID by
-running (after replacing `<PandaScore API Key>` with your PandaScore API key):
-
-```bash
-PANDASCORE_API_KEY=<PandaScore API Key> ./scripts/get_match_id.sh
-```
-
-which will print
-
-```
-1121861
-```
-
-If you're curious about PandaScore's APIs used throughout this example, check 
-out its 
-[documentation](https://developers.pandascore.co/reference/get_matches)
-page.
+If you want to look up the match ID for the StarCraft II PL Invitational 2025
+final match, you can make a sequence of calls to PandaScore API endpoints to
+find the
+[league](https://developers.pandascore.co/reference/get_leagues),
+[serie](https://developers.pandascore.co/reference/get_series),
+[tournament](https://developers.pandascore.co/reference/get_tournaments),
+and [match](https://developers.pandascore.co/reference/get_matches).
+For this example, we went through this process and pulled the StarCraft II PL
+Invitational 2025 final match ID `1121861`.
 
 ### Step 2: Create a parameterized oracle function
 
@@ -112,7 +98,7 @@ file contents:
 
 As you see, we already have the `match_id` value from the previous step in
 [`fn-call.json`](./fn-call.json). If you want to look up the results for a 
-different match you update the `match_id` value to another id. 
+different match you update the `match_id` value to another ID. 
 If you haven't already as part of the [Setup](#setup), go ahead and replace
 the `api_key` value with your PandaScore API key.
 
@@ -225,9 +211,14 @@ type MatchResult struct {
 }
 
 func getMatchResultFromPandaScore(matchID string, apiKey string) (MatchResult, error) {
+	matchesAPIEndpoint, err := getMatchesAPIEndpoint()
+	if err != nil {
+		return MatchResult{}, fmt.Errorf("getting matches api endpoint: %w", err)
+	}
+
 	req := as.HostHTTPRequestInput{
 		Method: "GET",
-		URL:    fmt.Sprintf("https://api.pandascore.co/matches/%s", matchID),
+		URL:    fmt.Sprintf("%s/%s", matchesAPIEndpoint, matchID),
 		Headers: map[string][]string{
 			"Accept":        {"application/json"},
 			"Authorization": {"Bearer " + apiKey},
@@ -282,7 +273,8 @@ func getMatchResultFromPandaScore(matchID string, apiKey string) (MatchResult, e
 ```
 
 The `getMatchResult` function takes in the `matchID` and `apiKey` as arguments.
-First, it constructs an HTTP request to the PandaScore API using the `matchID`
+First, it looks up the PandaScore API endpoint using the `getMatchesAPIEndpoint`
+and constructs an HTTP request to the PandaScore API using the `matchID`
 in the URL and the `apiKey` in the headers. It then sends the request to the
 `as.HostFuncHTTPRequest` function, which makes the request through the Blocky AS
 server networking stack. Next, it checks the response status code and

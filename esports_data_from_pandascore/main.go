@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"regexp"
 	"time"
 
 	"github.com/blocky/as-demo/as"
@@ -49,9 +50,14 @@ type MatchResult struct {
 }
 
 func getMatchResultFromPandaScore(matchID string, apiKey string) (MatchResult, error) {
+	matchesAPIEndpoint, err := getMatchesAPIEndpoint()
+	if err != nil {
+		return MatchResult{}, fmt.Errorf("getting matches api endpoint: %w", err)
+	}
+
 	req := as.HostHTTPRequestInput{
 		Method: "GET",
-		URL:    fmt.Sprintf("https://api.pandascore.co/matches/%s", matchID),
+		URL:    fmt.Sprintf("%s/%s", matchesAPIEndpoint, matchID),
 		Headers: map[string][]string{
 			"Accept":        {"application/json"},
 			"Authorization": {"Bearer " + apiKey},
@@ -143,3 +149,27 @@ func scoreFunc(inputPtr, secretPtr uint64) uint64 {
 }
 
 func main() {}
+
+func getMatchesAPIEndpoint() (string, error) {
+	req := as.HostHTTPRequestInput{
+		Method: "GET",
+		URL:    fmt.Sprintf("https://developers.pandascore.co/reference/get_matches"),
+	}
+	resp, err := as.HostFuncHTTPRequest(req)
+	switch {
+	case err != nil:
+		return "", fmt.Errorf("making http request: %w", err)
+	case resp.StatusCode != http.StatusOK:
+		return "", fmt.Errorf(
+			"http request failed with status code %d",
+			resp.StatusCode,
+		)
+	}
+
+	matchesURLRegex, err := regexp.Compile(`https.{21}matches`)
+	if err != nil {
+		return "", fmt.Errorf("compiling regex: %w", err)
+	}
+
+	return string(matchesURLRegex.Find(resp.Body)), nil
+}
