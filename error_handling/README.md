@@ -107,8 +107,9 @@ where typically a `Value` field of type `any` might hold either an error message
 type. Having the three fields, however, allows for one pass parsing of `Result`
 structs in the client code.
 
-To return a `Result` to user, we need to serialize to bytes and send them to our
-[Blocky Attestation Service WASM Go SDK (`basm`)](https://github.com/blocky/basm-go-sdk)
+To return a `Result` to user, we need to serialize to bytes and send them to the
+`basm`
+[Blocky Attestation Service WASM Go SDK](https://github.com/blocky/basm-go-sdk)
 `basm.WriteToHost` function. Let's say that we want to use JSON to serialize the
 `Result` struct.
 
