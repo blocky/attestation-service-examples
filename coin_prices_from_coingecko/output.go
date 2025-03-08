@@ -5,7 +5,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/blocky/as-demo/as"
+	"github.com/blocky/basm-go-sdk"
 )
 
 type Result struct {
@@ -32,13 +32,13 @@ func WriteOutput(output any) uint64 {
 	}
 	data, err := json.Marshal(result)
 	if err != nil {
-		as.Log(fmt.Sprintf("Error marshalling Result: %v", err))
+		basm.Log(fmt.Sprintf("Error marshalling Result: %v", err))
 		return WriteError(err)
 	}
-	return as.WriteToHost(data)
+	return basm.WriteToHost(data)
 }
 
 func WriteError(err error) uint64 {
 	data := Result{}.JSONMarshalWithError(err)
-	return as.WriteToHost(data)
+	return basm.WriteToHost(data)
 }

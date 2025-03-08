@@ -106,12 +106,10 @@ To invoke our function, we first need to define an invocation template.
 We have one set up already in [`fn-call.json`](./fn-call.json) that looks like:
 
 ```json
-[
-  {
-    "code_file": "tmp/x.wasm",
-    "function": "helloWorld"
-  }
-]
+{
+  "code_file": "tmp/x.wasm",
+  "function": "helloWorld"
+}
 ```
 
 where `code_file` is the path to the WASM file we compiled earlier, and

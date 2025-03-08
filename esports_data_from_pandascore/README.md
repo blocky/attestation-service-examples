@@ -169,12 +169,12 @@ arguments carry serialized `input` and `secret` sections of
 To parse the `input` data, we first fetch the data pointed to by `inputPtr`
 using the `basm`
 [Blocky Attestation Service WASM Go SDK](https://github.com/blocky/basm-go-sdk)
-`basm.ReadFromHost` function and then unmarshal it into the `Args` struct. We do the same
-for the `secret` data. Next, we call the `getMatchResultFromPandaScore` function
-to fetch the price of `input.MatchID` using the `secret.PandaScoreAPIKey` API
-key. Finally, we return the `matchResult` to user by converting its data to fat
-pointer using the `WriteOutput` function and returning the pointer from
-`scoreFunc` to the Blocky AS server host runtime.
+`basm.ReadFromHost` function and then unmarshal it into the `Args` struct. We do
+the same for the `secret` data. Next, we call the `getMatchResultFromPandaScore`
+function to fetch the price of `input.MatchID` using the
+`secret.PandaScoreAPIKey` API key. Finally, we return the `matchResult` to user
+by converting its data to fat pointer using the `WriteOutput` function and
+returning the pointer from `scoreFunc` to the Blocky AS server host runtime.
 
 ### Step 3: Make a request to the PandaScore API
 
