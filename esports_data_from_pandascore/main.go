@@ -150,6 +150,9 @@ func scoreFunc(inputPtr, secretPtr uint64) uint64 {
 
 func main() {}
 
+// getMatchesAPIEndpoint Looks up the PandaScore API endpoint the PandaScore
+// documentation page, since the PandaScore terms of service do not allow
+// us to disclose a hardcoded endpoint as a part of this example.
 func getMatchesAPIEndpoint() (string, error) {
 	req := as.HostHTTPRequestInput{
 		Method: "GET",
