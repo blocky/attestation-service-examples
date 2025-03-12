@@ -7,6 +7,7 @@ import (
 
 	"github.com/blocky/as-demo/price"
 	"github.com/blocky/basm-go-sdk"
+	"github.com/blocky/basm-go-sdk/x/xbasm"
 )
 
 type ArgsIterate struct {
@@ -48,15 +49,13 @@ func extractPriceSamples(
 		return nil, fmt.Errorf("could not verify previous attestation: %w", err)
 	}
 
-	var fixedRep [][]byte
-	err = json.Unmarshal(verifyOut.RawClaims, &fixedRep)
+	claims, err := xbasm.ParseFnCallClaims(verifyOut.RawClaims)
 	if err != nil {
-		return nil, fmt.Errorf("could not unmarshal previous claims: %w", err)
+		return nil, fmt.Errorf("could not parse previous claims: %w", err)
 	}
 
-	prevResultData := fixedRep[basm.RawClaimsAttestFnCallOutputIdx]
 	var prevResult Result
-	err = json.Unmarshal(prevResultData, &prevResult)
+	err = json.Unmarshal(claims.Output, &prevResult)
 	switch {
 	case err != nil:
 		return nil, fmt.Errorf("could not unmarshal previous output: %w", err)
