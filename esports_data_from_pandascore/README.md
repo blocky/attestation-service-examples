@@ -23,33 +23,6 @@ In this example, you'll learn how to:
 - [Get a key for the PandaScore API](https://app.pandascore.co/dashboard)
   and set it in `fn-call.json` in the `api_key` field.
 
-## Quick Start
-
-To run this example, call:
-
-```bash
-make run
-```
-
-You will see the following output extracted from a Blocky AS response showing
-you the result of the StartCraft II PL Invitational 2025 tournament final match:
-
-```json
-{
-  "Success": true,
-  "Value": {
-    "league": "starcraft-2-pl-invitational",
-    "serie": "starcraft-2-pl-invitational-2025",
-    "tournament": "starcraft-2-pl-invitational-2025-playoffs",
-    "match": "solar-vs-cure-2025-02-09",
-    "match_id": 1121861,
-    "winner": "Cure",
-    "loser": "Solar",
-    "score": "3 - 1",
-    "end_at": "2025-02-09T08:24:49Z"
-  }
-}
-```
 
 ## Walkthrough
 
@@ -82,18 +55,17 @@ using the `bky-as` CLI by passing in the [`fn-call.json`](./fn-call.json)
 file contents:
 
 ```json
-[
-  {
-    "code_file": "tmp/x.wasm",
-    "function": "scoreFunc",
-    "input": {
-      "match_id": "1121861"
-    },
-    "secret": {
-      "api_key": "PandaScore API Key"
-    }
+{
+  "code_file": "tmp/x.wasm",
+  "function": "scoreFunc",
+  "input": {
+    "matches_api_endpoint": "PandaScore API matches endpoint",
+    "match_id": "1121861"
+  },
+  "secret": {
+    "api_key": "PandaScore API Key"
   }
-]
+}
 ```
 
 As you see, we already have the `match_id` value from the previous step in
@@ -101,6 +73,12 @@ As you see, we already have the `match_id` value from the previous step in
 different match you update the `match_id` value to another ID. 
 If you haven't already as part of the [Setup](#setup), go ahead and replace
 the `api_key` value with your PandaScore API key.
+
+> PandaScore API [Terms and Conditions](https://pandascore.co/terms-and-condition)
+> does not allow us to share their API endpoints publicly. To use this example,
+> you need to replace `matches_api_endpoint` in [`fn-call.json`](./fn-call.json)
+> with the PandaScore API matches endpoint, which you can find on their
+> [List marches API call documentation page](https://developers.pandascore.co/reference/get_matches).
 
 Next, we define the `scoreFunc` function in [`main.go`](./main.go):
 

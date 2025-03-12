@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"regexp"
 	"time"
 
 	"github.com/blocky/basm-go-sdk"
@@ -49,12 +48,14 @@ type MatchResult struct {
 	EndAt      string `json:"end_at"`
 }
 
-func getMatchResultFromPandaScore(matchID string, apiKey string) (MatchResult, error) {
-	matchesAPIEndpoint, err := getMatchesAPIEndpoint()
-	if err != nil {
-		return MatchResult{}, fmt.Errorf("getting matches api endpoint: %w", err)
-	}
-
+func getMatchResultFromPandaScore(
+	matchesAPIEndpoint string,
+	matchID string,
+	apiKey string,
+) (
+	MatchResult,
+	error,
+) {
 	req := basm.HTTPRequestInput{
 		Method: "GET",
 		URL:    fmt.Sprintf("%s/%s", matchesAPIEndpoint, matchID),
@@ -111,7 +112,8 @@ func getMatchResultFromPandaScore(matchID string, apiKey string) (MatchResult, e
 }
 
 type Args struct {
-	MatchID string `json:"match_id"`
+	MatchesAPIEndpoint string `json:"matches_api_endpoint"`
+	MatchID            string `json:"match_id"`
 }
 
 type SecretArgs struct {
@@ -137,6 +139,7 @@ func scoreFunc(inputPtr, secretPtr uint64) uint64 {
 	}
 
 	matchResult, err := getMatchResultFromPandaScore(
+		input.MatchesAPIEndpoint,
 		input.MatchID,
 		secret.PandaScoreAPIKey,
 	)
@@ -149,30 +152,3 @@ func scoreFunc(inputPtr, secretPtr uint64) uint64 {
 }
 
 func main() {}
-
-// getMatchesAPIEndpoint Looks up the PandaScore API endpoint the PandaScore
-// documentation page, since the PandaScore terms of service do not allow
-// us to disclose a hardcoded endpoint as a part of this example.
-func getMatchesAPIEndpoint() (string, error) {
-	req := basm.HTTPRequestInput{
-		Method: "GET",
-		URL:    fmt.Sprintf("https://developers.pandascore.co/reference/get_matches"),
-	}
-	resp, err := basm.HTTPRequest(req)
-	switch {
-	case err != nil:
-		return "", fmt.Errorf("making http request: %w", err)
-	case resp.StatusCode != http.StatusOK:
-		return "", fmt.Errorf(
-			"http request failed with status code %d",
-			resp.StatusCode,
-		)
-	}
-
-	matchesURLRegex, err := regexp.Compile(`https.{21}matches`)
-	if err != nil {
-		return "", fmt.Errorf("compiling regex: %w", err)
-	}
-
-	return string(matchesURLRegex.Find(resp.Body)), nil
-}
