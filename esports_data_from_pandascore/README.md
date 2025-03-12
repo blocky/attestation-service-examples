@@ -53,10 +53,10 @@ you the result of the StartCraft II PL Invitational 2025 tournament final match:
 
 ## Walkthrough
 
-Let's say you're implementing an onchain betting application that allows players
-to bet on the outcome of esports matches. In particular, let's say you set up a 
-bet on the outcome of the StartCraft II PL Invitational 2025 tournament
-final match.
+Let's say you're implementing an on chain fantasy application that needs to
+access esports data such as player statistics, or match results. In particular,
+let's say want to bring on chain the outcome of the StartCraft II PL
+Invitational 2025 tournament final match.
 
 ### Step 1: Get match ID for the PandaScore API
 
@@ -64,29 +64,15 @@ You can use
 [PandaScore API](https://developers.pandascore.co/docs/introduction)
 to get the tournament results. PandaScore organizes its results into 
 [leagues, series, tournaments, and matches](https://developers.pandascore.co/docs/fundamentals).
-Our first step is to get the match ID for the StarCraft II PL Invitational 2025
-final match.
-
-If you look at [`scripts/get_match_id.sh`](./scripts/get_match_id.sh), 
-you'll see a series of `curl` and `jq` commands that look up, using the
-PandaScore API, the match ID for final match in the
-`starcraft-2-pl-invitational` league in 2025. You can get the match ID by
-running (after replacing `<PandaScore API Key>` with your PandaScore API key):
-
-```bash
-PANDASCORE_API_KEY=<PandaScore API Key> ./scripts/get_match_id.sh
-```
-
-which will print
-
-```
-1121861
-```
-
-If you're curious about PandaScore's APIs used throughout this example, check 
-out its 
-[documentation](https://developers.pandascore.co/reference/get_matches)
-page.
+If you want to look up the match ID for the StarCraft II PL Invitational 2025
+final match, you can make a sequence of calls to PandaScore API endpoints to
+find the
+[league](https://developers.pandascore.co/reference/get_leagues),
+[serie](https://developers.pandascore.co/reference/get_series),
+[tournament](https://developers.pandascore.co/reference/get_tournaments),
+and [match](https://developers.pandascore.co/reference/get_matches).
+For this example, we went through this process and pulled the StarCraft II PL
+Invitational 2025 final match ID `1121861`.
 
 ### Step 2: Create a parameterized oracle function
 
@@ -112,7 +98,7 @@ file contents:
 
 As you see, we already have the `match_id` value from the previous step in
 [`fn-call.json`](./fn-call.json). If you want to look up the results for a 
-different match you update the `match_id` value to another id. 
+different match you update the `match_id` value to another ID. 
 If you haven't already as part of the [Setup](#setup), go ahead and replace
 the `api_key` value with your PandaScore API key.
 
@@ -230,9 +216,14 @@ type MatchResult struct {
 }
 
 func getMatchResultFromPandaScore(matchID string, apiKey string) (MatchResult, error) {
+	matchesAPIEndpoint, err := getMatchesAPIEndpoint()
+	if err != nil {
+		return MatchResult{}, fmt.Errorf("getting matches api endpoint: %w", err)
+	}
+
 	req := basm.HTTPRequestInput{
 		Method: "GET",
-		URL:    fmt.Sprintf("https://api.pandascore.co/matches/%s", matchID),
+		URL:    fmt.Sprintf("%s/%s", matchesAPIEndpoint, matchID),
 		Headers: map[string][]string{
 			"Accept":        {"application/json"},
 			"Authorization": {"Bearer " + apiKey},
@@ -287,7 +278,8 @@ func getMatchResultFromPandaScore(matchID string, apiKey string) (MatchResult, e
 ```
 
 The `getMatchResult` function takes in the `matchID` and `apiKey` as arguments.
-First, it constructs an HTTP request to the PandaScore API using the `matchID`
+First, it looks up the PandaScore API endpoint using the `getMatchesAPIEndpoint`
+and constructs an HTTP request to the PandaScore API using the `matchID`
 in the URL and the `apiKey` in the headers. It then sends the request to the
 `basm.HTTPRequest` function, which makes the request through the Blocky AS
 server networking stack. Next, it checks the response status code and
@@ -332,9 +324,7 @@ also lists the `match_id` of 1121861. Finally, we get the `winner`, `loser`,
 ## Next steps
 
 Now that you have successfully run the example, you can start modifying it to
-fit your own needs. If you remember, the application we had in mind for this 
-example was to settle esports bets on chain. If you want to take expand this 
+fit your own needs. If you want to take expand this 
 example with an on chain component, you may explore the
 [Hello World - Bringing A Blocky AS Function Call Attestation On Chain](../hello_world_on_chain/README.md)
-example to learn you can bring the `MatchResult` struct into a smart contract,
-which you could extend to accept and settle esports bets.
+example to learn you can bring the `MatchResult` struct into a smart contract.

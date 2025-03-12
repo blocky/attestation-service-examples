@@ -24,7 +24,6 @@ run: build | check
 	@echo "Output:"
 	@jq -r '.transitive_attested_function_call.claims.output | @base64d | fromjson' tmp/out.json
 
-
 clean:
 	@rm -rf tmp
 
