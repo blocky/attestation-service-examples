@@ -75,7 +75,7 @@ If you haven't already as part of the [Setup](#setup), go ahead and replace
 the `api_key` value with your PandaScore API key.
 
 > PandaScore API [Terms and Conditions](https://pandascore.co/terms-and-condition)
-> does not allow us to share their API endpoints publicly. To use this example,
+> do not allow us to share their API endpoints publicly. To use this example,
 > you need to replace `matches_api_endpoint` in [`fn-call.json`](./fn-call.json)
 > with the PandaScore API matches endpoint, which you can find on their
 > [List marches API call documentation page](https://developers.pandascore.co/reference/get_matches).
