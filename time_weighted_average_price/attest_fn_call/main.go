@@ -79,6 +79,10 @@ func extractPriceSamples(
 	return prevPriceSamples, nil
 }
 
+type SteerData struct {
+	Price float64 `json:"price"`
+}
+
 func getNewPriceSample(tokenAddress string, chainID string) (price.Price, error) {
 	req := basm.HTTPRequestInput{
 		Method: "GET",
@@ -93,10 +97,7 @@ func getNewPriceSample(tokenAddress string, chainID string) (price.Price, error)
 		return price.Price{}, fmt.Errorf("making http request: %w", err)
 	}
 
-	steerData := struct {
-		Price float64 `json:"price"`
-	}{}
-
+	var steerData SteerData
 	err = json.Unmarshal(resp.Body, &steerData)
 	if err != nil {
 		return price.Price{}, fmt.Errorf(
