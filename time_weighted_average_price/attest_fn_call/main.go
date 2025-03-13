@@ -10,60 +10,6 @@ import (
 	"github.com/blocky/basm-go-sdk/x/xbasm"
 )
 
-func extractPriceSamples(
-	eAttest json.RawMessage,
-	tAttest json.RawMessage,
-	whitelist []basm.EnclaveMeasurement,
-) (
-	[]price.Price,
-	error,
-) {
-	// bootstrap with empty samples if we don't have a transitive attestation
-	if tAttest == nil {
-		return []price.Price{}, nil
-	}
-
-	verifiedTA, err := basm.VerifyAttestation(
-		basm.VerifyAttestationInput{
-			EnclaveAttestedKey:       eAttest,
-			TransitiveAttestedClaims: tAttest,
-			AcceptableMeasures:       whitelist,
-		},
-	)
-	if err != nil {
-		return nil, fmt.Errorf("could not verify previous attestation: %w", err)
-	}
-
-	claims, err := xbasm.ParseFnCallClaims(verifiedTA.RawClaims)
-	if err != nil {
-		return nil, fmt.Errorf("could not parse previous claims: %w", err)
-	}
-
-	var prevResult Result
-	err = json.Unmarshal(claims.Output, &prevResult)
-	switch {
-	case err != nil:
-		return nil, fmt.Errorf("could not unmarshal previous output: %w", err)
-	case !prevResult.Success:
-		return nil, fmt.Errorf("previous run was an error: %w", err)
-	}
-
-	prevPriceSamplesStr, err := json.Marshal(prevResult.Value)
-	if err != nil {
-		retErr := fmt.Errorf("could not marshal previous price samples: %w", err)
-		return nil, retErr
-	}
-
-	var prevPriceSamples []price.Price
-	err = json.Unmarshal(prevPriceSamplesStr, &prevPriceSamples)
-	if err != nil {
-		retErr := fmt.Errorf("could not unmarshal previous price samples: %w", err)
-		return nil, retErr
-	}
-
-	return prevPriceSamples, nil
-}
-
 type SteerData struct {
 	Price float64 `json:"price"`
 }
@@ -101,6 +47,60 @@ func getNewPriceSample(tokenAddress string, chainID string) (price.Price, error)
 		Value:     steerData.Price,
 		Timestamp: now,
 	}, nil
+}
+
+func extractPriceSamples(
+	eAttest json.RawMessage,
+	tAttest json.RawMessage,
+	whitelist []basm.EnclaveMeasurement,
+) (
+	[]price.Price,
+	error,
+) {
+	// bootstrap with empty samples if we don't have a transitive attestation
+	if tAttest == nil {
+		return []price.Price{}, nil
+	}
+
+	verifiedTA, err := basm.VerifyAttestation(
+		basm.VerifyAttestationInput{
+			EnclaveAttestedKey:       eAttest,
+			TransitiveAttestedClaims: tAttest,
+			AcceptableMeasures:       whitelist,
+		},
+	)
+	if err != nil {
+		return nil, fmt.Errorf("could not verify previous attestation: %w", err)
+	}
+
+	verifiedClaims, err := xbasm.ParseFnCallClaims(verifiedTA.RawClaims)
+	if err != nil {
+		return nil, fmt.Errorf("could not parse claims: %w", err)
+	}
+
+	var prevResult Result
+	err = json.Unmarshal(verifiedClaims.Output, &prevResult)
+	switch {
+	case err != nil:
+		return nil, fmt.Errorf("could not unmarshal previous output: %w", err)
+	case !prevResult.Success:
+		return nil, fmt.Errorf("previous run was an error: %w", err)
+	}
+
+	prevPriceSamplesStr, err := json.Marshal(prevResult.Value)
+	if err != nil {
+		retErr := fmt.Errorf("could not marshal previous price samples: %w", err)
+		return nil, retErr
+	}
+
+	var prevPriceSamples []price.Price
+	err = json.Unmarshal(prevPriceSamplesStr, &prevPriceSamples)
+	if err != nil {
+		retErr := fmt.Errorf("could not unmarshal previous price samples: %w", err)
+		return nil, retErr
+	}
+
+	return prevPriceSamples, nil
 }
 
 type ArgsIterate struct {
