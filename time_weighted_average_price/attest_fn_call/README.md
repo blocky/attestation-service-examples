@@ -49,7 +49,7 @@ Your output should show the attested TWAP of WETH like:
 {
   "Success": true,
   "Error": "",
-  "Value": 1911.67
+  "Value": 1896.93
 }
 ```
 
@@ -119,14 +119,16 @@ func getNewPriceSample(tokenAddress string, chainID string) (price.Price, error)
 ```
 
 where we fetch data from Steer, parse the JSON response, record the current
-time, set it in a `Price` struct, and return it. If the details of this flow
-are new to you, you may want to review the 
+time, set it in a `Price` struct defined in the `price` package in 
+[`price/price.go`](./price/price.go), and return it. 
+If the details of this flow are new to you, you may want to review the 
 [Getting Coin Prices From CoinGecko](../../coin_prices_from_coingecko/README.md)
 example, where we walk thought a similar flow in more detail.
 One detail to notice is the `TimeNow` helper function, defined in
 [`time.go`](./time.go), which fetches the current time from
 [timeapi.io](https://timeapi.io/). In the future, we will support getting the
 current time directly from the Blocky AS server running your function.
+
 
 ### Step 2: Attest the price samples
 
@@ -380,6 +382,104 @@ func twap(inputPtr, secretPtr uint64) uint64 {
 
 which follows a similar pattern to the `iteration` function. It extracts
 the `ArgsTWAP` struct from the `inputPtr`, calls `extractPriceSamples` to
-extract the collection of price samples from the transitively attested
+extract the collection of price samples from `args.TAttest`, and then calls the
+`TWAP` function `price` package in [`price/price.go`](./price/price.go) to
+compute the TWAP from the extracted price samples. Finally, the `twap`
+function returns the computed TWAP to the Blocky AS server for attestation.
 
+We can drill into the `price.TWAP` function:
 
+```go
+type Price struct {
+	Value     float64   `json:"price"`
+	Timestamp time.Time `json:"timestamp"`
+}
+
+func TWAP(samples []Price) (float64, error) {
+	switch len(samples) {
+	case 0:
+		return 0, fmt.Errorf("no samples provided")
+	case 1:
+		return samples[0].Value, nil
+	}
+
+	// Sort samples from latest to earliest
+	lessThan := func(i, j int) bool {
+		return samples[i].Timestamp.After(samples[j].Timestamp)
+	}
+	sort.Slice(samples, lessThan)
+
+	var weightedSum, totalWeight float64
+
+	// IMPORTANT: The value of the last sample is not included in the calculation
+	// because it doesn't have a next sample to compare with. However, its
+	// timestamp is used to calculate the weight of the previous sample.
+	prev := samples[0]
+	for _, next := range samples[1:] {
+		timeDiff := prev.Timestamp.Sub(next.Timestamp).Microseconds()
+		weight := float64(timeDiff)
+		weightedSum += prev.Value * weight
+		totalWeight += weight
+		prev = next
+	}
+
+	if totalWeight == 0 {
+		return 0, fmt.Errorf("total weight is zero, cannot compute TWAP")
+	}
+
+	return weightedSum / totalWeight, nil
+}
+```
+
+we can see the TWAP calculation.
+
+To obtain the TWAP, we define a call to the `twap` function in 
+[`twap-call.json.template`](./twap-call.json.template):
+
+```
+{
+    "code_file": "./tmp/x.wasm",
+    "function": "twap",
+    "input": {
+        "eAttest": VAR_EATTEST,
+        VAR_TATTEST
+        "whitelist": [
+            { "platform": "plain", "code": "plain" }
+        ]
+    }
+}
+```
+
+where the `VAR_EATTEST` and `VAR_TATTEST` placeholders will be
+used to insert the enclave attested application public key and the
+transitive attested function call.
+
+To invoke the `twap` function, we call:
+
+```bash
+make twap
+```
+
+which will save the output of `bky-as` running the `twap` function in 
+[`tmp/twap.json`](./tmp/twap.json) and give us the parsed output like:
+
+```json
+{
+  "Success": true,
+  "Error": "",
+  "Value": 1896.93
+}
+
+```
+
+where `Value` is the computed TWAP of WETH.
+
+## Next steps
+
+Now that you have successfully run the example, you can start modifying it to
+fit your own needs. For example, you can try computing a TWAPs for different
+coins. You can also extend this example, by calling the `iteration` function at
+the desired time interval to control the granularity of the TWAP. Finally, you
+may explore the
+[Time-Weighted Average Price On Chain](https://blocky-docs.redocly.app/attestation-service/examples/time-weighted-average-price/on_chain)
+example to learn how to bring the TWAP into a smart contract.
