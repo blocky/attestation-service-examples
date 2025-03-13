@@ -51,9 +51,9 @@ our function there:
 func helloWorld(inputPtr, secretPtr uint64) uint64 {
 	msg := "Hello, World!"
 
-	as.Log(fmt.Sprintf("Writing \"%s\" to host\n", msg))
+	basm.Log(fmt.Sprintf("Writing \"%s\" to host\n", msg))
 
-	return as.WriteToHost([]byte(msg))
+	return basm.WriteToHost([]byte(msg))
 }
 ```
 
@@ -69,10 +69,12 @@ You will notice a few things:
   `secretPtr` arguments carry user-defined function input and secrets,
   though we don't make use of them in this example. The output of the function
   is also a memory pointer, whose value will be returned to the user.
-- The function uses `as.Log` to write a message to the Blocky AS server log, 
+- The function uses `basm`
+  [Blocky Attestation Service WASM Go SDK](https://github.com/blocky/basm-go-sdk)
+  `basm.Log` function to write a message to the Blocky AS server log, 
   maintained separately for each function invocation. You can log messages
   to debug or monitor your function's behavior.
-- The function calls `as.WriteToHost` to write a byte array (serialized from
+- The function calls `basm.WriteToHost` to write a byte array (serialized from
   `msg`) to shared memory. The host (Blocky AS server) will create an 
   attestation over that array as a part of its response.
 
@@ -84,10 +86,10 @@ it into a WASM file. If you inspect the `build` target in the
 
 ```bash
 @docker run --rm \
-  -v .:/src \
-  -w /src \
-  tinygo/tinygo:0.31.2 \
-  tinygo build -o tmp/x.wasm -target=wasi main.go
+    -v .:/src \
+    -w /src \
+    tinygo/tinygo:0.31.2 \
+    tinygo build -o tmp/x.wasm -target=wasi ./...
 ```
 
 where we use `docker` to run [`tinygo`](https://tinygo.org/) to compile 
@@ -104,12 +106,10 @@ To invoke our function, we first need to define an invocation template.
 We have one set up already in [`fn-call.json`](./fn-call.json) that looks like:
 
 ```json
-[
-  {
-    "code_file": "tmp/x.wasm",
-    "function": "helloWorld"
-  }
-]
+{
+  "code_file": "tmp/x.wasm",
+  "function": "helloWorld"
+}
 ```
 
 where `code_file` is the path to the WASM file we compiled earlier, and
@@ -174,51 +174,54 @@ To dive deeper, let's again look at the `run` target in the
 ```json
 {
   "enclave_attested_application_public_key": {
-    "enclave_attestation": {
-      "Platform": "plain",
-      "PlAttests": [
-        "eyJEYXRhIjoiZXlKamRYSjJaVj...", 
-        "eyJEYXRhIjoiUzIxMWNuRjRTWE...", 
-        "eyJEYXRhIjoiVTJ0MlFubDZha2...",
-        "eyJEYXRhIjoiVEc5TFUwNU5Sal...",
-        "eyJEYXRhIjoidHgyUmlmeEVITy..."
-      ]
-    },
-    "public_key": {
-      "curve_type": "p256k1",
-      "data": "BKmurqxIrdHeTwJN0YCV/4xbOv1iCA5jdSkvByzjH6UccaRDrB8KM295IkeihMQJOLoKSNMF5/mKypRbUp7Lkcs="
+    "enclave_attestation": "eyJQbGF0Zm9ybSI6InBsYWl...",
+    "claims": {
+      "enclave_measurement": {
+        "Platform": "plain",
+        "Code": "plain"
+      },
+      "public_key": {
+        "curve_type": "p256k1",
+        "data": "BN3/W1LNadnQ/AUWabtYJw0z58d4fC+oN83SlI+qUYShcUnYY67tlkE8fDnOa+pRLhaiGzvFUYguCKL/Bqo5hH0="
+      }
     }
   },
-  "function_calls": [
-    {
-      "transitive_attestation": "WyJXeUpOTWtab1QxUlNhRTV...",
-      "claims": {
-        "hash_of_code": "3aa94a482d4c37fb86a913f499ddcd22c316cd26293285bf063d015c160121e1f8821019d4e141ac1eb17030f556368a7edbd3d4cc24f159107b2bb07fb27a05",
-        "function": "helloWorld",
-        "hash_of_input": "a69f73cca23a9ac5c8b567dc185a756e97c982164fe25859e0d1dcc1475c80a615b2123af1f5f94c11e3e9402c3ac558f500199d95b6d3e301758586281dcd26",
-        "output": "SGVsbG8sIFdvcmxkIQ==",
-        "hash_of_secrets": "9375447cd5307bf7473b8200f039b60a3be491282f852df9f42ce31a8a43f6f8e916c4f8264e7d233add48746a40166eec588be8b7b9b16a5eb698d4c3b06e00"
-      },
-      "logs": "V3JpdGluZyBvdXQgIkhlbGxvLCBXb3JsZCEiCg=="
-    }
-  ]
+  "transitive_attested_function_call": {
+    "transitive_attestation": "WyJXeUpaZW14cVRucFJl...",
+    "claims": {
+      "hash_of_code": "c9c7439eb4aa0b3905f84654c6cf07fa9edf5730f5a5252086ece67c0b4dcc50fc7605cae70849799124aaf87332ab2a31bb1b7b9bdb52233ef4850899ebd15a",
+      "function": "helloWorld",
+      "hash_of_input": "a69f73cca23a9ac5c8b567dc185a756e97c982164fe25859e0d1dcc1475c80a615b2123af1f5f94c11e3e9402c3ac558f500199d95b6d3e301758586281dcd26",
+      "output": "SGVsbG8sIFdvcmxkIQ==",
+      "hash_of_secrets": "9375447cd5307bf7473b8200f039b60a3be491282f852df9f42ce31a8a43f6f8e916c4f8264e7d233add48746a40166eec588be8b7b9b16a5eb698d4c3b06e00"
+    },
+    "logs": "V3JpdGluZyAiSGVsbG8sIFdvcmxkISIgdG8gaG9zdAo="
+  }
 }
 ```
 
 The `enclave_attested_application_public_key` contains the `enclave_attestation`
-over the Blocky AS server public key. The `function_calls` section contains the
-`transitive_attestation` over the function call. The `bky-as attest-fn-call`
-command verifies that the `enclave_attestation` has been signed by either the
-TEE hardware manufacturer's private key, when `encalve_attestion.Platform` is
-`nitro`, or by a hardcoded development private key, when
-`enclave_attestation.Platform` is `plain`, as in this example running
-`bky-as` against a local server. The `bky-as` CLI also checks that the code
-measurement of the Blocky AS server, encoded in the `enclave_attestation`,
-matches one in the `acceptable_measurements` list in 
-[`config.toml`](./config.toml). Finally, the `bky-as` CLI extracts the enclave
-attested application public key, generated by the Blocky AS server on startup,
-and uses it to verify the signature of the `transitive_attestation` and extract
-its `claims`. You can learn more about this process in the
+over the Blocky AS server public key. The `transitive_attested_function_call`
+section contains the `transitive_attestation` over the function call. The
+`bky-as attest-fn-call` command verifies that the `enclave_attestation` has been
+signed by either the TEE hardware manufacturer's private key, when if the Blocky
+AS server is running on an AWS Nitro Enclave TEE, or by a hardcoded development
+private key, when the Blocky AS server is running locally. In this example, we
+have set up [`config.toml`](./config.toml) with `host = "local-server"`, which
+directs the `bky-as` to start a local server. As a part of the verification
+process, the `bky-as` lists `enclave_attested_application_public_key.claims`
+attested by the `enclave_attestation`. You can confirm that
+`enclave_attestation` was produced by a local Blocky AS server by looking at
+`enclave_attested_application_public_key.claims.enclave_measurement.Platform`
+having the value `plain`. The `bky-as` CLI also checks that measurement of the
+Blocky AS server code, attested by the `enclave_attestation`, matches one in the
+`acceptable_measurements` list in [`config.toml`](./config.toml). Again, since
+we are running the Blocky AS server locally in this example, the
+`enclave_attested_application_public_key.claims.enclave_measurement.Code` is
+reported as `plain`. Finally, the `bky-as` CLI extracts the enclave attested
+application public key, generated by the Blocky AS server on startup, and uses
+it to verify the signature of the `transitive_attestation` and extract its
+`claims`. You can learn more about this process in the
 [Attestations in the Blocky Attestation Service](https://blocky-docs.redocly.app/attestation-service/concepts#attestations-in-the-blocky-attestation-service)
 section in our documentation.
 

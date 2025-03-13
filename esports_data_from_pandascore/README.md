@@ -23,33 +23,6 @@ In this example, you'll learn how to:
 - [Get a key for the PandaScore API](https://app.pandascore.co/dashboard)
   and set it in `fn-call.json` in the `api_key` field.
 
-## Quick Start
-
-To run this example, call:
-
-```bash
-make run
-```
-
-You will see the following output extracted from a Blocky AS response showing
-you the result of the StartCraft II PL Invitational 2025 tournament final match:
-
-```json
-{
-  "Success": true,
-  "Value": {
-    "league": "starcraft-2-pl-invitational",
-    "serie": "starcraft-2-pl-invitational-2025",
-    "tournament": "starcraft-2-pl-invitational-2025-playoffs",
-    "match": "solar-vs-cure-2025-02-09",
-    "match_id": 1121861,
-    "winner": "Cure",
-    "loser": "Solar",
-    "score": "3 - 1",
-    "end_at": "2025-02-09T08:24:49Z"
-  }
-}
-```
 
 ## Walkthrough
 
@@ -82,18 +55,17 @@ using the `bky-as` CLI by passing in the [`fn-call.json`](./fn-call.json)
 file contents:
 
 ```json
-[
-  {
-    "code_file": "tmp/x.wasm",
-    "function": "scoreFunc",
-    "input": {
-      "match_id": "1121861"
-    },
-    "secret": {
-      "api_key": "PandaScore API Key"
-    }
+{
+  "code_file": "tmp/x.wasm",
+  "function": "scoreFunc",
+  "input": {
+    "matches_api_endpoint": "PandaScore API matches endpoint",
+    "match_id": "1121861"
+  },
+  "secret": {
+    "api_key": "PandaScore API Key"
   }
-]
+}
 ```
 
 As you see, we already have the `match_id` value from the previous step in
@@ -101,6 +73,12 @@ As you see, we already have the `match_id` value from the previous step in
 different match you update the `match_id` value to another ID. 
 If you haven't already as part of the [Setup](#setup), go ahead and replace
 the `api_key` value with your PandaScore API key.
+
+> PandaScore API [Terms and Conditions](https://pandascore.co/terms-and-condition)
+> do not allow us to share their API endpoints publicly. To use this example,
+> you need to replace `matches_api_endpoint` in [`fn-call.json`](./fn-call.json)
+> with the PandaScore API matches endpoint, which you can find on their
+> [List marches API call documentation page](https://developers.pandascore.co/reference/get_matches).
 
 Next, we define the `scoreFunc` function in [`main.go`](./main.go):
 
@@ -116,7 +94,7 @@ type SecretArgs struct {
 //export scoreFunc
 func scoreFunc(inputPtr, secretPtr uint64) uint64 {
 	var input Args
-	inputData := as.Bytes(inputPtr)
+	inputData := basm.ReadFromHost(inputPtr)
 	err := json.Unmarshal(inputData, &input)
 	if err != nil {
 		outErr := fmt.Errorf("could not unmarshal input args: %w", err)
@@ -124,20 +102,23 @@ func scoreFunc(inputPtr, secretPtr uint64) uint64 {
 	}
 
 	var secret SecretArgs
-	secretData := as.Bytes(secretPtr)
+	secretData := basm.ReadFromHost(secretPtr)
 	err = json.Unmarshal(secretData, &secret)
 	if err != nil {
 		outErr := fmt.Errorf("could not unmarshal secret args: %w", err)
 		return WriteError(outErr)
 	}
 
-	result, err := getMatchResult(input.MatchID, secret.PandaScoreAPIKey)
+	matchResult, err := getMatchResultFromPandaScore(
+		input.MatchID,
+		secret.PandaScoreAPIKey,
+	)
 	if err != nil {
 		outErr := fmt.Errorf("getting price: %w", err)
 		return WriteError(outErr)
 	}
 
-	return WriteOutput(result)
+	return WriteOutput(matchResult)
 }
 ```
 
@@ -150,12 +131,14 @@ arguments carry serialized `input` and `secret` sections of
 [`fn-call.json`](./fn-call.json).
 
 To parse the `input` data, we first fetch the data pointed to by `inputPtr`
-using `as.Bytes` and then unmarshal it into the `Args` struct. We do the same
-for the `secret` data. Next, we call the `getMatchResultFromPandaScore` function
-to fetch the price of `input.MatchID` using the `secret.PandaScoreAPIKey` API
-key. Finally, we return the `matchResult` to user by converting its data to fat
-pointer using the `WriteOutput` function and returning the pointer from
-`scoreFunc` to the Blocky AS server host runtime.
+using the `basm`
+[Blocky Attestation Service WASM Go SDK](https://github.com/blocky/basm-go-sdk)
+`basm.ReadFromHost` function and then unmarshal it into the `Args` struct. We do
+the same for the `secret` data. Next, we call the `getMatchResultFromPandaScore`
+function to fetch the price of `input.MatchID` using the
+`secret.PandaScoreAPIKey` API key. Finally, we return the `matchResult` to user
+by converting its data to fat pointer using the `WriteOutput` function and
+returning the pointer from `scoreFunc` to the Blocky AS server host runtime.
 
 ### Step 3: Make a request to the PandaScore API
 
@@ -216,7 +199,7 @@ func getMatchResultFromPandaScore(matchID string, apiKey string) (MatchResult, e
 		return MatchResult{}, fmt.Errorf("getting matches api endpoint: %w", err)
 	}
 
-	req := as.HostHTTPRequestInput{
+	req := basm.HTTPRequestInput{
 		Method: "GET",
 		URL:    fmt.Sprintf("%s/%s", matchesAPIEndpoint, matchID),
 		Headers: map[string][]string{
@@ -224,7 +207,7 @@ func getMatchResultFromPandaScore(matchID string, apiKey string) (MatchResult, e
 			"Authorization": {"Bearer " + apiKey},
 		},
 	}
-	resp, err := as.HostFuncHTTPRequest(req)
+	resp, err := basm.HTTPRequest(req)
 	switch {
 	case err != nil:
 		return MatchResult{}, fmt.Errorf("making http request: %w", err)
@@ -276,7 +259,7 @@ The `getMatchResult` function takes in the `matchID` and `apiKey` as arguments.
 First, it looks up the PandaScore API endpoint using the `getMatchesAPIEndpoint`
 and constructs an HTTP request to the PandaScore API using the `matchID`
 in the URL and the `apiKey` in the headers. It then sends the request to the
-`as.HostFuncHTTPRequest` function, which makes the request through the Blocky AS
+`basm.HTTPRequest` function, which makes the request through the Blocky AS
 server networking stack. Next, it checks the response status code and
 unmarshalls the JSON response into the `PandaScoreMatchResponse` struct.
 Finally, it processes the response to populate the `MatchResult` struct and

@@ -1,13 +1,11 @@
-[
-    {
-        "code_file": "tmp/x.wasm",
-        "function": "priceFunc",
-        "input": {
-            "market": "Binance",
-            "coin_id": "bitcoin"
-        },
-        "secret": {
-            "api_key": "CoinGecko API key"
-        }
-    }
-]
+{
+  "code_file": "tmp/x.wasm",
+  "function": "priceFunc",
+  "input": {
+    "market": "Binance",
+    "coin_id": "bitcoin"
+  },
+  "secret": {
+    "api_key": "CoinGecko API key"
+  }
+}

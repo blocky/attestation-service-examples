@@ -1,6 +1,4 @@
-[
-    {
-        "code_file": "tmp/x.wasm",
-        "function": "errorFunc"
-    }
-]
+{
+  "code_file": "tmp/x.wasm",
+  "function": "errorFunc"
+}

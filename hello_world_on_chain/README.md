@@ -37,11 +37,11 @@ within a local test environment:
   Local Test
 Verified attest-fn-call claims:
         Function: helloWorld
-        Hash of code: cbbb8adc3826e63c4bc5be6ec88b8bfb0301dcffc64951322ee946b8d99ffe2260333010bab215a3777e1b401f50a3810d7516fe5d42d19eb9e3ee3019ec234e
+        Hash of code: a8c69ed89187a4a6b46f0e7e3e30e144784fe4f60640a0839f1e7e81af31a4cf0ec82954172094167281a3b8ed3ddb2964fc53cc3c4d03d0ba8cd680db5a9ff6
         Hash of input: a69f73cca23a9ac5c8b567dc185a756e97c982164fe25859e0d1dcc1475c80a615b2123af1f5f94c11e3e9402c3ac558f500199d95b6d3e301758586281dcd26
         Hash of secrets: 9375447cd5307bf7473b8200f039b60a3be491282f852df9f42ce31a8a43f6f8e916c4f8264e7d233add48746a40166eec588be8b7b9b16a5eb698d4c3b06e00
         Output: Hello, World!
-    ✔ Set signing key and verify TA (1459ms)
+    ✔ Set signing key and verify TA (675ms)
 ```
 
 ## Walkthrough
@@ -71,12 +71,12 @@ public key from [`inputs/out.json`](inputs/out.json). If you like, you can see
 these values now by running:
 
 ```bash
-jq -r '.function_calls[0].transitive_attestation' inputs/out.json
+jq -r '.transitive_attested_function_call.transitive_attestation' inputs/out.json
 ```
 and
 
 ```bash
-jq -r '.enclave_attested_application_public_key.public_key.data' inputs/out.json
+jq -r '.enclave_attested_application_public_key.claims.public_key.data' inputs/out.json
 ```
 
 ### Step 2: Write a smart contract to verify a function call attestation
@@ -175,11 +175,11 @@ event with `"Hello, World!"` as input. You will see the test output:
   Local Test
 Verified attest-fn-call claims:
         Function: helloWorld
-        Hash of code: cbbb8adc3826e63c4bc5be6ec88b8bfb0301dcffc64951322ee946b8d99ffe2260333010bab215a3777e1b401f50a3810d7516fe5d42d19eb9e3ee3019ec234e
+        Hash of code: a8c69ed89187a4a6b46f0e7e3e30e144784fe4f60640a0839f1e7e81af31a4cf0ec82954172094167281a3b8ed3ddb2964fc53cc3c4d03d0ba8cd680db5a9ff6
         Hash of input: a69f73cca23a9ac5c8b567dc185a756e97c982164fe25859e0d1dcc1475c80a615b2123af1f5f94c11e3e9402c3ac558f500199d95b6d3e301758586281dcd26
         Hash of secrets: 9375447cd5307bf7473b8200f039b60a3be491282f852df9f42ce31a8a43f6f8e916c4f8264e7d233add48746a40166eec588be8b7b9b16a5eb698d4c3b06e00
         Output: Hello, World!
-    ✔ Set signing key and verify TA (1459ms)
+    ✔ Set signing key and verify TA (675ms)
 ```
 
 ### Step 4: Deploy the Smart Contract to Base Sepolia

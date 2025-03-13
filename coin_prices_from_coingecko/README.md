@@ -75,19 +75,17 @@ using the `bky-as` CLI by passing in the
 [`fn-call.json`](./fn-call.json) file contents:
 
 ```json
-[
-  {
-    "code_file": "tmp/x.wasm",
-    "function": "priceFunc",
-    "input": {
-      "market": "Binance",
-      "coin_id": "bitcoin"
-    },
-    "secret": {
-      "api_key": "CoinGecko API key"
-    }
+{
+  "code_file": "tmp/x.wasm",
+  "function": "priceFunc",
+  "input": {
+    "market": "Binance",
+    "coin_id": "bitcoin"
+  },
+  "secret": {
+    "api_key": "CoinGecko API key"
   }
-]
+}
 ```
 
 Notice the `input` section, which contains the parameters for `priceFunc`,
@@ -111,7 +109,7 @@ type SecretArgs struct {
 //export priceFunc
 func priceFunc(inputPtr, secretPtr uint64) uint64 {
 	var input Args
-	inputData := as.Bytes(inputPtr)
+	inputData := basm.ReadFromHost(inputPtr)
 	err := json.Unmarshal(inputData, &input)
 	if err != nil {
 		outErr := fmt.Errorf("could not unmarshal input args: %w", err)
@@ -119,7 +117,7 @@ func priceFunc(inputPtr, secretPtr uint64) uint64 {
 	}
 
 	var secret SecretArgs
-	secretData := as.Bytes(secretPtr)
+	secretData := basm.ReadFromHost(secretPtr)
 	err = json.Unmarshal(secretData, &secret)
 	if err != nil {
 		outErr := fmt.Errorf("could not unmarshal secret args: %w", err)
@@ -149,10 +147,12 @@ arguments carry serialized `input` and `secret` sections of
 [`fn-call.json`](./fn-call.json).
 
 To parse the `input` data, we first fetch the data pointed to by `inputPtr`
-using `as.Bytes` and then unmarshal it into the `Args` struct. We do the same
-for the `secret` data. Next, we call the `getPriceFromCoinGecko` function to
-fetch the price of `input.CoinID` in the `input.Market` market using the
-`secret.CoinGeckoAPIKey` API key. Finally, we return the `price` to user by
+using the `basm`
+[Blocky Attestation Service WASM Go SDK](https://github.com/blocky/basm-go-sdk)
+`basm.ReadFromHost` function and then unmarshal it into the `Args` struct.
+We do the same for the `secret` data. Next, we call the `getPriceFromCoinGecko`
+function to fetch the price of `input.CoinID` in the `input.Market` market using
+the `secret.CoinGeckoAPIKey` API key. Finally, we return the `price` to user by
 converting its data to fat pointer using the `WriteOutput` function and
 returning the pointer from `priceFunc` to the Blocky AS server host runtime.
 
@@ -192,14 +192,14 @@ type Price struct {
 }
 
 func getPriceFromCoinGecko(market string, coinID string, apiKey string) (Price, error) {
-	req := as.HostHTTPRequestInput{
+	req := basm.HTTPRequestInput{
 		Method: "GET",
 		URL:    fmt.Sprintf("https://api.coingecko.com/api/v3/coins/%s/tickers", coinID),
 		Headers: map[string][]string{
 			"x-cg-demo-api-key": []string{apiKey},
 		},
 	}
-	resp, err := as.HostFuncHTTPRequest(req)
+	resp, err := basm.HTTPRequest(req)
 	switch {
 	case err != nil:
 		return Price{}, fmt.Errorf("making http request: %w", err)
@@ -238,7 +238,7 @@ func getPriceFromCoinGecko(market string, coinID string, apiKey string) (Price, 
 The `getPriceFromCoinGecko` function takes the `market`, `coinID`, and `apiKey`
 as arguments. First it constructs an HTTP request to the CoinGecko API using
 `coinID` in the URL and the `apiKey` in the headers. It then sends the request
-to the `as.HostFuncHTTPRequest` function, which makes the request through the
+to the `basm.HTTPRequest` function, which makes the request through the
 Blocky AS server networking stack. Next, it checks the response status code and
 unmarshalls the JSON response into the `CoinGeckoResponse` struct. Finally, it
 iterates through the tickers in the response to find the ticker for the

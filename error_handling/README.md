@@ -107,13 +107,15 @@ where typically a `Value` field of type `any` might hold either an error message
 type. Having the three fields, however, allows for one pass parsing of `Result`
 structs in the client code.
 
-To return a `Result` to user, we need to serialize to bytes and send them to
-the `as.WriteToHost` function. Let's say that we want to use JSON to serialize
-the `Result` struct. 
+To return a `Result` to user, we need to serialize to bytes and send them to the
+`basm`
+[Blocky Attestation Service WASM Go SDK](https://github.com/blocky/basm-go-sdk)
+`basm.WriteToHost` function. Let's say that we want to use JSON to serialize the
+`Result` struct.
 
 We can define the `WriteOutput` function in [`output.go`](./output.go) to take
 in our function output, as `any`, put it in a `Result` struct, serialize it, and
-send it to `as.WriteToHost`:
+send it to `basm.WriteToHost`:
 
 ```go
 func WriteOutput(output any) uint64 {
@@ -123,10 +125,10 @@ func WriteOutput(output any) uint64 {
 	}
 	data, err := json.Marshal(result)
 	if err != nil {
-		as.Log(fmt.Sprintf("Error marshalling result: %s", err))
+		basm.Log(fmt.Sprintf("Error marshalling Result: %v", err))
 		return WriteError(err)
 	}
-	return as.WriteToHost(data)
+	return basm.WriteToHost(data)
 }
 ```
 
@@ -140,7 +142,7 @@ Our `WriteError` function in [`output.go`](./output.go) is defined as:
 ```go
 func WriteError(err error) uint64 {
 	data := Result{}.JSONMarshalWithError(err)
-	return as.WriteToHost(data)
+	return basm.WriteToHost(data)
 }
 ```
 

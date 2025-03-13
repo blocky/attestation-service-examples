@@ -12,7 +12,7 @@ tmp/x.wasm: main.go $(wildcard as/*.go) | tmp check
         -v .:/src \
         -w /src \
         tinygo/tinygo:0.31.2 \
-        tinygo build -o tmp/x.wasm -target=wasi main.go
+        tinygo build -o tmp/x.wasm -target=wasi ./...
 
 build: tmp/x.wasm
 
@@ -20,9 +20,9 @@ run: build | check
 	@echo "Running WASM module..."
 	@cat fn-call.json | bky-as attest-fn-call >tmp/out.json
 	@echo "Log:"
-	@jq -r '.function_calls[0].logs | @base64d' tmp/out.json
+	@jq -r '.transitive_attested_function_call.logs | @base64d' tmp/out.json
 	@echo "Output:"
-	@jq -r '.function_calls[0].claims.output | @base64d ' tmp/out.json
+	@jq -r '.transitive_attested_function_call.claims.output | @base64d ' tmp/out.json
 
 clean:
 	@rm -rf tmp

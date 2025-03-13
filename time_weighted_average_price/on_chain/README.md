@@ -21,7 +21,7 @@ Test bringing a transitive attested function call on chain into the
 make test-local
 ```
 
-You can see the details of this test in [test/User.ts](test/User.ts).
+You can see the details of this test in [test/user.ts](test/user.ts).
 
 (Optionally) If you ran the [twap demo](../attest_fn_call) and want to use its
 latest transitive attested function call, bring it into this project by

@@ -13,11 +13,11 @@ function loadEVMLinkData(jsonPath: string) {
 
         const data = JSON.parse(file);
 
-        const k = data.enclave_attested_application_public_key.public_key.data
+        const k = data.enclave_attested_application_public_key.claims.public_key.data
         const pubKeyBytes = ethers.decodeBase64(k)
         const publicKeyHex = Buffer.from(pubKeyBytes).toString('hex');
 
-        const taBytes = ethers.decodeBase64(data.function_calls[0].transitive_attestation)
+        const taBytes = ethers.decodeBase64(data.transitive_attested_function_call.transitive_attestation)
         const ta = Buffer.from(taBytes).toString('utf-8');
 
         return {

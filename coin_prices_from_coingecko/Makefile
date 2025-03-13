@@ -22,7 +22,7 @@ run: build | check
 	@echo "Running WASM module..."
 	@cat fn-call.json | bky-as attest-fn-call >tmp/out.json
 	@echo "Output:"
-	@jq -r '.function_calls[0].claims.output | @base64d | fromjson' tmp/out.json
+	@jq -r '.transitive_attested_function_call.claims.output | @base64d | fromjson' tmp/out.json
 
 clean:
 	@rm -rf tmp
