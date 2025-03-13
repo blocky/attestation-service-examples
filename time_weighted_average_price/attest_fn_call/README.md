@@ -130,9 +130,256 @@ current time directly from the Blocky AS server running your function.
 
 ### Step 2: Attest the price samples
 
-To compute a TWAP, we need to collect a number of samples. The challenge is that
-price APIs generally provide only price samples, or historical data at intervals
-that may be too large to compute a TWAP on a sufficiently granular timescale.
-Our approach here will be to collect and attest one sample at a time at the 
-desired interval.
+To compute a TWAP, we need to collect a number of price samples. The challenge
+is that price APIs generally provide only price samples, or historical data at
+intervals that may be too large to compute a TWAP on a sufficiently granular
+timescale. To solve this problem, we will follow an iterative process, where we
+collect price samples at the desired interval, and then compute a TWAP from the
+collected samples. The iterative step will take in a previously attested 
+collection of price samples, collect a new price sample, and then attest the 
+updated collection of price samples.
+
+We define the iterative step in the `iteration` function, in
+[`main.go`](./main.go):
+
+```go
+type ArgsIterate struct {
+	TokenAddress string                    `json:"token_address"`
+	ChainID      string                    `json:"chain_id"`
+	NumSamples   int                       `json:"num_samples"`
+	EAttest      json.RawMessage           `json:"eAttest"`
+	TAttest      json.RawMessage           `json:"tAttest"`
+	Whitelist    []basm.EnclaveMeasurement `json:"whitelist"`
+}
+
+//export iteration
+func iteration(inputPtr, secretPtr uint64) uint64 {
+	var args ArgsIterate
+	inputData := basm.ReadFromHost(inputPtr)
+	err := json.Unmarshal(inputData, &args)
+	if err != nil {
+		outErr := fmt.Errorf("could not unmarshal args args: %w", err)
+		return WriteError(outErr)
+	}
+
+	priceSamples, err := extractPriceSamples(args.EAttest, args.TAttest, args.Whitelist)
+	if err != nil {
+		outErr := fmt.Errorf("extracting priceSamples: %w", err)
+		return WriteError(outErr)
+	}
+
+	newPriceSample, err := getNewPriceSample(args.TokenAddress, args.ChainID)
+	if err != nil {
+		outErr := fmt.Errorf("getting new sample: %w", err)
+		return WriteError(outErr)
+	}
+
+	nextPriceSamples := append(priceSamples, newPriceSample)
+	if len(nextPriceSamples) > args.NumSamples {
+		numToRemove := len(nextPriceSamples) - args.NumSamples
+		nextPriceSamples = nextPriceSamples[numToRemove:]
+	}
+
+	return WriteOutput(nextPriceSamples)
+}
+```
+
+The `iteration` function extracts the `ArgsIterate` struct from the `inputPtr`.
+The `iteration` function calls `extractPriceSamples` to extract the previous
+collection of price samples `prevPriceSamples` from the transitively attested
+function call `args.TAttest`. Next, the `iteration` function collects a new
+price sample by calling `getNewPriceSample`. Finally, the `iteration` function
+computes the new collection of price samples `nextPriceSamples` by appending the
+new price sample to the previous collection and then truncating the collection
+to `args.NumSamples` most recent samples. Finally, `iteration` returns
+`newPriceSample` to the Blocky AS server for attestation.
+
+The last step we need to dive into is the `extractPriceSamples` function:
+
+```go
+func extractPriceSamples(
+	eAttest json.RawMessage,
+	tAttest json.RawMessage,
+	whitelist []basm.EnclaveMeasurement,
+) (
+	[]price.Price,
+	error,
+) {
+	// bootstrap with empty samples if we don't have a transitive attestation
+	if tAttest == nil {
+		return []price.Price{}, nil
+	}
+
+	verifyOut, err := basm.VerifyAttestation(
+		basm.VerifyAttestationInput{
+			EnclaveAttestedKey:       eAttest,
+			TransitiveAttestedClaims: tAttest,
+			AcceptableMeasures:       whitelist,
+		},
+	)
+	if err != nil {
+		return nil, fmt.Errorf("could not verify previous attestation: %w", err)
+	}
+
+	claims, err := xbasm.ParseFnCallClaims(verifyOut.RawClaims)
+	if err != nil {
+		return nil, fmt.Errorf("could not parse previous claims: %w", err)
+	}
+
+	var prevResult Result
+	err = json.Unmarshal(claims.Output, &prevResult)
+	switch {
+	case err != nil:
+		return nil, fmt.Errorf("could not unmarshal previous output: %w", err)
+	case !prevResult.Success:
+		return nil, fmt.Errorf("previous run was an error: %w", err)
+	}
+
+	prevPriceSamplesStr, err := json.Marshal(prevResult.Value)
+	if err != nil {
+		retErr := fmt.Errorf("could not marshal previous price samples: %w", err)
+		return nil, retErr
+	}
+
+	var prevPriceSamples []price.Price
+	err = json.Unmarshal(prevPriceSamplesStr, &prevPriceSamples)
+	if err != nil {
+		retErr := fmt.Errorf("could not unmarshal previous price samples: %w", err)
+		return nil, retErr
+	}
+
+	return prevPriceSamples, nil
+}
+```
+
+The `extractPriceSamples` function takes the enclave attested
+application public key `eAttest`, the transitive attested function call
+`tAttest`, and a `whitelist` of acceptable enclave measurements as parameters.
+It users these to call the `basm`
+[Blocky Attestation Service WASM Go SDK](https://github.com/blocky/basm-go-sdk)
+`basm.VerifyAttestation` function to verify that `tAttest` has been signed by
+the enclave attested application public key, and checks that the code
+measurement in `eAttest` is in the `whitelist`. If you'd like to learn more
+about the attestation verification process, please visit the 
+[Attestations in the Blocky Attestation Service](https://blocky-docs.redocly.app/attestation-service/concepts#attestations-in-the-blocky-attestation-service)
+page in our documentation.
+The `extractPriceSamples` function proceeds to parse out the verified
+transitive attestation `claims` using the experimental `xbasm` package of our SDK.
+(We use the `xbasm` package to stage features we are considering for production
+use in the Blocky AS SDK.) From the `claims`, `extractPriceSamples` extracts the
+`Output` field and unmarshalls it into a `Result` struct `prevResult`. In turn,
+`prevResult.Value` contains the previous collection of price samples. Since the
+type of `Result.Value` is `any`, we first marshal it to JSON, to then unmarshal
+it into a `[]price.Price` struct `prevPriceSamples`. Finally, the
+`extractPriceSamples` function returns `prevPriceSamples` to the caller
+`iteration` function.
+
+### Step 3: Collect price samples
+
+To collect the first sample, we define the call to the `iteration` function in
+[`iteration-call.json.template`](./iteration-call.json.template):
+
+```
+{
+    "code_file": "./tmp/x.wasm",
+    "function": "iteration",
+    "input": {
+        "token_address": "0x7ceb23fd6bc0add59e62ac25578270cff1b9f619",
+        "chain_id": "137",
+        "num_samples": 36,
+        "eAttest": VAR_EATTEST,
+        VAR_TATTEST
+        "whitelist": [
+            { "platform": "plain", "code": "plain" }
+        ]
+    }
+}
+```
+
+where we pass in the `token_address` and `chain_id` of the token we want to
+price, the `num_samples` we want to collect, and the `whitelist` of acceptable
+enclave measurements. The `VAR_EATTEST` and `VAR_TATTEST` placeholders will be
+used to insert the enclave attested application public key and the
+transitive attested function call, respectively in subsequent steps.
+
+To collect the first price sample, we call:
+
+```bash
+make init
+```
+
+which will save the output of `bky-as` running the `iteration` function in 
+[`tmp/prev.json`](./tmp/prev.json). 
+
+To collect the next price sample, we call:
+
+```bash
+make iteration
+```
+
+if you inspect the `iteration` target in the [`Makefile`](./Makefile):
+
+```makefile
+prev: | check
+	$(eval prev_ea := $(shell jq '.enclave_attested_application_public_key.enclave_attestation' tmp/prev.json | sed 's/\//\\\//g' ))
+	$(eval prev_ta := $(shell jq '.transitive_attested_function_call.transitive_attestation' tmp/prev.json ))
+
+iteration: build | check prev
+	@sed \
+		-e 's/VAR_TATTEST/"tAttest": ${prev_ta},/' \
+		-e 's/VAR_EATTEST/${prev_ea}/' \
+		iteration-call.json.template > tmp/iteration-call.json
+	@cat tmp/iteration-call.json | bky-as attest-fn-call | jq . > tmp/prev.json
+	@jq -r '.transitive_attested_function_call.claims.output | @base64d | fromjson' tmp/prev.json
+```
+
+you'll see that uses the `prev` target to load the `prev_ea` and `prev_ta`
+from [`tmp/prev.json`](./tmp/prev.json) and inserts them into the [
+`iteration-call.json.template`](./iteration-call.json.template) template to
+create the [`tmp/iteration-call.json`](./tmp/iteration-call.json) file. With
+these as arguments, the `iteration` function in [`main.go`](./main.go) will be
+able to parse out the previous samples in `extractPriceSamples`.
+
+### Step 4: Compute the TWAP
+
+To compute the TWAP, we define the `twap` function in
+[`main.go`](./main.go):
+
+```go
+type ArgsTWAP struct {
+	EAttest   json.RawMessage           `json:"eAttest"`
+	TAttest   json.RawMessage           `json:"tAttest"`
+	Whitelist []basm.EnclaveMeasurement `json:"whitelist"`
+}
+
+//export twap
+func twap(inputPtr, secretPtr uint64) uint64 {
+	var args ArgsTWAP
+	inputData := basm.ReadFromHost(inputPtr)
+	err := json.Unmarshal(inputData, &args)
+	if err != nil {
+		outErr := fmt.Errorf("could not unmarshal args args: %w", err)
+		return WriteError(outErr)
+	}
+
+	priceSamples, err := extractPriceSamples(args.EAttest, args.TAttest, args.Whitelist)
+	if err != nil {
+		outErr := fmt.Errorf("extracting samples: %w", err)
+		return WriteError(outErr)
+	}
+
+	twap, err := price.TWAP(priceSamples)
+	if err != nil {
+		outErr := fmt.Errorf("computing TWAP: %w", err)
+		return WriteError(outErr)
+	}
+
+	return WriteOutput(twap)
+}
+```
+
+which follows a similar pattern to the `iteration` function. It extracts
+the `ArgsTWAP` struct from the `inputPtr`, calls `extractPriceSamples` to
+extract the collection of price samples from the transitively attested
+
 

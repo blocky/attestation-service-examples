@@ -10,21 +10,6 @@ import (
 	"github.com/blocky/basm-go-sdk/x/xbasm"
 )
 
-type ArgsIterate struct {
-	TokenAddress string                    `json:"token_address"`
-	ChainID      string                    `json:"chain_id"`
-	NumSamples   int                       `json:"num_samples"`
-	EAttest      json.RawMessage           `json:"eAttest"`
-	TAttest      json.RawMessage           `json:"tAttest"`
-	Whitelist    []basm.EnclaveMeasurement `json:"whitelist"`
-}
-
-type ArgsTWAP struct {
-	EAttest   json.RawMessage           `json:"eAttest"`
-	TAttest   json.RawMessage           `json:"tAttest"`
-	Whitelist []basm.EnclaveMeasurement `json:"whitelist"`
-}
-
 func extractPriceSamples(
 	eAttest json.RawMessage,
 	tAttest json.RawMessage,
@@ -38,7 +23,7 @@ func extractPriceSamples(
 		return []price.Price{}, nil
 	}
 
-	verifyOut, err := basm.VerifyAttestation(
+	verifiedTA, err := basm.VerifyAttestation(
 		basm.VerifyAttestationInput{
 			EnclaveAttestedKey:       eAttest,
 			TransitiveAttestedClaims: tAttest,
@@ -49,7 +34,7 @@ func extractPriceSamples(
 		return nil, fmt.Errorf("could not verify previous attestation: %w", err)
 	}
 
-	claims, err := xbasm.ParseFnCallClaims(verifyOut.RawClaims)
+	claims, err := xbasm.ParseFnCallClaims(verifiedTA.RawClaims)
 	if err != nil {
 		return nil, fmt.Errorf("could not parse previous claims: %w", err)
 	}
@@ -118,6 +103,15 @@ func getNewPriceSample(tokenAddress string, chainID string) (price.Price, error)
 	}, nil
 }
 
+type ArgsIterate struct {
+	TokenAddress string                    `json:"token_address"`
+	ChainID      string                    `json:"chain_id"`
+	NumSamples   int                       `json:"num_samples"`
+	EAttest      json.RawMessage           `json:"eAttest"`
+	TAttest      json.RawMessage           `json:"tAttest"`
+	Whitelist    []basm.EnclaveMeasurement `json:"whitelist"`
+}
+
 //export iteration
 func iteration(inputPtr, secretPtr uint64) uint64 {
 	var args ArgsIterate
@@ -147,6 +141,12 @@ func iteration(inputPtr, secretPtr uint64) uint64 {
 	}
 
 	return WriteOutput(nextPriceSamples)
+}
+
+type ArgsTWAP struct {
+	EAttest   json.RawMessage           `json:"eAttest"`
+	TAttest   json.RawMessage           `json:"tAttest"`
+	Whitelist []basm.EnclaveMeasurement `json:"whitelist"`
 }
 
 //export twap
