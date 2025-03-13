@@ -76,7 +76,7 @@ jq -r '.transitive_attested_function_call.transitive_attestation' inputs/out.jso
 and
 
 ```bash
-jq -r '.enclave_attested_application_public_key.public_key.data' inputs/out.json
+jq -r '.enclave_attested_application_public_key.claims.public_key.data' inputs/out.json
 ```
 
 ### Step 2: Write a smart contract to verify a function call attestation
