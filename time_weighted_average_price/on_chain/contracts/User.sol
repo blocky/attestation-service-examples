@@ -2,11 +2,11 @@
 pragma solidity ^0.8.10;
 
 import {JsmnSolLib} from "../lib/JsmnSolLib.sol";
-import {TAParser} from "./TAParser.sol";
+import {TAParserLib} from "../lib/TAParserLib.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {console} from "hardhat/console.sol";
 
-contract User is Ownable, TAParser {
+contract User is Ownable {
     event AttestedFunctionCallOutput(string output);
 
     address public _verifierAddress;
@@ -20,15 +20,15 @@ contract User is Ownable, TAParser {
     )
     public onlyOwner
     {
-        taSigningKeyAddress = publicKeyToAddress(taSigningKey);
+        taSigningKeyAddress = TAParserLib.publicKeyToAddress(taSigningKey);
     }
 
     function verifyAttestedFnCallClaims(
         string calldata taData
     )
-    private view returns (TAParser.FnCallClaims memory)
+    private view returns (TAParserLib.FnCallClaims memory)
     {
-        TAParser.FnCallClaims memory claims = parseTA(
+        TAParserLib.FnCallClaims memory claims = TAParserLib.parseTA(
             taData,
             taSigningKeyAddress
         );
@@ -37,20 +37,18 @@ contract User is Ownable, TAParser {
     }
 
     function parseFnCallClaims(
-        TAParser.FnCallClaims memory claims
+        TAParserLib.FnCallClaims memory claims
     ) public
     {
-        string memory out = base64d(claims.Output);
-
         JsmnSolLib.Token[] memory tokens;
         uint number;
         uint success;
-        (success, tokens, number) = JsmnSolLib.parse(out, 50);
+        (success, tokens, number) = JsmnSolLib.parse(claims.Output, 50);
 
         uint successIdx = 2;
         bool resultSuccess = JsmnSolLib.parseBool(
             JsmnSolLib.getBytes(
-                out,
+                claims.Output,
                 tokens[successIdx].start,
                 tokens[successIdx].end
             )
@@ -58,7 +56,7 @@ contract User is Ownable, TAParser {
 
         uint errorIdx = 4;
         string memory resultError = JsmnSolLib.getBytes(
-            out,
+            claims.Output,
             tokens[errorIdx].start,
             tokens[errorIdx].end
         );
@@ -67,7 +65,7 @@ contract User is Ownable, TAParser {
 
         uint twapIdx = 6;
         string memory resultTWAP = JsmnSolLib.getBytes(
-            out,
+            claims.Output,
             tokens[twapIdx].start,
             tokens[twapIdx].end
         );
@@ -80,7 +78,10 @@ contract User is Ownable, TAParser {
     ) public {
         console.log("\n> Processing attested function call claims");
 
-        TAParser.FnCallClaims memory claims = verifyAttestedFnCallClaims(taData);
+        TAParserLib.FnCallClaims memory claims = TAParserLib.parseTA(
+            taData,
+            taSigningKeyAddress
+        );
 
         parseFnCallClaims(claims);
 

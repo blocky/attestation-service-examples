@@ -1,18 +1,54 @@
-# On Chain
+# Bringing An Attestation Of Time-Weighed Average Price On Chain
 
-This demo shows how we can get transitive attested data on chain. In this demo,
-bring a transitive attested function call from the [twap demo](../attest_fn_call)
-on to a chain in a development environment.
+This example shows you how to bring an attestation of time-weighted average price (TWAP)
+on chain. It builds on the 
+[Attesting A Time-Weighted Average Price](../attest_fn_call) 
+example, which shows you how to obtain an attestation of a TWAP, and on the
+[Hello World - Bringing A Blocky AS Function Call Attestation On Chain](../../hello_world_on_chain)
+example, which shows you how to bring an attestation of a Blocky AS function
+call on chain.
+
+In this example, you'll learn how to:
+
+- Bring an attestation of a TWAP on chain 
+- Revert a smart contract transaction if the 
 
 ## Setup
 
 Set up the project dependencies:
 
 ```bash
-npm install
+npm install --dd
 ```
 
-## Run
+## Quick Start
+
+To run this example, call:
+
+```bash
+make test-local
+```
+
+which will test verifying an attested TWAP in
+[`contracts/User.sol`](contracts/User.sol)
+within a local test environment and give your output like:
+
+```
+  Local Tests
+
+> Processing attested function call claims
+Processed attested function call claims
+    ✔ process TA (975ms)
+```
+
+## Walkthrough
+
+We cover the details of how to verify an attested function call in a smart 
+contract in the
+[Hello World - Bringing A Blocky AS Function Call Attestation On Chain](../../hello_world_on_chain)
+example.
+This example works in 
+
 
 Test bringing a transitive attested function call on chain into the
 [User](contracts/User.sol) contract:

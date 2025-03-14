@@ -1,13 +1,11 @@
 //  SPDX-License-Identifier: MIT
 pragma solidity ^0.8.10;
 
-import {JsmnSolLib} from "../lib/JsmnSolLib.sol";
-
-import {BytesLib} from "solidity-bytes-utils/contracts/BytesLib.sol";
-import {console} from "hardhat/console.sol";
+import {JsmnSolLib} from "./JsmnSolLib.sol";
 import {Base64} from "base64-sol/base64.sol";
+import {BytesLib} from "solidity-bytes-utils/contracts/BytesLib.sol";
 
-contract TAParser {
+library TAParserLib {
 
     struct TA {
         string Data;
@@ -20,14 +18,6 @@ contract TAParser {
         string HashOfInput;
         string HashOfSecrets;
         string Output;
-    }
-
-    function base64d(
-        string memory base64Input
-    ) 
-    internal pure returns (string memory) {
-        bytes memory decodedBytes = Base64.decode(base64Input);
-        return string(decodedBytes);
     }
 
     function publicKeyToAddress(
@@ -52,8 +42,6 @@ contract TAParser {
     {
         TA memory ta = decodeTA(taData);
 
-        FnCallClaims memory claims = decodeFnCallClaims(ta.Data);
-
         bytes memory sigAsBytes = Base64.decode(ta.Sig);
         bytes32 r = BytesLib.toBytes32(sigAsBytes, 0);
         bytes32 s = BytesLib.toBytes32(sigAsBytes, 32);
@@ -65,7 +53,17 @@ contract TAParser {
 
         require(publicKeyAddress == recovered, "Could not verify signature");
 
+        FnCallClaims memory claims = decodeFnCallClaims(ta.Data);
+
         return claims;
+    }
+
+    function base64d(
+        string memory base64Input
+    )
+    private pure returns (string memory) {
+        bytes memory decodedBytes = Base64.decode(base64Input);
+        return string(decodedBytes);
     }
 
     function decodeTA(
@@ -103,7 +101,7 @@ contract TAParser {
         claims.HashOfCode = base64d(JsmnSolLib.getBytes(b64, tokens[1].start, tokens[1].end));
         claims.Function = base64d(JsmnSolLib.getBytes(b64, tokens[2].start, tokens[2].end));
         claims.HashOfInput = base64d(JsmnSolLib.getBytes(b64, tokens[3].start, tokens[3].end));
-        claims.Output = JsmnSolLib.getBytes(b64, tokens[4].start, tokens[4].end);
+        claims.Output = base64d(JsmnSolLib.getBytes(b64, tokens[4].start, tokens[4].end));
         claims.HashOfSecrets = base64d(JsmnSolLib.getBytes(b64, tokens[5].start, tokens[5].end));
 
         return claims;
