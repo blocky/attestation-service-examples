@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 
 	"github.com/blocky/as-demo/price"
@@ -10,19 +9,43 @@ import (
 	"github.com/blocky/basm-go-sdk/x/xbasm"
 )
 
-type ArgsIterate struct {
-	TokenAddress string                    `json:"token_address"`
-	ChainID      string                    `json:"chain_id"`
-	NumSamples   int                       `json:"num_samples"`
-	EAttest      json.RawMessage           `json:"eAttest"`
-	TAttest      json.RawMessage           `json:"tAttest"`
-	Whitelist    []basm.EnclaveMeasurement `json:"whitelist"`
+type SteerData struct {
+	Price float64 `json:"price"`
 }
 
-type ArgsTWAP struct {
-	EAttest   json.RawMessage           `json:"eAttest"`
-	TAttest   json.RawMessage           `json:"tAttest"`
-	Whitelist []basm.EnclaveMeasurement `json:"whitelist"`
+func getNewPriceSample(tokenAddress string, chainID string) (price.Price, error) {
+	req := basm.HTTPRequestInput{
+		Method: "GET",
+		URL: fmt.Sprintf(
+			"https://app.steer.finance/api/token/price?tokenAddress=%s&chainId=%s",
+			tokenAddress,
+			chainID,
+		),
+	}
+	resp, err := basm.HTTPRequest(req)
+	if err != nil {
+		return price.Price{}, fmt.Errorf("making http request: %w", err)
+	}
+
+	var steerData SteerData
+	err = json.Unmarshal(resp.Body, &steerData)
+	if err != nil {
+		return price.Price{}, fmt.Errorf(
+			"unmarshaling Steer data: %w...%s",
+			err,
+			resp.Body,
+		)
+	}
+
+	now, err := TimeNow()
+	if err != nil {
+		return price.Price{}, fmt.Errorf("getting current time: %w", err)
+	}
+
+	return price.Price{
+		Value:     steerData.Price,
+		Timestamp: now,
+	}, nil
 }
 
 func extractPriceSamples(
@@ -38,7 +61,7 @@ func extractPriceSamples(
 		return []price.Price{}, nil
 	}
 
-	verifyOut, err := basm.VerifyAttestation(
+	verifiedTA, err := basm.VerifyAttestation(
 		basm.VerifyAttestationInput{
 			EnclaveAttestedKey:       eAttest,
 			TransitiveAttestedClaims: tAttest,
@@ -49,13 +72,13 @@ func extractPriceSamples(
 		return nil, fmt.Errorf("could not verify previous attestation: %w", err)
 	}
 
-	claims, err := xbasm.ParseFnCallClaims(verifyOut.RawClaims)
+	verifiedClaims, err := xbasm.ParseFnCallClaims(verifiedTA.RawClaims)
 	if err != nil {
-		return nil, fmt.Errorf("could not parse previous claims: %w", err)
+		return nil, fmt.Errorf("could not parse claims: %w", err)
 	}
 
 	var prevResult Result
-	err = json.Unmarshal(claims.Output, &prevResult)
+	err = json.Unmarshal(verifiedClaims.Output, &prevResult)
 	switch {
 	case err != nil:
 		return nil, fmt.Errorf("could not unmarshal previous output: %w", err)
@@ -79,42 +102,13 @@ func extractPriceSamples(
 	return prevPriceSamples, nil
 }
 
-func getNewPriceSample(tokenAddress string, chainID string) (price.Price, error) {
-	req := basm.HTTPRequestInput{
-		Method: "GET",
-		URL: fmt.Sprintf(
-			"https://app.steer.finance/api/token/price?tokenAddress=%s&chainId=%s",
-			tokenAddress,
-			chainID,
-		),
-	}
-	resp, err := basm.HTTPRequest(req)
-	if err != nil {
-		return price.Price{}, fmt.Errorf("making http request: %w", err)
-	}
-
-	steerData := struct {
-		Price float64 `json:"price"`
-	}{}
-
-	err = json.Unmarshal(resp.Body, &steerData)
-	if err != nil {
-		return price.Price{}, fmt.Errorf(
-			"unmarshaling Steer data: %w...%s",
-			err,
-			resp.Body,
-		)
-	}
-
-	now, err := TimeNow()
-	if err != nil {
-		return price.Price{}, fmt.Errorf("getting current time: %w", err)
-	}
-
-	return price.Price{
-		Value:     steerData.Price,
-		Timestamp: now,
-	}, nil
+type ArgsIterate struct {
+	TokenAddress string                    `json:"token_address"`
+	ChainID      string                    `json:"chain_id"`
+	NumSamples   int                       `json:"num_samples"`
+	EAttest      json.RawMessage           `json:"eAttest"`
+	TAttest      json.RawMessage           `json:"tAttest"`
+	Whitelist    []basm.EnclaveMeasurement `json:"whitelist"`
 }
 
 //export iteration
@@ -148,6 +142,12 @@ func iteration(inputPtr, secretPtr uint64) uint64 {
 	return WriteOutput(nextPriceSamples)
 }
 
+type ArgsTWAP struct {
+	EAttest   json.RawMessage           `json:"eAttest"`
+	TAttest   json.RawMessage           `json:"tAttest"`
+	Whitelist []basm.EnclaveMeasurement `json:"whitelist"`
+}
+
 //export twap
 func twap(inputPtr, secretPtr uint64) uint64 {
 	var args ArgsTWAP
@@ -171,12 +171,6 @@ func twap(inputPtr, secretPtr uint64) uint64 {
 	}
 
 	return WriteOutput(twap)
-}
-
-//export errorFunc
-func errorFunc(inputPtr, secretPtr uint64) uint64 {
-	err := errors.New("Expected error for testing")
-	return WriteError(err)
 }
 
 func main() {}

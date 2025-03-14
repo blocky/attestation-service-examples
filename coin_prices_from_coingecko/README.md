@@ -52,6 +52,9 @@ you the price of Bitcoin in USD on the Binance market:
 }
 ```
 
+> If you get a `401` error, you need to set your CoinGecko API key in
+> [`fn-call.json`](./fn-call.json). 
+
 ## Walkthrough
 
 Let's say you want to implement a simple price feed oracle that fetches the

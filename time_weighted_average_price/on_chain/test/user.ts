@@ -13,7 +13,7 @@ function loadEVMLinkData(jsonPath: string) {
 
         const data = JSON.parse(file);
 
-        const k = data.enclave_attested_application_public_key.public_key.data
+        const k = data.enclave_attested_application_public_key.claims.public_key.data
         const pubKeyBytes = ethers.decodeBase64(k)
         const publicKeyHex = Buffer.from(pubKeyBytes).toString('hex');
 
@@ -35,7 +35,7 @@ describe("Local Tests", function () {
         return {userContract: contract};
     }
 
-    it("process TA", async () => {
+    it("Verify attested TWAP in User contract", async () => {
         // given
         const evmLinkData = loadEVMLinkData("../inputs/twap.json");
         const publicKey = evmLinkData.publicKey;
@@ -50,24 +50,8 @@ describe("Local Tests", function () {
         // then
         await expect(tx).to.emit(
             userContract,
-            'AttestedFunctionCallOutput'
+            'TWAP'
         )
-    })
-
-    it("process TA with revert", async () => {
-        // given
-        const evmLinkData = loadEVMLinkData("../inputs/error.json");
-        const publicKey = evmLinkData.publicKey;
-
-        const {userContract} = await loadFixture(deployUser);
-        await userContract.setTASigningKeyAddress(publicKey as any);
-
-        // when
-        const ta = evmLinkData.transitiveAttestation;
-        const tx = userContract.processAttestedFnCallClaims(ta as any)
-
-        // then
-        await expect(tx).to.revertedWith("Expected error for testing")
     })
 });
 

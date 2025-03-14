@@ -1,4 +1,4 @@
-# Hello World - Attesting a Function Call
+# Error Handling
 
 This example shows you a useful pattern for reporting errors during the 
 execution of functions in the Blocky Attestation Service (Blocky AS).
