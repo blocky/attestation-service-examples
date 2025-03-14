@@ -1,4 +1,4 @@
-# Time-Weighted Average Price
+# Attesting A Time-Weighted Average Price
 
 This examples shows how to use the Blocky Attestation Service (Blocky AS) to
 compute a time-weighted average price (TWAP) of a token. 
