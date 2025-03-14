@@ -35,34 +35,73 @@ within a local test environment and give your output like:
 
 ```
   Local Tests
-
-> Processing attested function call claims
-Processed attested function call claims
-    ✔ process TA (975ms)
+    ✔ Verify attested TWAP in User contract (1080ms)
 ```
 
 ## Walkthrough
 
-We cover the details of how to verify an attested function call in a smart 
+We cover the basics of how to verify an attested function call in a smart 
 contract in the
 [Hello World - Bringing A Blocky AS Function Call Attestation On Chain](../../hello_world_on_chain)
-example.
-This example works in 
+example. 
 
+In this example, we go a step further and show you how to parse out the 
+TWAP value from the `Result` struct attested in the output of the `twap` function
+call in the [Attesting A Time-Weighted Average Price](../attest_fn_call) example.
+If you would like more background on how we use the `Result` struct, please 
+review the [Error Handling](../../error_handling) example.
 
-Test bringing a transitive attested function call on chain into the
-[User](contracts/User.sol) contract:
+In [`contracts/User.sol`](contracts/User.sol), we define a `parseTWAP` function:
 
-```bash
-make test-local
+```solidity
+function parseTWAP(
+    TAParserLib.FnCallClaims memory claims
+) public
+{
+    JsmnSolLib.Token[] memory tokens;
+    uint number;
+    uint success;
+    (success, tokens, number) = JsmnSolLib.parse(claims.Output, 50);
+
+    uint successIdx = 2;
+    bool resultSuccess = JsmnSolLib.parseBool(
+        JsmnSolLib.getBytes(
+            claims.Output,
+            tokens[successIdx].start,
+            tokens[successIdx].end
+        )
+    );
+
+    uint errorIdx = 4;
+    string memory resultError = JsmnSolLib.getBytes(
+        claims.Output,
+        tokens[errorIdx].start,
+        tokens[errorIdx].end
+    );
+
+    require(resultSuccess, resultError);
+
+    uint twapIdx = 6;
+    string memory resultTWAP = JsmnSolLib.getBytes(
+        claims.Output,
+        tokens[twapIdx].start,
+        tokens[twapIdx].end
+    );
+
+    emit TWAP(resultTWAP);
+}
 ```
 
-You can see the details of this test in [test/user.ts](test/user.ts).
+which takes in the verified `TAParserLib.FnCallClaims` `claims` and uses
+`JsmnSolLib` to parse the JSON serialized `Result` struct contains in
+`claims.Output`. We use positional arguments to parse out `resultSuccess` from
+`Result.Success` and `resultError` from `Result.Error` and if the
+`resultSuccess` is `false`, we revert the transaction with the `resultError`
+message. If `resultSuccess` is `true`, we parse out the `resultTWAP` from
+`Result.Value` and emit it as a `TWAP` event.
 
-(Optionally) If you ran the [twap demo](../attest_fn_call) and want to use its
-latest transitive attested function call, bring it into this project by
-running:
+## Next steps
 
-```bash
-make copy-from-twap
-```
+Now that you have successfully run the example, you can start modifying it to
+fit your own needs. Check out other examples in this repository, to learn what
+else you can do with Blocky AS.

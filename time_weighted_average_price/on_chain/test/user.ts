@@ -35,7 +35,7 @@ describe("Local Tests", function () {
         return {userContract: contract};
     }
 
-    it("process TA", async () => {
+    it("Verify attested TWAP in User contract", async () => {
         // given
         const evmLinkData = loadEVMLinkData("../inputs/twap.json");
         const publicKey = evmLinkData.publicKey;
@@ -50,7 +50,7 @@ describe("Local Tests", function () {
         // then
         await expect(tx).to.emit(
             userContract,
-            'AttestedFunctionCallOutput'
+            'TWAP'
         )
     })
 });

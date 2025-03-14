@@ -7,7 +7,7 @@ import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {console} from "hardhat/console.sol";
 
 contract User is Ownable {
-    event AttestedFunctionCallOutput(string output);
+    event TWAP(string output);
 
     address public _verifierAddress;
     address public taSigningKeyAddress;
@@ -36,7 +36,7 @@ contract User is Ownable {
         return claims;
     }
 
-    function parseFnCallClaims(
+    function parseTWAP(
         TAParserLib.FnCallClaims memory claims
     ) public
     {
@@ -70,22 +70,18 @@ contract User is Ownable {
             tokens[twapIdx].end
         );
 
-        emit AttestedFunctionCallOutput(resultTWAP);
+        emit TWAP(resultTWAP);
     }
 
     function processAttestedFnCallClaims(
         string calldata taData
     ) public {
-        console.log("\n> Processing attested function call claims");
-
         TAParserLib.FnCallClaims memory claims = TAParserLib.parseTA(
             taData,
             taSigningKeyAddress
         );
 
-        parseFnCallClaims(claims);
-
-        console.log("Processed attested function call claims");
+        parseTWAP(claims);
     }
 }
 
