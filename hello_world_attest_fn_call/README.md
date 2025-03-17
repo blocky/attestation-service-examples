@@ -48,7 +48,7 @@ our function there:
 
 ```go
 //export helloWorld
-func helloWorld(inputPtr, secretPtr uint64) uint64 {
+func helloWorld(inputPtr uint64, secretPtr uint64) uint64 {
 	msg := "Hello, World!"
 
 	basm.Log(fmt.Sprintf("Writing \"%s\" to host\n", msg))

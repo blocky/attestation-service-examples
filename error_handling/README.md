@@ -52,7 +52,7 @@ returns structured data. In [`main.go`](./main.go), we define the
 `successFunc` function:
 
 ```go
-func successFunc(inputPtr, secretPtr uint64) uint64 {
+func successFunc(inputPtr uint64, secretPtr uint64) uint64 {
 	type Output struct {
 		Number int `json:"number"`
 	}
@@ -71,7 +71,7 @@ For the purpose of this example, we define the `errorFunc` in
 [`main.go`](./main.go) that will always fail:
 
 ```go
-func errorFunc(inputPtr, secretPtr uint64) uint64 {
+func errorFunc(inputPtr uint64, secretPtr uint64) uint64 {
 	err := errors.New("expected error")
 	return WriteError(err)
 }

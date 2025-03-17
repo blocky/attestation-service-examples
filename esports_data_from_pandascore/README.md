@@ -92,7 +92,7 @@ type SecretArgs struct {
 }
 
 //export scoreFunc
-func scoreFunc(inputPtr, secretPtr uint64) uint64 {
+func scoreFunc(inputPtr uint64, secretPtr uint64) uint64 {
 	var input Args
 	inputData := basm.ReadFromHost(inputPtr)
 	err := json.Unmarshal(inputData, &input)

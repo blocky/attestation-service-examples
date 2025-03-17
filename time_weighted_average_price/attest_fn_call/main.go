@@ -112,7 +112,7 @@ type ArgsIterate struct {
 }
 
 //export iteration
-func iteration(inputPtr, secretPtr uint64) uint64 {
+func iteration(inputPtr uint64, secretPtr uint64) uint64 {
 	var args ArgsIterate
 	inputData := basm.ReadFromHost(inputPtr)
 	err := json.Unmarshal(inputData, &args)
@@ -149,7 +149,7 @@ type ArgsTWAP struct {
 }
 
 //export twap
-func twap(inputPtr, secretPtr uint64) uint64 {
+func twap(inputPtr uint64, secretPtr uint64) uint64 {
 	var args ArgsTWAP
 	inputData := basm.ReadFromHost(inputPtr)
 	err := json.Unmarshal(inputData, &args)

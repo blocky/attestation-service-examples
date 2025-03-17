@@ -5,7 +5,7 @@ import (
 )
 
 //export successFunc
-func successFunc(inputPtr, secretPtr uint64) uint64 {
+func successFunc(inputPtr uint64, secretPtr uint64) uint64 {
 	type Output struct {
 		Number int `json:"number"`
 	}
@@ -14,7 +14,7 @@ func successFunc(inputPtr, secretPtr uint64) uint64 {
 }
 
 //export errorFunc
-func errorFunc(inputPtr, secretPtr uint64) uint64 {
+func errorFunc(inputPtr uint64, secretPtr uint64) uint64 {
 	err := errors.New("expected error")
 	return WriteError(err)
 }
