@@ -9,6 +9,7 @@ import (
 	"github.com/blocky/basm-go-sdk/x/xbasm"
 )
 
+// todo: replace with CoinGecko API
 type SteerData struct {
 	Price float64 `json:"price"`
 }

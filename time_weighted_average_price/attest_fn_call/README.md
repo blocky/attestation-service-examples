@@ -256,7 +256,7 @@ func extractPriceSamples(
 
 The `extractPriceSamples` function takes the enclave attested application public
 key `eAttest`, the transitive attested function call `tAttest`, and a
-`whitelist` of acceptable enclave measurements as parameters. It users these to
+`whitelist` of acceptable enclave measurements as parameters. It uses these to
 call the`basm` 
 [Blocky Attestation Service WASM Go SDK](https://github.com/blocky/basm-go-sdk)
 `basm.VerifyAttestation` function to verify that `tAttest` has been signed by
@@ -491,5 +491,5 @@ coins. You can also extend this example, by calling the `iteration` function at
 the desired time interval, for example using a 
 [cron](https://en.wikipedia.org/wiki/Cron) 
 job, to control the granularity of the TWAP. Finally, you may explore the
-[Time-Weighted Average Price On Chain](https://blocky-docs.redocly.app/attestation-service/examples/time-weighted-average-price/on_chain)
+[Time-Weighted Average Price On Chain](../on_chain)
 example to learn how to bring the TWAP into a smart contract.

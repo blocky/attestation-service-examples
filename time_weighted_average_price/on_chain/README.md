@@ -11,14 +11,13 @@ call on chain.
 In this example, you'll learn how to:
 
 - Bring an attestation of a TWAP on chain 
-- Revert a smart contract transaction if the 
 
 ## Setup
 
 Set up the project dependencies:
 
 ```bash
-npm install --dd
+npm install
 ```
 
 ## Quick Start
