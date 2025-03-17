@@ -8,7 +8,7 @@ check:
 	@command -v bky-as >/dev/null 2>&1 || { echo >&2 "bky-as not found in PATH. Aborting."; exit 1; }
 	@command -v jq >/dev/null 2>&1 || { echo >&2 "jq not found in PATH. Aborting."; exit 1; }
 	
-tmp/x.wasm: main.go $(wildcard as/*.go) | tmp check
+tmp/x.wasm: main.go | tmp check
 	@echo "Building WASM module..."
 	@docker run --rm \
         -v .:/src \
