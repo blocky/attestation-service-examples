@@ -16,13 +16,13 @@ tmp/x.wasm: main.go | tmp check
 
 build: tmp/x.wasm
 
-run-success: build | check
+run-success: check build
 	@echo "Running WASM module..."
 	@cat successFunc.json | bky-as attest-fn-call >tmp/successout.json
 	@echo "Output:"
 	@jq -r '.transitive_attested_function_call.claims.output | @base64d | fromjson' tmp/successout.json
 
-run-error: build | check
+run-error: check build
 	@echo "Running WASM module..."
 	@cat errorFunc.json | bky-as attest-fn-call >tmp/errorout.json
 	@echo "Output:"

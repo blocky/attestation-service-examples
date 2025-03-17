@@ -16,7 +16,7 @@ tmp/x.wasm: main.go | tmp check
 
 build: tmp/x.wasm
 
-run: build | check
+run: check build
 	@echo "Running WASM module..."
 	@cat fn-call.json | bky-as attest-fn-call >tmp/out.json
 	@echo "Log:"

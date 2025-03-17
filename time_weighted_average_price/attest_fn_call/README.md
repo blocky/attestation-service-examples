@@ -323,11 +323,11 @@ make iteration
 If you inspect the `iteration` target in the [`Makefile`](./Makefile):
 
 ```makefile
-prev: | check
+prev: check
 	$(eval prev_ea := $(shell jq '.enclave_attested_application_public_key.enclave_attestation' tmp/prev.json | sed 's/\//\\\//g' ))
 	$(eval prev_ta := $(shell jq '.transitive_attested_function_call.transitive_attestation' tmp/prev.json ))
 
-iteration: build | check prev
+iteration: check prev build
 	@sed \
 		-e 's/VAR_TATTEST/"tAttest": ${prev_ta},/' \
 		-e 's/VAR_EATTEST/${prev_ea}/' \

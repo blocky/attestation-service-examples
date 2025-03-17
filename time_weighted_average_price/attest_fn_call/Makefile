@@ -19,18 +19,18 @@ tmp/x.wasm: main.go $(wildcard price/*.go) | tmp check
 build: tmp/x.wasm
 
 .PHONY: prev
-prev: | check
+prev: check
 	$(eval prev_ea := $(shell jq '.enclave_attested_application_public_key.enclave_attestation' tmp/prev.json | sed 's/\//\\\//g' ))
 	$(eval prev_ta := $(shell jq '.transitive_attested_function_call.transitive_attestation' tmp/prev.json ))
 
 .PHONY: init
-init: build | check
+init: check build
 	@sed -e 's/VAR_EATTEST/null/' -e 's/VAR_TATTEST//' ./iteration-call.json.template > ./tmp/iteration-call.json
 	@cat tmp/iteration-call.json | bky-as attest-fn-call  | jq . > tmp/prev.json
 	@jq -r '.transitive_attested_function_call.claims.output | @base64d' tmp/prev.json | jq .
 
 .PHONY: iteration
-iteration: build | check prev
+iteration: check prev build
 	@sed \
 		-e 's/VAR_TATTEST/"tAttest": ${prev_ta},/' \
 		-e 's/VAR_EATTEST/${prev_ea}/' \
@@ -39,7 +39,7 @@ iteration: build | check prev
 	@jq -r '.transitive_attested_function_call.claims.output | @base64d | fromjson' tmp/prev.json
 
 .PHONY: twap
-twap: build | check prev
+twap: check prev build
 	@sed \
 		-e 's/VAR_TATTEST/"tAttest": ${prev_ta},/' \
 		-e 's/VAR_EATTEST/${prev_ea}/' \
