@@ -1,28 +1,68 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
-	"errors"
 	"fmt"
+	"net/http"
+	"time"
 
 	"github.com/blocky/as-demo/price"
 	"github.com/blocky/basm-go-sdk"
 	"github.com/blocky/basm-go-sdk/x/xbasm"
 )
 
-type ArgsIterate struct {
-	TokenAddress string                    `json:"token_address"`
-	ChainID      string                    `json:"chain_id"`
-	NumSamples   int                       `json:"num_samples"`
-	EAttest      json.RawMessage           `json:"eAttest"`
-	TAttest      json.RawMessage           `json:"tAttest"`
-	Whitelist    []basm.EnclaveMeasurement `json:"whitelist"`
+type CoinGeckoResponse struct {
+	Price struct {
+		USD           float64 `json:"usd"`
+		LastUpdatedAt int     `json:"last_updated_at"`
+	} `json:"price"`
 }
 
-type ArgsTWAP struct {
-	EAttest   json.RawMessage           `json:"eAttest"`
-	TAttest   json.RawMessage           `json:"tAttest"`
-	Whitelist []basm.EnclaveMeasurement `json:"whitelist"`
+func getNewPriceSample(coinID string, apiKey string) (price.Price, error) {
+	req := basm.HTTPRequestInput{
+		Method: "GET",
+		URL: fmt.Sprintf(
+			"https://api.coingecko.com/api/v3/simple/price"+
+				"?ids=%s"+
+				"&vs_currencies=usd"+
+				"&include_last_updated_at=true"+
+				"&precision=full",
+			coinID,
+		),
+		Headers: map[string][]string{
+			"x-cg-demo-api-key": []string{apiKey},
+		},
+	}
+	resp, err := basm.HTTPRequest(req)
+	switch {
+	case err != nil:
+		return price.Price{}, fmt.Errorf("making http request: %w", err)
+	case resp.StatusCode != http.StatusOK:
+		return price.Price{}, fmt.Errorf(
+			"http request failed with status code %d",
+			resp.StatusCode,
+		)
+	}
+
+	respBody := bytes.ReplaceAll(resp.Body, []byte(coinID), []byte("price"))
+
+	var coinGeckoResponse CoinGeckoResponse
+	err = json.Unmarshal(respBody, &coinGeckoResponse)
+	if err != nil {
+		return price.Price{}, fmt.Errorf(
+			"unmarshaling CoinGecko data: %w...%s",
+			err,
+			resp.Body,
+		)
+	}
+
+	timestamp := time.Unix(int64(coinGeckoResponse.Price.LastUpdatedAt), 0)
+
+	return price.Price{
+		Value:     coinGeckoResponse.Price.USD,
+		Timestamp: timestamp,
+	}, nil
 }
 
 func extractPriceSamples(
@@ -38,7 +78,7 @@ func extractPriceSamples(
 		return []price.Price{}, nil
 	}
 
-	verifyOut, err := basm.VerifyAttestation(
+	verifiedTA, err := basm.VerifyAttestation(
 		basm.VerifyAttestationInput{
 			EnclaveAttestedKey:       eAttest,
 			TransitiveAttestedClaims: tAttest,
@@ -49,13 +89,13 @@ func extractPriceSamples(
 		return nil, fmt.Errorf("could not verify previous attestation: %w", err)
 	}
 
-	claims, err := xbasm.ParseFnCallClaims(verifyOut.RawClaims)
+	verifiedClaims, err := xbasm.ParseFnCallClaims(verifiedTA.RawClaims)
 	if err != nil {
-		return nil, fmt.Errorf("could not parse previous claims: %w", err)
+		return nil, fmt.Errorf("could not parse claims: %w", err)
 	}
 
 	var prevResult Result
-	err = json.Unmarshal(claims.Output, &prevResult)
+	err = json.Unmarshal(verifiedClaims.Output, &prevResult)
 	switch {
 	case err != nil:
 		return nil, fmt.Errorf("could not unmarshal previous output: %w", err)
@@ -79,51 +119,33 @@ func extractPriceSamples(
 	return prevPriceSamples, nil
 }
 
-func getNewPriceSample(tokenAddress string, chainID string) (price.Price, error) {
-	req := basm.HTTPRequestInput{
-		Method: "GET",
-		URL: fmt.Sprintf(
-			"https://app.steer.finance/api/token/price?tokenAddress=%s&chainId=%s",
-			tokenAddress,
-			chainID,
-		),
-	}
-	resp, err := basm.HTTPRequest(req)
-	if err != nil {
-		return price.Price{}, fmt.Errorf("making http request: %w", err)
-	}
+type ArgsIterate struct {
+	CoinID     string                    `json:"coin_id"`
+	NumSamples int                       `json:"num_samples"`
+	EAttest    json.RawMessage           `json:"eAttest"`
+	TAttest    json.RawMessage           `json:"tAttest"`
+	Whitelist  []basm.EnclaveMeasurement `json:"whitelist"`
+}
 
-	steerData := struct {
-		Price float64 `json:"price"`
-	}{}
-
-	err = json.Unmarshal(resp.Body, &steerData)
-	if err != nil {
-		return price.Price{}, fmt.Errorf(
-			"unmarshaling Steer data: %w...%s",
-			err,
-			resp.Body,
-		)
-	}
-
-	now, err := TimeNow()
-	if err != nil {
-		return price.Price{}, fmt.Errorf("getting current time: %w", err)
-	}
-
-	return price.Price{
-		Value:     steerData.Price,
-		Timestamp: now,
-	}, nil
+type SecretArgs struct {
+	CoinGeckoAPIKey string `json:"api_key"`
 }
 
 //export iteration
-func iteration(inputPtr, secretPtr uint64) uint64 {
+func iteration(inputPtr uint64, secretPtr uint64) uint64 {
 	var args ArgsIterate
 	inputData := basm.ReadFromHost(inputPtr)
 	err := json.Unmarshal(inputData, &args)
 	if err != nil {
 		outErr := fmt.Errorf("could not unmarshal args args: %w", err)
+		return WriteError(outErr)
+	}
+
+	var secret SecretArgs
+	secretData := basm.ReadFromHost(secretPtr)
+	err = json.Unmarshal(secretData, &secret)
+	if err != nil {
+		outErr := fmt.Errorf("could not unmarshal secret args: %w", err)
 		return WriteError(outErr)
 	}
 
@@ -133,7 +155,7 @@ func iteration(inputPtr, secretPtr uint64) uint64 {
 		return WriteError(outErr)
 	}
 
-	newPriceSample, err := getNewPriceSample(args.TokenAddress, args.ChainID)
+	newPriceSample, err := getNewPriceSample(args.CoinID, secret.CoinGeckoAPIKey)
 	if err != nil {
 		outErr := fmt.Errorf("getting new sample: %w", err)
 		return WriteError(outErr)
@@ -148,8 +170,14 @@ func iteration(inputPtr, secretPtr uint64) uint64 {
 	return WriteOutput(nextPriceSamples)
 }
 
+type ArgsTWAP struct {
+	EAttest   json.RawMessage           `json:"eAttest"`
+	TAttest   json.RawMessage           `json:"tAttest"`
+	Whitelist []basm.EnclaveMeasurement `json:"whitelist"`
+}
+
 //export twap
-func twap(inputPtr, secretPtr uint64) uint64 {
+func twap(inputPtr uint64, secretPtr uint64) uint64 {
 	var args ArgsTWAP
 	inputData := basm.ReadFromHost(inputPtr)
 	err := json.Unmarshal(inputData, &args)
@@ -171,12 +199,6 @@ func twap(inputPtr, secretPtr uint64) uint64 {
 	}
 
 	return WriteOutput(twap)
-}
-
-//export errorFunc
-func errorFunc(inputPtr, secretPtr uint64) uint64 {
-	err := errors.New("Expected error for testing")
-	return WriteError(err)
 }
 
 func main() {}

@@ -18,7 +18,7 @@ In this example, you'll learn how to:
 Set up the project dependencies:
 
 ```bash
-npm install --dd
+npm install
 ```
 
 ## Quick Start

@@ -52,6 +52,9 @@ you the price of Bitcoin in USD on the Binance market:
 }
 ```
 
+> If you get a `401` error, you need to set your CoinGecko API key in
+> [`fn-call.json`](./fn-call.json). 
+
 ## Walkthrough
 
 Let's say you want to implement a simple price feed oracle that fetches the
@@ -107,7 +110,7 @@ type SecretArgs struct {
 }
 
 //export priceFunc
-func priceFunc(inputPtr, secretPtr uint64) uint64 {
+func priceFunc(inputPtr uint64, secretPtr uint64) uint64 {
 	var input Args
 	inputData := basm.ReadFromHost(inputPtr)
 	err := json.Unmarshal(inputData, &input)

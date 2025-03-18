@@ -2,14 +2,15 @@
     "code_file": "./tmp/x.wasm",
     "function": "iteration",
     "input": {
-        "token_address": "0x7ceb23fd6bc0add59e62ac25578270cff1b9f619",
-        "chain_id": "137",
-        "num_samples": 36,
+        "coin_id": "polygon-pos-bridged-weth-polygon-pos",
+        "num_samples": 3,
         "eAttest": VAR_EATTEST,
         VAR_TATTEST
         "whitelist": [
-            { "platform": "plain", "code": "plain" },
-            { "platform": "nitro", "code": "edd5bfcd857e20ff5f151fbb8160f54f638ec5bddee5922d2c5db3575c9c4db14b88a53d90917965c705bbdba48ee657.4b4d5b3661b3efc12920900c80e126e4ce783c522de6c02a2a5bf7af3a2b9327b86776f188e4be1c1c404a129dbda493.dbecae9b2e9e79b10bcf55138a7d028e565d85cea7b095639000304e1d42d6d2d6839ebeea03d55e14c03ec474885ae3" }
+            { "platform": "plain", "code": "plain" }
         ]
+    },
+    "secret": {
+      "api_key": "CoinGecko API key"
     }
 }
