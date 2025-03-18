@@ -23,6 +23,8 @@ In this example, you'll learn how to:
 - Make sure you also have
   [Docker](https://www.docker.com/) and [jq](https://jqlang.org/) installed on
   your system.
+- [Get a key for the CoinGecko API](https://docs.coingecko.com/reference/setting-up-your-api-key)
+  and set it in `iteration-call.json.template` in the `api_key` field.
 
 ## Quick Start
 
@@ -41,7 +43,8 @@ make twap
 which shows you how to collect three price samples at 1 second intervals and
 then compute a TWAP from the collected samples.
 
-The output of the `make twap` should show the attested TWAP of WETH similar to:
+The output of the `make twap` should show the attested TWAP of wrapped ETH 
+similar to:
 
 ```json
 {
@@ -56,76 +59,93 @@ The output of the `make twap` should show the attested TWAP of WETH similar to:
 ### Step 1: Collect a price sample
 
 Let's say you want to compute the time-weighted average price (TWAP) of a 
-a wrapped Ethereum (WETH) token. We can get the WETH price from the 
-[Steer Protocol](https://steer.finance/) API by calling:
+wrapped Ethereum (WETH) token. We can get the WETH price from the 
+CoinGecko API by calling:
 
 ```bash
-curl https://app.steer.finance/api/token/price?tokenAddress=0x7ceb23fd6bc0add59e62ac25578270cff1b9f619&chainId=137 | jq .
+https://api.coingecko.com/api/v3/simple/price?ids=polygon-pos-bridged-weth-polygon-pos&vs_currencies=usd&include_last_updated_at=true&precision=full | jq .
 ```
 
 which will return a JSON response like:
 
 ```json
 {
-  "price": 1907.12
+  "polygon-pos-bridged-weth-polygon-pos": {
+    "usd": 1929.1247885555736,
+    "last_updated_at": 1742255916
+  }
 }
 ```
 
-That's great, but to compute a TWAP, we need to collect multiple price samples,
-and we need to record the time of each sample. Let's do these things by defining
-a `getNewSamplePrice` function in [`main.go`](./main.go):
+That's great, but to compute a TWAP, we need to collect multiple price samples. 
+Let's do these things by defining a `getNewSamplePrice` function in 
+[`main.go`](./main.go):
 
 ```go
-type SteerData struct {
-	Price float64 `json:"price"`
+type CoinGeckoResponse struct {
+	Price struct {
+		USD           float64 `json:"usd"`
+		LastUpdatedAt int     `json:"last_updated_at"`
+	} `json:"price"`
 }
 
-func getNewPriceSample(tokenAddress string, chainID string) (price.Price, error) {
+func getNewPriceSample(coinID string, apiKey string) (price.Price, error) {
 	req := basm.HTTPRequestInput{
 		Method: "GET",
 		URL: fmt.Sprintf(
-			"https://app.steer.finance/api/token/price?tokenAddress=%s&chainId=%s",
-			tokenAddress,
-			chainID,
+			"https://api.coingecko.com/api/v3/simple/price"+
+				"?ids=%s"+
+				"&vs_currencies=usd"+
+				"&include_last_updated_at=true"+
+				"&precision=full",
+			coinID,
 		),
+		Headers: map[string][]string{
+			"x-cg-demo-api-key": []string{apiKey},
+		},
 	}
 	resp, err := basm.HTTPRequest(req)
-	if err != nil {
+	switch {
+	case err != nil:
 		return price.Price{}, fmt.Errorf("making http request: %w", err)
+	case resp.StatusCode != http.StatusOK:
+		return price.Price{}, fmt.Errorf(
+			"http request failed with status code %d",
+			resp.StatusCode,
+		)
 	}
 
-	var steerData SteerData
-	err = json.Unmarshal(resp.Body, &steerData)
+	respBody := bytes.ReplaceAll(resp.Body, []byte(coinID), []byte("price"))
+
+	var coinGeckoResponse CoinGeckoResponse
+	err = json.Unmarshal(respBody, &coinGeckoResponse)
 	if err != nil {
 		return price.Price{}, fmt.Errorf(
-			"unmarshaling Steer data: %w...%s",
+			"unmarshaling CoinGecko data: %w...%s",
 			err,
 			resp.Body,
 		)
 	}
 
-	now, err := TimeNow()
-	if err != nil {
-		return price.Price{}, fmt.Errorf("getting current time: %w", err)
-	}
+	timestamp := time.Unix(int64(coinGeckoResponse.Price.LastUpdatedAt), 0)
 
 	return price.Price{
-		Value:     steerData.Price,
-		Timestamp: now,
+		Value:     coinGeckoResponse.Price.USD,
+		Timestamp: timestamp,
 	}, nil
 }
 ```
 
-where we fetch data from Steer, parse the JSON response, record the current
+where we fetch data from CoinGecko, parse the JSON response, record the current
 time, set it in a `Price` struct defined in the `price` package in 
 [`price/price.go`](./price/price.go), and return it. 
 If the details of this flow are new to you, you may want to review the 
 [Getting Coin Prices From CoinGecko](../../coin_prices_from_coingecko/README.md)
 example, where we walk thought how to fetch and parse API data in more detail.
-One thing to notice in this example is the `TimeNow` helper function, defined in
-[`time.go`](./time.go), which fetches the current time from
-[timeapi.io](https://timeapi.io/). In the future, we will support getting the
-current time directly from the Blocky AS server running your function.
+One thing to notice in this example is that we replace the value of the 
+variable `coinID` in the response body with the string `"price"` to allow
+for deterministic unmarshalling the response into the `CoinGeckoResponse` 
+struct.
 
 
 ### Step 2: Attest the price samples
@@ -144,12 +164,15 @@ We define the iterative step in the `iteration` function, in
 
 ```go
 type ArgsIterate struct {
-	TokenAddress string                    `json:"token_address"`
-	ChainID      string                    `json:"chain_id"`
-	NumSamples   int                       `json:"num_samples"`
-	EAttest      json.RawMessage           `json:"eAttest"`
-	TAttest      json.RawMessage           `json:"tAttest"`
-	Whitelist    []basm.EnclaveMeasurement `json:"whitelist"`
+	CoinID     string                    `json:"coin_id"`
+	NumSamples int                       `json:"num_samples"`
+	EAttest    json.RawMessage           `json:"eAttest"`
+	TAttest    json.RawMessage           `json:"tAttest"`
+	Whitelist  []basm.EnclaveMeasurement `json:"whitelist"`
+}
+
+type SecretArgs struct {
+	CoinGeckoAPIKey string `json:"api_key"`
 }
 
 //export iteration
@@ -162,13 +185,21 @@ func iteration(inputPtr uint64, secretPtr uint64) uint64 {
 		return WriteError(outErr)
 	}
 
+	var secret SecretArgs
+	secretData := basm.ReadFromHost(secretPtr)
+	err = json.Unmarshal(secretData, &secret)
+	if err != nil {
+		outErr := fmt.Errorf("could not unmarshal secret args: %w", err)
+		return WriteError(outErr)
+	}
+
 	priceSamples, err := extractPriceSamples(args.EAttest, args.TAttest, args.Whitelist)
 	if err != nil {
 		outErr := fmt.Errorf("extracting priceSamples: %w", err)
 		return WriteError(outErr)
 	}
 
-	newPriceSample, err := getNewPriceSample(args.TokenAddress, args.ChainID)
+	newPriceSample, err := getNewPriceSample(args.CoinID, secret.CoinGeckoAPIKey)
 	if err != nil {
 		outErr := fmt.Errorf("getting new sample: %w", err)
 		return WriteError(outErr)
@@ -186,7 +217,8 @@ func iteration(inputPtr uint64, secretPtr uint64) uint64 {
 
 where we: 
 
-1. Extract `iteration` call arguments `args` from the `inputPtr`.
+1. Extract `iteration` call arguments `args` from the `inputPtr` and `secret`
+   arguments from the `secretPtr`.
 2. Call `extractPriceSamples` to extract the previous collection of price
    samples `prevPriceSamples` from the transitively attested function call
    `args.TAttest`.
@@ -286,19 +318,21 @@ To collect a sample, we define the call to the `iteration` function in
     "code_file": "./tmp/x.wasm",
     "function": "iteration",
     "input": {
-        "token_address": "0x7ceb23fd6bc0add59e62ac25578270cff1b9f619",
-        "chain_id": "137",
-        "num_samples": 36,
+        "coin_id": "polygon-pos-bridged-weth-polygon-pos",
+        "num_samples": 3,
         "eAttest": VAR_EATTEST,
         VAR_TATTEST
         "whitelist": [
             { "platform": "plain", "code": "plain" }
         ]
+    },
+    "secret": {
+      "api_key": "CoinGeckoAPIKey"
     }
 }
 ```
 
-where we pass in the `token_address` and `chain_id` of the token we want to
+where we pass in the `coin_id` of the token we want to
 price, the `num_samples` we want to collect, and the `whitelist` of acceptable
 enclave measurements. The `VAR_EATTEST` and `VAR_TATTEST` placeholders will be
 used to insert the enclave attested application public key and the
@@ -405,26 +439,37 @@ type Price struct {
 }
 
 func TWAP(samples []Price) (float64, error) {
-	switch len(samples) {
-	case 0:
+	if len(samples) == 0 {
 		return 0, fmt.Errorf("no samples provided")
-	case 1:
-		return samples[0].Value, nil
+	}
+
+	// Remove duplicate samples with the same timestamp
+	uniqueSamples := make([]Price, 0, len(samples))
+	seen := make(map[time.Time]struct{})
+	for _, sample := range samples {
+		if _, ok := seen[sample.Timestamp]; !ok {
+			uniqueSamples = append(uniqueSamples, sample)
+			seen[sample.Timestamp] = struct{}{}
+		}
+	}
+
+	if len(uniqueSamples) == 1 {
+		return uniqueSamples[0].Value, nil
 	}
 
 	// Sort samples from latest to earliest
 	lessThan := func(i, j int) bool {
-		return samples[i].Timestamp.After(samples[j].Timestamp)
+		return uniqueSamples[i].Timestamp.After(uniqueSamples[j].Timestamp)
 	}
-	sort.Slice(samples, lessThan)
+	sort.Slice(uniqueSamples, lessThan)
 
 	var weightedSum, totalWeight float64
 
 	// IMPORTANT: The value of the last sample is not included in the calculation
 	// because it doesn't have a next sample to compare with. However, its
 	// timestamp is used to calculate the weight of the previous sample.
-	prev := samples[0]
-	for _, next := range samples[1:] {
+	prev := uniqueSamples[0]
+	for _, next := range uniqueSamples[1:] {
 		timeDiff := prev.Timestamp.Sub(next.Timestamp).Microseconds()
 		weight := float64(timeDiff)
 		weightedSum += prev.Value * weight

@@ -1,51 +1,67 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
+	"net/http"
+	"time"
 
 	"github.com/blocky/as-demo/price"
 	"github.com/blocky/basm-go-sdk"
 	"github.com/blocky/basm-go-sdk/x/xbasm"
 )
 
-// todo: replace with CoinGecko API
-type SteerData struct {
-	Price float64 `json:"price"`
+type CoinGeckoResponse struct {
+	Price struct {
+		USD           float64 `json:"usd"`
+		LastUpdatedAt int     `json:"last_updated_at"`
+	} `json:"price"`
 }
 
-func getNewPriceSample(tokenAddress string, chainID string) (price.Price, error) {
+func getNewPriceSample(coinID string, apiKey string) (price.Price, error) {
 	req := basm.HTTPRequestInput{
 		Method: "GET",
 		URL: fmt.Sprintf(
-			"https://app.steer.finance/api/token/price?tokenAddress=%s&chainId=%s",
-			tokenAddress,
-			chainID,
+			"https://api.coingecko.com/api/v3/simple/price"+
+				"?ids=%s"+
+				"&vs_currencies=usd"+
+				"&include_last_updated_at=true"+
+				"&precision=full",
+			coinID,
 		),
+		Headers: map[string][]string{
+			"x-cg-demo-api-key": []string{apiKey},
+		},
 	}
 	resp, err := basm.HTTPRequest(req)
-	if err != nil {
+	switch {
+	case err != nil:
 		return price.Price{}, fmt.Errorf("making http request: %w", err)
+	case resp.StatusCode != http.StatusOK:
+		return price.Price{}, fmt.Errorf(
+			"http request failed with status code %d",
+			resp.StatusCode,
+		)
 	}
 
-	var steerData SteerData
-	err = json.Unmarshal(resp.Body, &steerData)
+	respBody := bytes.ReplaceAll(resp.Body, []byte(coinID), []byte("price"))
+
+	var coinGeckoResponse CoinGeckoResponse
+	err = json.Unmarshal(respBody, &coinGeckoResponse)
 	if err != nil {
 		return price.Price{}, fmt.Errorf(
-			"unmarshaling Steer data: %w...%s",
+			"unmarshaling CoinGecko data: %w...%s",
 			err,
 			resp.Body,
 		)
 	}
 
-	now, err := TimeNow()
-	if err != nil {
-		return price.Price{}, fmt.Errorf("getting current time: %w", err)
-	}
+	timestamp := time.Unix(int64(coinGeckoResponse.Price.LastUpdatedAt), 0)
 
 	return price.Price{
-		Value:     steerData.Price,
-		Timestamp: now,
+		Value:     coinGeckoResponse.Price.USD,
+		Timestamp: timestamp,
 	}, nil
 }
 
@@ -104,12 +120,15 @@ func extractPriceSamples(
 }
 
 type ArgsIterate struct {
-	TokenAddress string                    `json:"token_address"`
-	ChainID      string                    `json:"chain_id"`
-	NumSamples   int                       `json:"num_samples"`
-	EAttest      json.RawMessage           `json:"eAttest"`
-	TAttest      json.RawMessage           `json:"tAttest"`
-	Whitelist    []basm.EnclaveMeasurement `json:"whitelist"`
+	CoinID     string                    `json:"coin_id"`
+	NumSamples int                       `json:"num_samples"`
+	EAttest    json.RawMessage           `json:"eAttest"`
+	TAttest    json.RawMessage           `json:"tAttest"`
+	Whitelist  []basm.EnclaveMeasurement `json:"whitelist"`
+}
+
+type SecretArgs struct {
+	CoinGeckoAPIKey string `json:"api_key"`
 }
 
 //export iteration
@@ -122,13 +141,21 @@ func iteration(inputPtr uint64, secretPtr uint64) uint64 {
 		return WriteError(outErr)
 	}
 
+	var secret SecretArgs
+	secretData := basm.ReadFromHost(secretPtr)
+	err = json.Unmarshal(secretData, &secret)
+	if err != nil {
+		outErr := fmt.Errorf("could not unmarshal secret args: %w", err)
+		return WriteError(outErr)
+	}
+
 	priceSamples, err := extractPriceSamples(args.EAttest, args.TAttest, args.Whitelist)
 	if err != nil {
 		outErr := fmt.Errorf("extracting priceSamples: %w", err)
 		return WriteError(outErr)
 	}
 
-	newPriceSample, err := getNewPriceSample(args.TokenAddress, args.ChainID)
+	newPriceSample, err := getNewPriceSample(args.CoinID, secret.CoinGeckoAPIKey)
 	if err != nil {
 		outErr := fmt.Errorf("getting new sample: %w", err)
 		return WriteError(outErr)
