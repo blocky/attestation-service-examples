@@ -2,33 +2,20 @@
 pragma solidity ^0.8.10;
 
 import {TAParserLib} from "../lib/TAParserLib.sol";
-import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {console} from "hardhat/console.sol";
 
-contract User is Ownable {
+contract User {
     event AttestedFunctionCallOutput(string output);
 
-    address private taSigningKeyAddress;
-
-    constructor() Ownable(msg.sender) {
-    }
-
-    function setTASigningKeyAddress(
-        bytes calldata taSigningKey
+    function demo(
+        bytes calldata publicKey,
+        string calldata transitiveAttestation
     )
-    public onlyOwner
+        public
     {
-        taSigningKeyAddress = TAParserLib.publicKeyToAddress(taSigningKey);
-    }
-
-    function verifyAttestedFnCallClaims(
-        string calldata taData
-    )
-    public
-    {
-        TAParserLib.FnCallClaims memory claims = TAParserLib.parseTA(
-            taData,
-            taSigningKeyAddress
+        TAParserLib.FnCallClaims memory claims = TAParserLib.verifyAttestedFnCall(
+            publicKey,
+            transitiveAttestation
         );
 
         console.log("Verified attest-fn-call claims:");
@@ -41,4 +28,3 @@ contract User is Ownable {
         emit AttestedFunctionCallOutput(claims.Output);
     }
 }
-

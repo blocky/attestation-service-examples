@@ -69,11 +69,10 @@ describe("Local Test", function () {
         const publicKey = evmLinkData.publicKey;
 
         const {userContract} = await loadFixture(deployUser);
-        await userContract.setTASigningKeyAddress(publicKey as any);
 
         // when
         const ta = evmLinkData.transitiveAttestation;
-        const tx = await userContract.verifyAttestedFnCallClaims(ta as any)
+        const tx = await userContract.demo(publicKey, ta)
 
         // then
         await expect(tx).to.emit(
@@ -97,15 +96,10 @@ describe("Base Sepolia Tests", function () {
 
     const evmLinkData = loadEVMLinkData("../inputs/out.json");
 
-    it("Set signing key", async () => {
-        const publicKey = evmLinkData.publicKey;
-        const tx = await userContract.setTASigningKeyAddress(publicKey as any);
-        await tx.wait()
-    })
-
     it("Verify TA", async () => {
+        const publicKey = evmLinkData.publicKey;
         const ta = evmLinkData.transitiveAttestation;
-        const tx = await userContract.verifyAttestedFnCallClaims(ta)
+        const tx = await userContract.demo(publicKey, ta)
         // poll instead of tx.wait() to get the lowest possible delay
         for (; ;) {
             const txReceipt = await provider.getTransactionReceipt(tx.hash);
