@@ -10,6 +10,7 @@ run-error-handling:
 	@echo "Running run-error-handling..."
 	@make -C error_handling clean run-success > /dev/null 2>&1
 	@make -C error_handling clean run-error > /dev/null 2>&1
+	@make -C error_handling clean run-panic > /dev/null 2>&1
 
 run-coin-prices-from-coingecko:
 	@echo "Running run-coin-prices-from-coingecko..."
