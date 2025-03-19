@@ -1,7 +1,7 @@
-# Getting Coin Prices From CoinGecko
+# Tracking a Shipment with DHL
 
 This example shows you how to use the Blocky Attestation Service (Blocky AS) to
-attest a function call that fetches data from the CoinGecko API and processes
+attest a function call that fetches data from the DHL Tracking API and processes
 it.
 
 Before starting this example, make sure you are familiar with the
@@ -185,7 +185,7 @@ type DHLTrackingInfo struct {
 ```
 
 Next, we'll define the `getTrackingInfoFromDHL` function to fetch and parse the data from the
-CoinGecko API:
+DHL API:
 
 ```go
 type TrackingInfo struct {
