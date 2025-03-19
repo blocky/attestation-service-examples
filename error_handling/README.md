@@ -13,6 +13,7 @@ In this example, you'll learn how to:
 functions
 - Return structured data from your functions
 - Report errors from your functions
+- Log errors in your functions
   
 ## Setup
 
@@ -77,10 +78,10 @@ func errorFunc(inputPtr uint64, secretPtr uint64) uint64 {
 }
 ```
 
-Both of these functions will successfully complete their execution on the 
-Blocky AS server and produce an attestation over their output. What we'd like
-is an easy way to tell whether the function succeeded or failed due to a runtime
-error.
+Both `successFunc` and `errorFunc` will successfully complete their execution on
+the Blocky AS server and produce an attestation over their output. What we'd
+like is an easy way to tell whether the function succeeded or failed due to a
+runtime error.
 
 ### Step 2: Use the result pattern
 
@@ -207,6 +208,46 @@ which will produce:
 
 Now the `Success` field is set to `false`, which means that we can read the
 error message from the`Error` field and disregard the `Value` field.
+
+### Step 4: Handle runtime errors
+
+But what if the function encounters a runtime error? In
+[`main.go`](./main.go), we define the `panicFunc` function:
+
+```go
+func panicFunc(inputPtr uint64, secretPtr uint64) uint64 {
+	basm.LogToHost("Expected panic call\n")
+	panic(nil)
+}
+```
+
+where we call `panic` to trigger a runtime error during the function execution.
+To debug code with runtime errors, we might want to emit information on the
+state of the program before the panic. To do that, we can use the
+`basm.LogToHost` function from the
+[Blocky Attestation Service WASM Go SDK](https://github.com/blocky/basm-go-sdk).
+When you run the function on a local instance of the Blocky AS server (the
+`host` value in `config.toml` is set to `"local-server"`) you will be able to
+see the log messages sent to host.
+
+To run the `panicFunc` function, we can call:
+
+```bash
+make run-panic
+```
+
+which will produce output similar to:
+
+```
+🚀 Starting local server at http://127.0.0.1:8081 ...success
+Expected panic call
+2025/03/19 17:41:20 Error: making fn call attestation request: making function call: unexpected status, wanted '200' got '422': "invoking code: error invoking code 'panicFunc': calling function: wasm error: unreachable\nwasm stack trace:\n\t.runtime._panic(i32,i32)\n\t\t0x3fa1: /usr/local/tinygo/src/runtime/runtime_tinygowasm.go:70:6\n\t.panicFunc(i64,i64) i64\n\t\t0x4a7a0: /src/main.go:27:7 (inlined)"
+```
+
+The error message is quite verbose, but it tells us that the `panicFunc`
+function encountered a runtime error in `main.go` at line 27. We can also see
+the context for the error from out `Expected panic call` log message shown above
+the server error message.
 
 ## Next Steps
 
