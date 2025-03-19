@@ -1,0 +1,18 @@
+# a set of acceptable server enclave measurements for CLI to interact with
+acceptable_measurements = [
+    # platform and code pair identifies the acceptable server implementation
+
+    # a measurement that is valid for when the server is running on a non-TEE environment
+    { platform = "plain", code = "plain" },
+    # a measurement that is valid for when the server is running in debug mode on nitro
+    { platform = "nitro", code = "000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000.000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000.000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000" },
+]
+
+# token authorizing CLI's access to the server
+auth_token = "user_auth_token"
+
+# the server that the CLI interacts with.
+# `local-server` is a special host value will start a local attestation service
+# server for testing and development. To interact with a real server, replace
+# `local-server` with the server's address.
+host = "local-server"
