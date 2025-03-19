@@ -39,7 +39,13 @@ type TrackingInfo struct {
 	Timestamp   string `json:"timestamp"`
 }
 
-func getTrackingInfoFromDHL(trackingNumber string, apiKey string) (TrackingInfo, error) {
+func getTrackingInfoFromDHL(
+	trackingNumber string,
+	apiKey string,
+) (
+	TrackingInfo,
+	error,
+) {
 	req := basm.HTTPRequestInput{
 		Method: "GET",
 		URL: fmt.Sprintf(

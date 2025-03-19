@@ -1,8 +1,7 @@
 # Tracking a Shipment with DHL
 
 This example shows you how to use the Blocky Attestation Service (Blocky AS) to
-attest a function call that fetches data from the DHL Tracking API and processes
-it.
+attest a function call that fetches and processes data from the DHL Tracking API.
 
 Before starting this example, make sure you are familiar with the
 [Hello World - Attesting a Function Call](../hello_world_attest_fn_call/README.md)
@@ -34,7 +33,7 @@ make run
 ```
 
 You will see the following output extracted from a Blocky AS response showing
-you the price of Bitcoin in USD on the Binance market:
+you the status of a DHL shipment with tracking number `00340434292135100186`.
 
 ```json
 {
@@ -65,11 +64,15 @@ Let's say you want to implement an oracle that fetches the status of a DHL
 shipment using the DHL API:
 
 ```bash
-curl -s 'https://api-test.dhl.com/track/shipments?trackingNumber=00340434292135100186' -H 'DHL-API-Key: demo-key' | jq .
+curl -s \
+    'https://api-test.dhl.com/track/shipments?trackingNumber=00340434292135100186' \
+    -H 'DHL-API-Key: demo-key' \
+  | jq .
 ```
 
 If you run the above command, you will get a lot of information. Let's say that 
-you want to parse out just a few details relevant to your application.
+you want to parse out just a few details about the shipment relevant to your 
+application.
 
 ### Step 1: Create a parameterized oracle function
 
@@ -90,9 +93,8 @@ passing in the [`fn-call.json`](./fn-call.json) file contents:
 }
 ```
 
-Notice the `input` section, which contains the parameters for `trackingFunc`,
-specifically the `tracking_number`. The `secret` section contains the `api_key`
-field, which you could set to your DHL API key.
+Notice the `input` section, which contains the `tracking_number` parameter, and
+the `secret` section, which  contains a DHL `api_key`.
 
 Next, we define the `trackingFunc` function in [`main.go`](./main.go):
 
@@ -151,17 +153,17 @@ using the `basm`
 the same for the `secret` data. Next, we call the `getTrackingInfoFromDHL`
 function to fetch tracking information for `input.TrackingNumber` using the
 `secret.DHLAPIKey` API key. Finally, we return the `trackingInfo` to user by
-converting its data to fat pointer using the `WriteOutput` function and
+converting its data to a fat pointer using the `WriteOutput` function and
 returning the pointer from `trackingFunc` to the Blocky AS server host runtime.
 
 ### Step 2: Make a request to the DHL API
 
-The `getTrackingInfoFromDHL` function, in `trackingFunc`, will make an HTTP
-request to the DHL API to fetch the tracking information for a specific tracking
-number.
+The `getTrackingInfoFromDHL` function, called by `trackingFunc`, will make an
+HTTP request to the DHL API to fetch the tracking information for a specific
+tracking number.
 
-Let's start by setting up a struct to parse the relevant fields from the
-DHL API response JSON:
+Let's start by setting up a struct in [`main.go`](./main.go) to parse the
+relevant fields from the DHL API response JSON:
 
 ```go
 type DHLTrackingInfo struct {
@@ -184,8 +186,8 @@ type DHLTrackingInfo struct {
 }
 ```
 
-Next, we'll define the `getTrackingInfoFromDHL` function to fetch and parse the data from the
-DHL API:
+Next, we'll define the `getTrackingInfoFromDHL` function to fetch and parse the
+data from the DHL API:
 
 ```go
 type TrackingInfo struct {
@@ -200,7 +202,13 @@ type TrackingInfo struct {
 	Timestamp   string `json:"timestamp"`
 }
 
-func getTrackingInfoFromDHL(trackingNumber string, apiKey string) (TrackingInfo, error) {
+func getTrackingInfoFromDHL(
+	trackingNumber string,
+	apiKey string,
+) (
+	TrackingInfo,
+	error,
+) {
 	req := basm.HTTPRequestInput{
 		Method: "GET",
 		URL: fmt.Sprintf(
@@ -288,9 +296,10 @@ the `Value` field gives you a JSON-serialized `TrackingInfo` struct.
 ## Next steps
 
 Now that you have successfully run the example, you can start modifying it to
-fit your own needs. For example, you can try passing in different parameters to
-`trackingFunc`, or changing out the API endpoint in `getTrackingInfoFromDHL` to
-fetch data from a different API, or even multiple APIs. You may also want to
-explore the
+fit your own needs. For example, you can try passing in different tracking
+numbers to `trackingFunc`, or even multiple tracking numbers with some
+modifications to the code. You can also change the API endpoint in
+`getTrackingInfoFromDHL` to fetch data from a different API, or even multiple
+APIs. You may also want to explore the
 [Hello World - Bringing A Blocky AS Function Call Attestation On Chain](../hello_world_on_chain/README.md)
 example to learn you can bring the `TrackingInfo` struct into a smart contract.
