@@ -63,7 +63,7 @@ describe("Local Test", function () {
         return {userContract: contract};
     }
 
-    it("Set signing key and verify TA", async () => {
+    it("Verify TA", async () => {
         // given
         const evmLinkData = loadEVMLinkData("../inputs/out.json");
         const publicKey = evmLinkData.publicKey;
