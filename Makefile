@@ -15,15 +15,19 @@ run-coin-prices-from-coingecko:
 	@echo "Running run-coin-prices-from-coingecko..."
 	@make -C coin_prices_from_coingecko clean run > /dev/null 2>&1
 
+run-esports-data-from-pandascore:
+	@echo "Running run-esports-data-from-pandascore..."
+	@make -C esports_data_from_pandascore clean run > /dev/null 2>&1
+
+run-shipment_tracking_with_dhl:
+	@echo "Running run-shipment_tracking_with_dhl..."
+	@make -C shipment_tracking_with_dhl clean run > /dev/null 2>&1
+
 run-twap-fn-call:
 	@echo "Running run-twap-fn-call..."
 	@make -C time_weighted_average_price/attest_fn_call clean init > /dev/null 2>&1
 	@make -C time_weighted_average_price/attest_fn_call iteration > /dev/null 2>&1
 	@make -C time_weighted_average_price/attest_fn_call twap > /dev/null 2>&1
-
-run-esports-data-from-pandascore:
-	@echo "Running run-esports-data-from-pandascore..."
-	@make -C esports_data_from_pandascore clean run > /dev/null 2>&1
 
 run-twap-on-chain:
 	@echo "Running run-twap-on-chain..."
