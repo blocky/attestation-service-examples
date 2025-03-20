@@ -1,0 +1,10 @@
+{
+  "code_file": "tmp/x.wasm",
+  "function": "trackingFunc",
+  "input": {
+    "tracking_number": "00340434292135100186"
+  },
+  "secret": {
+    "api_key": "demo-key"
+  }
+}

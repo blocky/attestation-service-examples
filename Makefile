@@ -15,19 +15,31 @@ run-coin-prices-from-coingecko:
 	@echo "Running run-coin-prices-from-coingecko..."
 	@make -C coin_prices_from_coingecko clean run > /dev/null 2>&1
 
+run-esports-data-from-pandascore:
+	@echo "Running run-esports-data-from-pandascore..."
+	@make -C esports_data_from_pandascore clean run > /dev/null 2>&1
+
+run-shipment_tracking_with_dhl:
+	@echo "Running run-shipment_tracking_with_dhl..."
+	@make -C shipment_tracking_with_dhl clean run > /dev/null 2>&1
+
 run-twap-fn-call:
 	@echo "Running run-twap-fn-call..."
 	@make -C time_weighted_average_price/attest_fn_call clean init > /dev/null 2>&1
 	@make -C time_weighted_average_price/attest_fn_call iteration > /dev/null 2>&1
 	@make -C time_weighted_average_price/attest_fn_call twap > /dev/null 2>&1
 
-run-esports-data-from-pandascore:
-	@echo "Running run-esports-data-from-pandascore..."
-	@make -C esports_data_from_pandascore clean run > /dev/null 2>&1
-
 run-twap-on-chain:
 	@echo "Running run-twap-on-chain..."
 	@make -C time_weighted_average_price/on_chain test-local > /dev/null
 
-run-all: run-hello-world-attest-fn-call run-hello-world-on-chain run-error-handling run-coin-prices-from-coingecko run-twap-fn-call run-esports-data-from-pandascore run-twap-on-chain
+run-all: \
+run-hello-world-attest-fn-call \
+run-hello-world-on-chain \
+run-error-handling \
+run-coin-prices-from-coingecko \
+run-esports-data-from-pandascore \
+run-shipment_tracking_with_dhl \
+run-twap-fn-call  \
+run-twap-on-chain
 	@echo "All tests passed!"
