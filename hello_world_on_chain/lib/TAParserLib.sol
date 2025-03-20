@@ -20,6 +20,20 @@ library TAParserLib {
         string Output;
     }
 
+    function publicKeyToAddress(
+        bytes calldata publicKey
+    )
+        internal pure returns (address)
+    {
+        // strip out the public key prefix byte
+        bytes memory strippedPublicKey = new bytes(publicKey.length - 1);
+        for (uint i = 0; i < strippedPublicKey.length; i++) {
+            strippedPublicKey[i] = publicKey[i + 1];
+        }
+
+        return address(uint160(uint256(keccak256(strippedPublicKey))));
+    }
+
     function verifyAttestedFnCall(
         address applicationPublicKey,
         string calldata transitiveAttestation
@@ -36,25 +50,11 @@ library TAParserLib {
         return verifiedClaims;
     }
 
-    function publicKeyToAddress(
-        bytes calldata publicKey
-    )
-        internal pure returns (address)
-    {
-        // strip out the public key prefix byte
-        bytes memory strippedPublicKey = new bytes(publicKey.length - 1);
-        for (uint i = 0; i < strippedPublicKey.length; i++) {
-            strippedPublicKey[i] = publicKey[i + 1];
-        }
-
-        return address(uint160(uint256(keccak256(strippedPublicKey))));
-    }
-
     function verifyTA(
         address publicKeyAddress,
         string calldata transitiveAttestation
     )
-        internal pure returns (string memory)
+        private pure returns (string memory)
     {
         TA memory ta = decodeTA(transitiveAttestation);
 
