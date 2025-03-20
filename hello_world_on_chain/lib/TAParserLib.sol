@@ -26,10 +26,14 @@ library TAParserLib {
     )
         internal pure returns (FnCallClaims memory)
     {
-        address publicKeyAsAddress  = publicKeyToAddress(publicKey);
-        string memory taData = verifyTA(publicKeyAsAddress, transitiveAttestation);
-        TAParserLib.FnCallClaims memory claims = decodeFnCallClaims(taData);
-        return claims;
+        string memory verifiedTAData = verifyTA(
+            applicationPublicKey,
+            transitiveAttestation
+        );
+        TAParserLib.FnCallClaims memory verifiedClaims = decodeFnCallClaims(
+            verifiedTAData
+        );
+        return verifiedClaims;
     }
 
     function publicKeyToAddress(
@@ -48,11 +52,11 @@ library TAParserLib {
 
     function verifyTA(
         address publicKeyAddress,
-        string calldata taData
+        string calldata transitiveAttestation
     )
         internal pure returns (string memory)
     {
-        TA memory ta = decodeTA(taData);
+        TA memory ta = decodeTA(transitiveAttestation);
 
         bytes memory sigAsBytes = Base64.decode(ta.Sig);
         bytes32 r = BytesLib.toBytes32(sigAsBytes, 0);
