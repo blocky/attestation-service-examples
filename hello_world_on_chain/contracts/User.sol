@@ -7,8 +7,8 @@ import {console} from "hardhat/console.sol";
 contract User {
     event AttestedFunctionCallOutput(string output);
 
-    function demo(
         bytes calldata publicKey,
+    function processTAHelloWorld(
         string calldata transitiveAttestation
     )
         public

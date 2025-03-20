@@ -72,7 +72,7 @@ describe("Local Test", function () {
 
         // when
         const ta = evmLinkData.transitiveAttestation;
-        const tx = await userContract.demo(publicKey, ta)
+        const tx = await userContract.processTAHelloWorld(publicKey, ta)
 
         // then
         await expect(tx).to.emit(
@@ -99,7 +99,7 @@ describe("Base Sepolia Tests", function () {
     it("Verify TA", async () => {
         const publicKey = evmLinkData.publicKey;
         const ta = evmLinkData.transitiveAttestation;
-        const tx = await userContract.demo(publicKey, ta)
+        const tx = await userContract.processTAHelloWorld(publicKey, ta)
         // poll instead of tx.wait() to get the lowest possible delay
         for (; ;) {
             const txReceipt = await provider.getTransactionReceipt(tx.hash);
