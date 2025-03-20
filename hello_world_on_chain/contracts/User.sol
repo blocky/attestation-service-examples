@@ -7,14 +7,17 @@ import {console} from "hardhat/console.sol";
 contract User {
     event AttestedFunctionCallOutput(string output);
 
-        bytes calldata publicKey,
     function processTAHelloWorld(
+        bytes calldata applicationPublicKey,
         string calldata transitiveAttestation
     )
         public
     {
+        address applicationPublicKeyAsAddress  = TAParserLib.publicKeyToAddress(
+            applicationPublicKey
+        );
         TAParserLib.FnCallClaims memory claims = TAParserLib.verifyAttestedFnCall(
-            publicKey,
+            applicationPublicKeyAsAddress,
             transitiveAttestation
         );
 

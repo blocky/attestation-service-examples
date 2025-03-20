@@ -21,7 +21,7 @@ library TAParserLib {
     }
 
     function verifyAttestedFnCall(
-        bytes calldata publicKey,
+        address applicationPublicKey,
         string calldata transitiveAttestation
     )
         internal pure returns (FnCallClaims memory)
