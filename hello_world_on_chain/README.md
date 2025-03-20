@@ -203,7 +203,7 @@ Sepolia testnet. To do so, we need to do a bit more setup:
 > [Step 5](#step-5-test-the-user-contract-on-base-sepolia) to test the
 > [`User`](contracts/User.sol) contract on Base Sepolia using
 > deployed contract address in the
-> [`deploymnets/user_deployed_address`](deployments/user_deployed_addressoyed_address)
+> [`deploymnets/user_deployed_address`](deployments/user_deployed_address)
 > file.
 
 To deploy the smart contract, call:
