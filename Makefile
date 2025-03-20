@@ -33,5 +33,13 @@ run-twap-on-chain:
 	@echo "Running run-twap-on-chain..."
 	@make -C time_weighted_average_price/on_chain test-local > /dev/null
 
-run-all: run-hello-world-attest-fn-call run-hello-world-on-chain run-error-handling run-coin-prices-from-coingecko run-twap-fn-call run-esports-data-from-pandascore run-twap-on-chain
+run-all: \
+run-hello-world-attest-fn-call \
+run-hello-world-on-chain \
+run-error-handling \
+run-coin-prices-from-coingecko \
+run-esports-data-from-pandascore \
+run-shipment_tracking_with_dhl \
+run-twap-fn-call  \
+run-twap-on-chain
 	@echo "All tests passed!"
