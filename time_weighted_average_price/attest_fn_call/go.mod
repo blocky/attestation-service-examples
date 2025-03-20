@@ -3,7 +3,7 @@ module github.com/blocky/as-demo
 go 1.22.6
 
 require (
-	github.com/blocky/basm-go-sdk v0.0.0-20250312030207-a4be1da53ba8
+	github.com/blocky/basm-go-sdk v0.1.0-beta.4
 	github.com/stretchr/testify v1.10.0
 )
 
