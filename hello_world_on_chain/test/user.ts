@@ -57,6 +57,10 @@ const loadUserContractABI = () => {
     }
 }
 
+interface UserContract extends ethers.Contract {
+    processTAHelloWorld(publicKey: any, ta: any): Promise<ethers.ContractTransactionResponse>;
+}
+
 describe("Local Test", function () {
     async function deployUser() {
         const contract = await hre.ethers.deployContract("User");
@@ -72,7 +76,10 @@ describe("Local Test", function () {
 
         // when
         const ta = evmLinkData.transitiveAttestation;
-        const tx = await userContract.processTAHelloWorld(publicKey, ta)
+        const tx = await userContract.processTAHelloWorld(
+            publicKey as any,
+            ta as any
+        )
 
         // then
         await expect(tx).to.emit(
@@ -99,7 +106,10 @@ describe("Base Sepolia Tests", function () {
     it("Verify TA", async () => {
         const publicKey = evmLinkData.publicKey;
         const ta = evmLinkData.transitiveAttestation;
-        const tx = await userContract.processTAHelloWorld(publicKey, ta)
+        const tx = await userContract.processTAHelloWorld(
+            publicKey as any,
+            ta as any
+        )
         // poll instead of tx.wait() to get the lowest possible delay
         for (; ;) {
             const txReceipt = await provider.getTransactionReceipt(tx.hash);
