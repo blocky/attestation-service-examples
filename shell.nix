@@ -8,34 +8,20 @@ let
     overlays = [ ];
   };
 
-  bky-as = pkgs.buildGoModule rec {
+  bky-as = pkgs.stdenv.mkDerivation rec {
     pname = "bky-as";
     version = "v0.1.0-beta.4";
 
-    tmpDir = "/tmp";
-
-    env = {
-      GOPRIVATE = "github.com/blocky/*";
-      HOME = tmpDir;
+    src = pkgs.fetchurl {
+      url = "https://github.com/blocky/attestation-service-demo/releases/download/v0.1.0-beta.4/bky-as_linux_amd64";
+      sha256 = "sha256-Gm/zEiP1jJaloxN6TdiCq112zk6hHlTWu65VkUlNceU=";
     };
 
-    src = builtins.fetchGit {
-      ref = version;
-      url = "git@github.com:blocky/delphi.git";
-    };
+    unpackPhase = ":";
 
-    doCheck = false;
-
-    preBuild = ''
-      echo machine github.com login doesNotMatter password ${githubPAT} > ${tmpDir}/.netrc
+    installPhase = ''
+      install -D -m 555 $src $out/bin/bky-as
     '';
-
-    postInstall = ''
-      cp $out/bin/cli $out/bin/bky-as
-    '';
-
-    vendorHash = "sha256-GXlZz3L5vd1v9NHlaagKw6aY3LEyt9E10reh6EvZ4Bw=";
-
   };
 in
 pkgs.mkShellNoCC {
