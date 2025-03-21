@@ -2,6 +2,8 @@ package main
 
 import (
 	"errors"
+
+	"github.com/blocky/basm-go-sdk"
 )
 
 //export successFunc
@@ -17,6 +19,12 @@ func successFunc(inputPtr uint64, secretPtr uint64) uint64 {
 func errorFunc(inputPtr uint64, secretPtr uint64) uint64 {
 	err := errors.New("expected error")
 	return WriteError(err)
+}
+
+//export panicFunc
+func panicFunc(inputPtr uint64, secretPtr uint64) uint64 {
+	basm.LogToHost("Expected panic call\n")
+	panic(nil)
 }
 
 func main() {}

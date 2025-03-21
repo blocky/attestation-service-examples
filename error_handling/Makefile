@@ -28,6 +28,10 @@ run-error: check build
 	@echo "Output:"
 	@jq -r '.transitive_attested_function_call.claims.output | @base64d | fromjson' tmp/errorout.json
 
+run-panic: check build
+	@echo "Running WASM module..."
+	@cat panicFunc.json | bky-as attest-fn-call >tmp/panicout.json
+
 clean:
 	@rm -rf tmp
 
