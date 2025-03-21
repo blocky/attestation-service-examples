@@ -20,7 +20,7 @@ let
     };
 
     src = builtins.fetchGit {
-      rev = "f6a2c0f965cfca9583ab29e10b9e2e5acf006046";
+      ref = version;
       url = "git@github.com:blocky/delphi.git";
     };
 
@@ -30,8 +30,8 @@ let
       echo machine github.com login doesNotMatter password ${githubPAT} > ${tmpDir}/.netrc
     '';
 
-    postBuild = ''
-      alias bky-as=cli
+    postInstall = ''
+      cp $out/bin/cli $out/bin/bky-as
     '';
 
     vendorHash = "sha256-GXlZz3L5vd1v9NHlaagKw6aY3LEyt9E10reh6EvZ4Bw=";
