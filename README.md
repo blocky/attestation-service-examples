@@ -39,4 +39,4 @@ following order:
   price of an asset through iterative calls to Blocky AS.
 
 To learn more about Blocky AS, check out our
-[documentation](https://blocky-docs.redocly.app/).
+[documentation](https://blocky-docs.redocly.app/v0.1.0-beta.4/).
