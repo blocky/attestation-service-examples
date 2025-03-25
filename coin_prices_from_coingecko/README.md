@@ -19,7 +19,7 @@ In this example, you'll learn how to:
 ## Setup
 
 - Install the Blocky AS CLI by following the
-  [setup instructions](https://blocky-docs.redocly.app/attestation-service/setup)
+  [setup instructions](https://blocky-docs.redocly.app/v0.1.0-beta.4/attestation-service/setup)
   in the Blocky AS documentation.
 - Make sure you also have
   [Docker](https://www.docker.com/) and [jq](https://jqlang.org/) installed on
@@ -151,7 +151,7 @@ arguments carry serialized `input` and `secret` sections of
 
 To parse the `input` data, we first fetch the data pointed to by `inputPtr`
 using the `basm`
-[Blocky Attestation Service WASM Go SDK](https://github.com/blocky/basm-go-sdk)
+[Blocky Attestation Service WASM Go SDK](https://github.com/blocky/basm-go-sdk/tree/v0.1.0-beta.4)
 `basm.ReadFromHost` function and then unmarshal it into the `Args` struct.
 We do the same for the `secret` data. Next, we call the `getPriceFromCoinGecko`
 function to fetch the price of `input.CoinID` in the `input.Market` market using

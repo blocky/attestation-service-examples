@@ -23,6 +23,12 @@ following order:
    - Deploy the smart contract to Base Sepolia to verify a function call
      attestation on chain and use the attested function output in your smart
      contract
+- [Error Handling](./error_handling) shows you how to handle errors in your
+  Blocky AS functions. You'll learn how to:
+   - Use the result pattern in your function
+   - Return structured data from your function
+   - Report errors from your function
+   - Log errors in your function
 - [Getting Coin Prices From CoinGecko](./coin_prices_from_coingecko) shows you
   how to use Blocky AS to fetch and process coin price data from the CoinGecko 
   API. You'll learn how to:
@@ -32,9 +38,11 @@ following order:
 - [Getting Esports Data From PandaScore](./esports_data_from_pandascore) shows
   you how to use Blocky AS to attest and process esports data from the 
   PandaScore API. 
+- [Tracking a Shipment with DHL](./shipment_tracking_with_dhl) shows
+  you how to use Blocky AS to track a shipment using the DHL API.
 - [Time Weighted Average Price](./time_weighted_average_price) is a more
   advanced example that shows you how to calculate the time weighted average
   price of an asset through iterative calls to Blocky AS.
 
 To learn more about Blocky AS, check out our
-[documentation](https://blocky-docs.redocly.app/).
+[documentation](https://blocky-docs.redocly.app/v0.1.0-beta.4/).
