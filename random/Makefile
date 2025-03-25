@@ -22,7 +22,7 @@ run: check build
 	@echo "Log:"
 	@jq -r '.transitive_attested_function_call.logs | @base64d' tmp/out.json
 	@echo "Output:"
-	@jq -r '.transitive_attested_function_call.claims.output | @base64d ' tmp/out.json
+	@jq -r '.transitive_attested_function_call.claims.output | @base64d | fromjson' tmp/out.json
 
 clean:
 	@rm -rf tmp
