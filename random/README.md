@@ -38,8 +38,6 @@ make run
 You will see the following output extracted from a Blocky AS response:
 
 ```
-Log:
-
 Output:
 {
   "Success": true,
@@ -164,8 +162,6 @@ make run
 You will see the following output extracted from a Blocky AS response:
 
 ```
-Log:
-
 Output:
 {
   "Success": true,
