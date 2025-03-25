@@ -23,6 +23,12 @@ following order:
    - Deploy the smart contract to Base Sepolia to verify a function call
      attestation on chain and use the attested function output in your smart
      contract
+- [Error Handling](./error_handling) shows you how to handle errors in your
+  Blocky AS functions. You'll learn how to:
+   - Use the result pattern in your function
+   - Return structured data from your function
+   - Report errors from your function
+   - Log errors in your function
 - [Getting Coin Prices From CoinGecko](./coin_prices_from_coingecko) shows you
   how to use Blocky AS to fetch and process coin price data from the CoinGecko 
   API. You'll learn how to:
