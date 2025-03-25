@@ -1,10 +1,9 @@
 package main
 
 import (
-	crand "crypto/rand"
-	"encoding/binary"
 	"encoding/json"
 	"fmt"
+	"math/rand"
 
 	"github.com/blocky/basm-go-sdk"
 )
@@ -27,18 +26,7 @@ func rollDie(inputPtr uint64, secretPtr uint64) uint64 {
 		return WriteError(outErr)
 	}
 
-	randBytes := make([]byte, 8)
-	n, err := crand.Read(randBytes)
-	switch {
-	case err != nil:
-		outErr := fmt.Errorf("reading random bytes: %w", err)
-		return WriteError(outErr)
-	case n != 8:
-		outErr := fmt.Errorf("reading random bytes: expected 8 bytes, got %d", n)
-		return WriteError(outErr)
-	}
-
-	roll := (binary.BigEndian.Uint64(randBytes) % input.Sides) + 1
+	roll := rand.Intn(int(input.Sides)) + 1
 	return WriteOutput(roll)
 }
 

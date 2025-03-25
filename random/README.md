@@ -121,13 +121,12 @@ You will notice a few things:
 - The function uses the `basm`
   [Blocky Attestation Service WASM Go SDK](https://github.com/blocky/basm-go-sdk)
   `basm.ReadFromHost` to fetch the input data and unmarshal it into the
-`Args` struct.
-
-Finally, note that we are able to generate random numbers the way you would in
-a normal Go program (i.e., via `crypto/rand`). This is because
-`tinygo` provides an implementation for `crypto/rand` and we properly seed the
-`wazero` runtime with a source of entropy (`wazero` provides a deterministic
-source of entropy by default).
+  `Args` struct.
+- We are able to generate random numbers the way you would in a normal Go
+  program (i.e., via `math/rand` or `crypto/rand`). This is because `tinygo`
+  provides implementations for `math/rand` and `crypto/rand`, and because we
+  properly seed the `wazero` runtime with a source of entropy (`wazero`
+  provides a deterministic source of entropy by default).
 
 ### Step 2: Compile the function to WebAssembly (WASM)
 
