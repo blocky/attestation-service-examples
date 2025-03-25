@@ -57,23 +57,29 @@ const loadUserContractABI = () => {
     }
 }
 
+interface UserContract extends ethers.Contract {
+    processTAHelloWorld(publicKey: any, ta: any): Promise<ethers.ContractTransactionResponse>;
+}
+
 describe("Local Test", function () {
     async function deployUser() {
         const contract = await hre.ethers.deployContract("User");
         return {userContract: contract};
     }
 
-    it("Set signing key and verify TA", async () => {
+    it("Verify TA", async () => {
         // given
         const evmLinkData = loadEVMLinkData("../inputs/out.json");
         const publicKey = evmLinkData.publicKey;
 
         const {userContract} = await loadFixture(deployUser);
-        await userContract.setTASigningKeyAddress(publicKey as any);
 
         // when
         const ta = evmLinkData.transitiveAttestation;
-        const tx = await userContract.verifyAttestedFnCallClaims(ta as any)
+        const tx = await userContract.processTAHelloWorld(
+            publicKey as any,
+            ta as any
+        )
 
         // then
         await expect(tx).to.emit(
@@ -97,15 +103,13 @@ describe("Base Sepolia Tests", function () {
 
     const evmLinkData = loadEVMLinkData("../inputs/out.json");
 
-    it("Set signing key", async () => {
-        const publicKey = evmLinkData.publicKey;
-        const tx = await userContract.setTASigningKeyAddress(publicKey as any);
-        await tx.wait()
-    })
-
     it("Verify TA", async () => {
+        const publicKey = evmLinkData.publicKey;
         const ta = evmLinkData.transitiveAttestation;
-        const tx = await userContract.verifyAttestedFnCallClaims(ta)
+        const tx = await userContract.processTAHelloWorld(
+            publicKey as any,
+            ta as any
+        )
         // poll instead of tx.wait() to get the lowest possible delay
         for (; ;) {
             const txReceipt = await provider.getTransactionReceipt(tx.hash);
