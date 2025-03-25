@@ -290,7 +290,7 @@ The `extractPriceSamples` function takes the enclave attested application public
 key `eAttest`, the transitive attested function call `tAttest`, and a
 `whitelist` of acceptable enclave measurements as parameters. It uses these to
 call the`basm` 
-[Blocky Attestation Service WASM Go SDK](https://github.com/blocky/basm-go-sdk)
+[Blocky Attestation Service WASM Go SDK](https://github.com/blocky/basm-go-sdk/tree/v0.1.0-beta.4)
 `basm.VerifyAttestation` function to verify that `tAttest` has been signed by
 the enclave attested application public key from `eAttest`, and checks that the
 code measurement in `eAttest` is present in the `whitelist`. If you'd like to
