@@ -70,7 +70,7 @@ You will notice a few things:
   though we don't make use of them in this example. The output of the function
   is also a memory pointer, whose value will be returned to the user.
 - The function uses `basm`
-  [Blocky Attestation Service WASM Go SDK](https://github.com/blocky/basm-go-sdk)
+  [Blocky Attestation Service WASM Go SDK](https://github.com/blocky/basm-go-sdk/tree/v0.1.0-beta.4)
   `basm.Log` function to write a message to the Blocky AS server log, 
   maintained separately for each function invocation. You can log messages
   to debug or monitor your function's behavior.
