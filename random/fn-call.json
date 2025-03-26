@@ -2,6 +2,6 @@
   "code_file": "tmp/x.wasm",
   "function": "rollDie",
   "input": {
-    "sides": 20
+    "die_sides": 20
   }
 }
