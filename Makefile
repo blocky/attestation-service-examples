@@ -34,6 +34,10 @@ run-twap-on-chain:
 	@echo "Running run-twap-on-chain..."
 	@make -C time_weighted_average_price/on_chain test-local > /dev/null
 
+run-random:
+	@echo "Running random..."
+	@make -C random clean run 2> /dev/null
+
 run-all: \
 	run-hello-world-attest-fn-call \
 	run-hello-world-on-chain \
@@ -42,5 +46,6 @@ run-all: \
 	run-esports-data-from-pandascore \
 	run-shipment_tracking_with_dhl \
 	run-twap-fn-call  \
-	run-twap-on-chain
+	run-twap-on-chain \
+	run-random
 	@echo "All tests passed!"
