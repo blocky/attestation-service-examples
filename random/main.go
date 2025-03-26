@@ -9,7 +9,7 @@ import (
 )
 
 type Args struct {
-	DieSides uint64 `json:"die_sides"`
+	DieSides int `json:"die_sides"`
 }
 
 //export rollDie
@@ -21,12 +21,12 @@ func rollDie(inputPtr uint64, secretPtr uint64) uint64 {
 	case err != nil:
 		outErr := fmt.Errorf("could not unmarshal input args: %w", err)
 		return WriteError(outErr)
-	case input.DieSides == 0:
-		outErr := fmt.Errorf("die cannot have zero sides")
+	case input.DieSides < 1:
+		outErr := fmt.Errorf("die must have one or more sides")
 		return WriteError(outErr)
 	}
 
-	roll := rand.Intn(int(input.DieSides)) + 1
+	roll := rand.Intn(input.DieSides) + 1
 	return WriteOutput(roll)
 }
 
