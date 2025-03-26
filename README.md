@@ -29,6 +29,10 @@ following order:
    - Return structured data from your function
    - Report errors from your function
    - Log errors in your function
+- [Random](./random) shows you how to generate random numbers in your Blocky AS
+  functions. You'll learn how to:
+  - Generate random numbers in the Blocky AS runtime
+  - Create a function that returns a random number within a given range
 - [Getting Coin Prices From CoinGecko](./coin_prices_from_coingecko) shows you
   how to use Blocky AS to fetch and process coin price data from the CoinGecko 
   API. You'll learn how to:
