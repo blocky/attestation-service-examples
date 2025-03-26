@@ -66,7 +66,7 @@ using the `bky-as` CLI by passing in the
 }
 ```
 
-Notice the `input` section, which contains the parameters for `rollDie`,
+Notice the `input` section, which contains the parameter for `rollDie`,
 specifically the `sides` field set to `20`. Meaning, `rollDie` will return
 a number in the range [1,20].
 
@@ -98,8 +98,6 @@ func rollDie(inputPtr uint64, secretPtr uint64) uint64 {
 
 You will notice a few things:
 
-- The `rollDie` function is exported so that it can be invoked by the
-  Blocky AS server in a WASM runtime.
 - The function takes two `uint64` arguments and returns a `uint64`. These are
   fat pointers to shared memory managed by the Blocky AS server, where the first
   32 bits are a memory address and the second 32 bits are the size of the data.
@@ -169,5 +167,8 @@ updating the `sides` field in the `fn-call.json` file.
 ## Next steps
 
 Now that you have successfully run the example, you can start modifying it to
-fit your own needs. Check out other examples in this repository, to learn what
+fit your own needs. Try updating the example to return the result of multiple
+rolls.
+
+Check out other examples in this repository, to learn what
 else you can do with Blocky AS.
