@@ -61,7 +61,7 @@ using the `bky-as` CLI by passing in the
   "code_file": "tmp/x.wasm",
   "function": "rollDie",
   "input": {
-    "sides": 20
+    "die_sides": 20
   }
 }
 ```
@@ -74,7 +74,7 @@ Next, we define the `rollDie` function in [`main.go`](./main.go):
 
 ```go
 type Args struct {
-    Sides uint64 `json:"sides"`
+    DieSides uint64 `json:"die_sides"`
 }
 
 //export rollDie
@@ -84,25 +84,14 @@ func rollDie(inputPtr uint64, secretPtr uint64) uint64 {
     err := json.Unmarshal(inputData, &input)
     switch {
     case err != nil:
-        outErr := fmt.Errorf("could not unmarshal input args: %w", err)
+		outErr := fmt.Errorf("could not unmarshal input args: %w", err)
         return WriteError(outErr)
-    case input.Sides == 0:
+    case input.DieSides == 0:
         outErr := fmt.Errorf("die cannot have zero sides")
         return WriteError(outErr)
     }
 
-    randBytes := make([]byte, 8)
-    n, err := crand.Read(randBytes)
-    switch {
-    case err != nil:
-        outErr := fmt.Errorf("reading random bytes: %w", err)
-        return WriteError(outErr)
-    case n != 8:
-        outErr := fmt.Errorf("reading random bytes: expected 8 bytes, got %d", n)
-        return WriteError(outErr)
-    }
-
-    roll := (binary.BigEndian.Uint64(randBytes) % input.Sides) + 1
+    roll := rand.Intn(int(input.DieSides)) + 1
     return WriteOutput(roll)
 }
 ```
@@ -127,7 +116,9 @@ You will notice a few things:
   program (i.e., via `math/rand` or `crypto/rand`). This is because `tinygo`
   provides implementations for `math/rand` and `crypto/rand`, and because we
   properly seed the `wazero` runtime with a source of entropy (`wazero`
-  provides a deterministic source of entropy by default).
+  provides a deterministic source of entropy by default). Specifically, we
+  seed the runtime with entropy obtained from the
+  [AWS Nitro Secure Module (NSM)](https://github.com/aws/aws-nitro-enclaves-nsm-api).
 
 ### Step 2: Compile the function to WebAssembly (WASM)
 
