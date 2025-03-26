@@ -1,7 +1,8 @@
 # Random - Generating Random Numbers
 
 This example shows you how to use the Blocky Attestation Service (Blocky AS) to
-attest simple function call that generates random numbers to simulate a die roll.
+attest simple function call that generates random numbers to simulate a die
+roll.
 
 Before starting this example, make sure you are familiar with the
 [Hello World - Attesting a Function Call](../hello_world_attest_fn_call/README.md)
