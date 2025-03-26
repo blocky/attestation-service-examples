@@ -51,7 +51,7 @@ Output:
 
 ### Step 1: Create a parameterized random function
 
-We'll demonstrate random by emulating a die roll in `rollDie` in
+We'll demonstrate random number generation by emulating a die roll in `rollDie` in
 [`main.go`](./main.go). As in previous examples, we will call this function
 using the `bky-as` CLI by passing in the
 [`fn-call.json`](./fn-call.json) file contents:
