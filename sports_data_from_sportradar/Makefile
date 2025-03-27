@@ -14,11 +14,14 @@ DEPS := go.mod go.sum
 
 tmp/x.wasm: $(SRCS) $(DEPS) | tmp check
 	@echo "Building WASM module..."
-	@docker run --rm \
-        -v .:/src \
-        -w /src \
-        tinygo/tinygo:0.31.2 \
-        tinygo build -o tmp/x.wasm -target=wasi ./...
+	@tinygo build -o tmp/x.wasm -target=wasi ./...
+
+# todo: use docker to build
+#	@docker run --rm \
+#        -v .:/src \
+#        -w /src \
+#        tinygo/tinygo:0.31.2 \
+#        tinygo build -o tmp/x.wasm -target=wasi ./...
 
 .PHONY: build
 build: tmp/x.wasm

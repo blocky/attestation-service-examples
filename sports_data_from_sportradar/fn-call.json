@@ -2,10 +2,13 @@
   "code_file": "tmp/x.wasm",
   "function": "pointsLeaderNBA",
   "input": {
-    "season_year": "2024",
-    "season_type": "REG"
+    "game_id": "aaa3ddb3-dd1b-459e-a686-d2bfc4408881",
+    "players": [
+      "Jayson Tatum",
+      "Luka Doncic"
+    ]
   },
   "secret": {
-    "api_key": "SportRadar API Key"
+    "api_key": "Sportradar API key"
   }
 }
