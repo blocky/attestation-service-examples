@@ -100,7 +100,7 @@ func rollDie(inputPtr uint64, secretPtr uint64) uint64 {
 You will notice a few things:
 
 - First, we fetch the input data and unmarshal it into the
-  `Args` struct.
+  `Args` struct. We don't fetch any secrets.
 - We are able to generate random numbers the way you would in a normal Go
   program (i.e., via `math/rand` or `crypto/rand`). This is because `tinygo`
   provides implementations for `math/rand` and `crypto/rand`, and because we

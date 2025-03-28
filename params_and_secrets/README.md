@@ -18,17 +18,17 @@ Every function executed in the Blocky Attestation Service (Blocky AS)
 can accept user input. 
 
 There are two function input types:
-* Regular input parameters – Sent directly to Blocky AS server and
+* Regular input parameters – Sent directly to the Blocky AS server and
 passed to your function as-is. These parameters are meant for data that 
 does not require any special handling or security measures.
-* Secrets – Encrypted before being sent to Blocky AS Server and only decrypted
-inside the server. This protects the integrity of sensitive data
-as the key needed for decryption exists exclusively inside the Blocky AS Server.
-Secrets are designed for passing sensitive information such as personal data,
-API keys, or passwords.
+* Secrets – Encrypted before being sent to the Blocky AS Server and only
+decrypted inside the server. This protects the integrity of sensitive data
+as the key needed for decryption exists exclusively inside the
+Blocky AS Server. Secrets are designed for passing sensitive information
+such as personal data, API keys, or passwords.
 
 You'll learn how to pass input parameters and secrets by writing a function
-that extracts password protected user data. We will pass the user data using 
+that extracts password protected user data. We will pass the data using 
 input parameters and the confidential access password using secrets.
 
 * Note: Used [password protection mechanism](./extract.go) is very simple
@@ -69,9 +69,9 @@ You will see the following output extracted from a Blocky AS response:
 
 ### Step 1: Create a parametrized extraction function
 
-We'll demonstrate both input parameter and secret passing in the `extract` function 
-in [`main.go`](./main.go). As in previous examples, we will call this function
-using the `bky-as` CLI by passing in the
+We'll demonstrate both input parameter and secret passing in the `extract`
+function in [`main.go`](./main.go). As in previous examples,
+we will call this function using the `bky-as` CLI by passing in the
 [`fn-call.json`](./fn-call.json) file contents:
 
 ```json
@@ -90,13 +90,13 @@ using the `bky-as` CLI by passing in the
 Input parameters and secrets can be passed into your function using
 the `input` and `secret` sections respectively.
 
-Our payload contains the input parameter section with
+Our payload contains the `input` parameter section with
 the password protected string inside the `data` field. 
-Confidential password used for data extraction is stored in the secret
-section in the `password` field.
+Confidential password used for data extraction is stored 
+in the `password` field of the `secret` section.
 
 Note that both `input` and `secret` sections can hold any `json` document, 
-and it is up to you how you wish to structure them.
+and it is up to you, how you wish to structure them.
 
 Next, we define the `extract` function in [`main.go`](./main.go):
 
@@ -157,12 +157,14 @@ You will notice a few things:
   [Blocky Attestation Service WASM Go SDK](https://github.com/blocky/basm-go-sdk)
   `basm.ReadFromHost` to fetch the input parameter and secret data
   and unmarshal then into the `Params` and `Secrets` structs. These structs need
-  to match the `json` structure of the corresponding 
-  [CLI input](./fn-call.json) sections.
-- The provided `extractData` function accepts the `params.Data` password protected string 
-  and the `secrets.Password` that allows for its safe extraction. It returns the extracted
-  string value that is then passed as the function output.
-- The details of the [`extractData`](./extract.go) function is out of this example's scope.
+  to match the `json` structure of the `input` and `secret` sections of the 
+  [CLI input](./fn-call.json).
+- The predefined [`extractData`](./extract.go) function accepts the `params.Data`
+  password protected string and the `secrets.Password` that allows for its safe
+  extraction. It returns the extracted string value and passes it to the function
+  output.
+- The details of the [`extractData`](./extract.go) function is out of this
+  example's scope.
 - The output of the function is also a memory pointer, whose value will be
   returned to the user.
 
@@ -212,7 +214,7 @@ You will see the following output extracted from a Blocky AS response:
 
 Note that in `bky-as` CLI [output](./tmp/successout.json) you can also find 
 the `hash_of_input` and `hash_of_secrets` fields that contain the `SHA3/512`
-hashes of the user provided input.
+hashes of the user provided input and secrets.
 
 If you wish to attempt running the `extract` function with incorrect password 
 and then observe the error, call:
@@ -234,9 +236,10 @@ You will see the following output extracted from a Blocky AS response:
 ## Next Steps
 
 Now that you have successfully run the example, you can start modifying it to
-fit your own needs. Try modifying the example to extract multiple password protected
-strings in one call. 
-You can use the predefined input from [`fn-call.json`](./fn-call.json) multiple times.
+fit your own needs. Try modifying the example to extract multiple password
+protected strings in one call. 
+You can use the predefined input from
+[`fn-call.json`](./fn-call.json) multiple times.
 
 Check out other examples in this repository, to learn what
 else you can do with Blocky AS.
