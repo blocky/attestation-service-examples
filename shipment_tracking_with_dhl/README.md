@@ -148,7 +148,7 @@ arguments carry serialized `input` and `secret` sections of
 
 To parse the `input` data, we first fetch the data pointed to by `inputPtr`
 using the `basm`
-[Blocky Attestation Service WASM Go SDK](https://github.com/blocky/basm-go-sdk/tree/v0.1.0-beta.4)
+[Blocky Attestation Service WASM Go SDK](https://github.com/blocky/basm-go-sdk/tree/v0.1.0-beta.5)
 `basm.ReadFromHost` function and then unmarshal it into the `Args` struct. We do
 the same for the `secret` data. Next, we call the `getTrackingInfoFromDHL`
 function to fetch tracking information for `input.TrackingNumber` using the
