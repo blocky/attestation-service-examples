@@ -1,6 +1,3 @@
-{
-  githubPAT ? builtins.getEnv "GITHUB_PAT",
-}:
 let
   nixpkgs = fetchTarball "https://github.com/NixOS/nixpkgs/tarball/nixos-24.11";
   pkgs = import nixpkgs {
@@ -8,34 +5,21 @@ let
     overlays = [ ];
   };
 
-  bky-as = pkgs.buildGoModule rec {
+  bky-as = pkgs.stdenv.mkDerivation rec {
     pname = "bky-as";
-    version = "v0.1.0-beta.4";
+    version = "v0.1.0-beta.5";
 
     tmpDir = "/tmp";
 
-    env = {
-      GOPRIVATE = "github.com/blocky/*";
-      HOME = tmpDir;
+    src = builtins.fetchurl {
+      url = "https://github.com/blocky/attestation-service-demo/releases/download/${version}/bky-as_linux_amd64";
     };
 
-    src = builtins.fetchGit {
-      rev = "f6a2c0f965cfca9583ab29e10b9e2e5acf006046";
-      url = "git@github.com:blocky/delphi.git";
-    };
+    unpackPhase = ":";
 
-    doCheck = false;
-
-    preBuild = ''
-      echo machine github.com login doesNotMatter password ${githubPAT} > ${tmpDir}/.netrc
+    installPhase = ''
+      install -D -m 555 $src $out/bin/bky-as
     '';
-
-    postBuild = ''
-      alias bky-as=cli
-    '';
-
-    vendorHash = "sha256-GXlZz3L5vd1v9NHlaagKw6aY3LEyt9E10reh6EvZ4Bw=";
-
   };
 in
 pkgs.mkShellNoCC {

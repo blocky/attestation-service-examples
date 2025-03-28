@@ -56,7 +56,7 @@ The contents of `out.json` have been verified by the Blocky AS CLI.
 To learn more about that process, revisit the
 [Hello World - Attesting a Function Call](../hello_world_attest_fn_call)
 example, or read about
-[Attestations in the Blocky Attestation Service](https://blocky-docs.redocly.app/v0.1.0-beta.4/attestation-service/concepts#attestations-in-the-blocky-attestation-service)
+[Attestations in the Blocky Attestation Service](https://blocky-docs.redocly.app/v0.1.0-beta.5/attestation-service/concepts#attestations-in-the-blocky-attestation-service)
 in our documentation.
 
 For this example, we have copied `out.json` from the previous example into
