@@ -1,6 +1,3 @@
-{
-  githubPAT ? builtins.getEnv "GITHUB_PAT",
-}:
 let
   nixpkgs = fetchTarball "https://github.com/NixOS/nixpkgs/tarball/nixos-24.11";
   pkgs = import nixpkgs {
@@ -8,47 +5,112 @@ let
     overlays = [ ];
   };
 
-  bky-as = pkgs.buildGoModule rec {
+  utils =
+    { pkgs }:
+    let
+      system = builtins.split "-" pkgs.stdenv.hostPlatform.system;
+      arch = builtins.elemAt (system) 0;
+      os = builtins.elemAt (system) 2;
+    in
+    {
+      goos = os;
+      goarch =
+        if arch == "x86_64" then
+          "amd64"
+        else if arch == "aarch64" then
+          "arm64"
+        else
+          throw "unknow arch '${arch}', supported arches are 'x86_64' and 'aarch64'";
+    };
+
+  bky-as-stable =
+    {
+      pkgs,
+      tag,
+    }:
+    let
+      u = utils { pkgs = pkgs; };
+      goos = u.goos;
+      goarch = u.goarch;
+    in
+    pkgs.stdenv.mkDerivation rec {
+      pname = "bky-as";
+      version = tag;
+
+      src = builtins.fetchurl {
+        url = "https://github.com/blocky/attestation-service-demo/releases/download/${version}/bky-as_${goos}_${goarch}";
+      };
+
+      unpackPhase = ":";
+
+      installPhase = ''
+        install -D -m 555 $src $out/bin/bky-as
+      '';
+    };
+
+  bky-as-unstable = pkgs.stdenv.mkDerivation rec {
     pname = "bky-as";
-    version = "v0.1.0-beta.4";
+    version = "unstable";
 
-    tmpDir = "/tmp";
+    src = ./nix/fetch-bky-as.sh;
 
-    env = {
-      GOPRIVATE = "github.com/blocky/*";
-      HOME = tmpDir;
-    };
+    unpackPhase = ":";
 
-    src = builtins.fetchGit {
-      rev = "f6a2c0f965cfca9583ab29e10b9e2e5acf006046";
-      url = "git@github.com:blocky/delphi.git";
-    };
-
-    doCheck = false;
-
-    preBuild = ''
-      echo machine github.com login doesNotMatter password ${githubPAT} > ${tmpDir}/.netrc
+    installPhase = ''
+      mkdir -p $out/bin
+      cp $src $out/bin/fetch-bky-as.sh
+      chmod +x $out/bin/fetch-bky-as.sh
     '';
-
-    postBuild = ''
-      alias bky-as=cli
-    '';
-
-    vendorHash = "sha256-GXlZz3L5vd1v9NHlaagKw6aY3LEyt9E10reh6EvZ4Bw=";
-
   };
-in
-pkgs.mkShellNoCC {
-  packages = [
-    pkgs.git
-    pkgs.go
-    pkgs.gotools # for tools like goimports
-    pkgs.golangci-lint # for linting go files
-    pkgs.tinygo # for building wasm
-    pkgs.nixfmt-rfc-style # for tools like nix fmt
-    pkgs.gnumake # for project management
-    pkgs.nodejs_18 # for on chain examples
 
-    bky-as
+  bky-as-dev-shell =
+    {
+      pkgs,
+      version,
+      dev-dependencies,
+    }:
+    let
+      u = utils { pkgs = pkgs; };
+      os = u.goos;
+      arch = u.goarch;
+
+      unstable-shell = pkgs.mkShellNoCC {
+        packages = dev-dependencies ++ [ bky-as-unstable ];
+
+        shellHook = ''
+          echo "bky-as hook ran"
+          bin=./tmp/bin
+          fetch-bky-as.sh $bin ${os} ${arch}
+          export PATH=$bin:$PATH
+        '';
+      };
+
+      bky-as-stable-version = bky-as-stable {
+        pkgs = pkgs;
+        tag = version;
+      };
+
+      stable-shell = pkgs.mkShellNoCC {
+        packages = dev-dependencies ++ [ bky-as-stable-version ];
+      };
+    in
+    if version == "unstable" then unstable-shell else stable-shell;
+in
+bky-as-dev-shell {
+  pkgs = pkgs;
+  version = "unstable";
+  # version = "v0.1.0-beta.5";
+  dev-dependencies = [
+    pkgs.awscli2 # for setting up the cli
+    pkgs.gh # for setting up the cli
+    pkgs.git # for project management
+    pkgs.gnumake # for project management
+    pkgs.go # for building examples
+    pkgs.golangci-lint # for linting go files
+    pkgs.gotools # for tools like goimports
+    pkgs.jq # for examples and setting up the cli
+    pkgs.nixfmt-rfc-style # for tools like nix fmt
+    pkgs.nodejs_18 # for on chain examples
+    pkgs.tinygo # for building wasm
   ];
 }
