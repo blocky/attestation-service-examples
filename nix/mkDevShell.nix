@@ -45,7 +45,7 @@ let
         pkgs.jq
       ];
     shellHook = ''
-      bin=./tmp/bin
+      bin=$(pwd)/tmp/bin
       fetch-bky-as.sh $bin ${goos} ${goarch}
       export PATH=$bin:$PATH
     '';
