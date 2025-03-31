@@ -7,7 +7,7 @@ import (
 	"errors"
 )
 
-func extractData(inputData, pwd string) (string, error) {
+func decryptData(inputData, pwd string) (string, error) {
 	data, err := base64.StdEncoding.DecodeString(inputData)
 	if err != nil {
 		return "", err

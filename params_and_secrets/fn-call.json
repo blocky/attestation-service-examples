@@ -1,8 +1,8 @@
 {
   "code_file": "tmp/x.wasm",
-  "function": "extract",
+  "function": "extractInputs",
   "input": {
-    "data": "z9s5DqczsNfnKhw86T6EiH74bNaoGS+T+kWNgDf7lvyRqTOyLiZrhloRnVq/nSXuIMD37aE1"
+    "data": "E8Pe7+S5fJR4u3XT5MdfQUi/H0zIWw18lL6ms33vq73YDA3s+QjtlVb14mCzaKFa+8TG8je/"
   },
   "secret": {
     "password": "secret-password"

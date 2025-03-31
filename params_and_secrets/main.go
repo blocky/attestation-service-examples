@@ -7,7 +7,7 @@ import (
 	"github.com/blocky/basm-go-sdk"
 )
 
-type Parms struct {
+type Params struct {
 	Data string `json:"data"`
 }
 
@@ -16,12 +16,12 @@ type Secrets struct {
 }
 
 type Output struct {
-	ExtractedData string `json:"extracted_data"`
+	DecryptedData string `json:"decrypted_data"`
 }
 
-//export extract
-func extract(inputPtr uint64, secretPtr uint64) uint64 {
-	var params Parms
+//export extractInputs
+func extractInputs(inputPtr uint64, secretPtr uint64) uint64 {
+	var params Params
 	inputData := basm.ReadFromHost(inputPtr)
 	err := json.Unmarshal(inputData, &params)
 	if err != nil {
@@ -37,13 +37,13 @@ func extract(inputPtr uint64, secretPtr uint64) uint64 {
 		return WriteError(outErr)
 	}
 
-	result, err := extractData(params.Data, secrets.Password)
+	result, err := decryptData(params.Data, secrets.Password)
 	if err != nil {
-		outErr := fmt.Errorf("extracting data: %w", err)
+		outErr := fmt.Errorf("decrypting data: %w", err)
 		return WriteError(outErr)
 	}
 
-	output := Output{ExtractedData: result}
+	output := Output{DecryptedData: result}
 
 	return WriteOutput(output)
 }
