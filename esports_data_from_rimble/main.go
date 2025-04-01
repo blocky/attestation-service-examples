@@ -78,10 +78,8 @@ type SecretArgs struct {
 	RimbleAPIKey string `json:"api_key"`
 }
 
-// todo: udpate function name
-//
-//export scoreFunc
-func scoreFunc(inputPtr uint64, secretPtr uint64) uint64 {
+//export rimbleStats
+func rimbleStats(inputPtr uint64, secretPtr uint64) uint64 {
 	var input Args
 	inputData := basm.ReadFromHost(inputPtr)
 	err := json.Unmarshal(inputData, &input)

@@ -1,6 +1,6 @@
 {
   "code_file": "tmp/x.wasm",
-  "function": "scoreFunc",
+  "function": "rimbleStats",
   "input": {
     "statistic": "match winner",
     "date": "2025-02-18",
