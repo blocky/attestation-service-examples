@@ -1,7 +1,9 @@
 package rimble
 
 import (
+	"encoding/json"
 	"errors"
+	"fmt"
 )
 
 type PlayerResult struct {
@@ -53,95 +55,59 @@ type MatchData struct {
 	MatchStatus string   `json:"match_status"`
 }
 
-type RimbleStat struct {
-	Name  string `json:"name"`
-	Value string `json:"value"`
-}
-
-func GetMatchWinner(match MatchData) (
-	RimbleStat,
-	error,
-) {
+func GetMatchWinner(match MatchData) (string, error) {
 	for _, team := range match.Teams {
 		if team.WinResult == 1 {
-			return RimbleStat{
-				Name:  "Winner",
-				Value: team.Name,
-			}, nil
+			return team.Name, nil
 		}
 	}
 
-	return RimbleStat{}, errors.New("no winner found in match data")
+	return "", errors.New("no winner found in match data")
 }
 
-// func GetTeamKills(matchID, date, apiKey, teamName string) (int, error) {
-// 	matches, err := fetchRawMatchData(matchID, date, apiKey)
-// 	if err != nil {
-// 		return 0, err
-// 	}
-//
-// 	if len(matches) == 0 {
-// 		return 0, fmt.Errorf("no match data found")
-// 	}
-//
-// 	match := matches[0]
-//
-// 	totalKills := 0
-// 	teamFound := false
-//
-// 	for _, team := range match.Teams {
-// 		if team.Name == teamName {
-// 			teamFound = true
-// 			for _, result := range team.Results {
-// 				totalKills += result.TotalKills
-// 			}
-// 			break
-// 		}
-// 	}
-//
-// 	if !teamFound {
-// 		return 0, fmt.Errorf("team '%s' not found in match data", teamName)
-// 	}
-//
-// 	return totalKills, nil
-// }
-//
-// func GetPlayerKills(matchID, date, apiKey, playerUsername string) (int, error) {
-// 	matches, err := fetchRawMatchData(matchID, date, apiKey)
-// 	if err != nil {
-// 		return 0, err
-// 	}
-//
-// 	if len(matches) == 0 {
-// 		return 0, fmt.Errorf("no match data found")
-// 	}
-//
-// 	match := matches[0]
-//
-// 	totalKills := 0
-// 	playerFound := false
-//
-// 	for _, team := range match.Teams {
-// 		for _, player := range team.Players {
-// 			if player.Username == playerUsername {
-// 				playerFound = true
-// 				for _, result := range player.Results {
-// 					totalKills += result.Kills
-// 				}
-// 				break
-// 			}
-// 		}
-// 		if playerFound {
-// 			break
-// 		}
-// 	}
-//
-// 	if !playerFound {
-// 		return 0, fmt.Errorf("player '%s' not found in match data", playerUsername)
-// 	}
-//
-// 	return totalKills, nil
-// }
+func GetPlayerKills(match MatchData, playerUsername string) (int, error) {
+	totalKills := 0
+	for _, team := range match.Teams {
+		for _, player := range team.Players {
+			if player.Username == playerUsername {
+				for _, result := range player.Results {
+					totalKills += result.Kills
+				}
+				return totalKills, nil
+			}
+		}
+	}
+
+	return 0, fmt.Errorf("player '%s' not found in match data", playerUsername)
+}
+
+func GetTeamKills(match MatchData, teamName string) (int, error) {
+	totalKills := 0
+
+	j, _ := json.Marshal(match)
+	fmt.Println(string(j))
+
+	for _, team := range match.Teams {
+		if team.Name == teamName {
+			for _, player := range team.Players {
+				playerKills, err := GetPlayerKills(match, player.Username)
+				if err != nil {
+					return 0, fmt.Errorf(
+						"getting kills for player '%s' in team '%s': %w",
+						player.Username,
+						team.Name,
+						err,
+					)
+				}
+				totalKills += playerKills
+			}
+			return totalKills, nil
+		}
+	}
+
+	return 0, fmt.Errorf("team '%s' not found in match data", teamName)
+}
+
 //
 // func GetMapWinner(matchID, date, apiKey, mapName string) (string, error) {
 // 	matches, err := fetchRawMatchData(matchID, date, apiKey)

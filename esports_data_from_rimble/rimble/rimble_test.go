@@ -83,11 +83,48 @@ func TestGetMatchWinner(t *testing.T) {
 		require.NoError(t, err)
 
 		// when
-		stat, err := rimble.GetMatchWinner(matches)
+		winner, err := rimble.GetMatchWinner(matches)
 
 		// then
 		require.NoError(t, err)
-		assert.Equal(t, "Winner", stat.Name)
-		assert.Equal(t, "MOUZ", stat.Value)
+		assert.Equal(t, "MOUZ", winner)
+	})
+}
+
+func TestGetPlayerKills(t *testing.T) {
+	t.Run("happy path", func(t *testing.T) {
+		// given
+		matchID := "2379357"
+		date := "2025-02-18"
+		playerUsername := "Brollan"
+
+		matches, err := fetchRawMatchData(date, matchID, RIMBLE_DEMO_API_KEY)
+		require.NoError(t, err)
+
+		// when
+		kills, err := rimble.GetPlayerKills(matches, playerUsername)
+
+		// then
+		require.NoError(t, err)
+		assert.Equal(t, 36, kills)
+	})
+}
+
+func TestGetTeamKills(t *testing.T) {
+	t.Run("happy path", func(t *testing.T) {
+		// given
+		matchID := "2379357"
+		date := "2025-02-18"
+		team := "MOUZ"
+
+		matches, err := fetchRawMatchData(date, matchID, RIMBLE_DEMO_API_KEY)
+		require.NoError(t, err)
+
+		// when
+		kills, err := rimble.GetTeamKills(matches, team)
+
+		// then
+		require.NoError(t, err)
+		assert.Equal(t, 229, kills)
 	})
 }
