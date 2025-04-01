@@ -1,0 +1,3 @@
+exec bky-as inspect
+cp stdout out.json
+grep '"Version": ".*SNAPSHOT.*"' out.json
