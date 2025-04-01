@@ -1,0 +1,7 @@
+Building WASM module...
+Running WASM module...
+Log:
+Writing "Hello, World!" to host
+
+Output:
+Hello, World!

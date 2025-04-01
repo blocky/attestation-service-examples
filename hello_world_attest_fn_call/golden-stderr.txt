@@ -1,0 +1,11 @@
+go: downloading github.com/blocky/basm-go-sdk v0.1.0-beta.4
+go: downloading github.com/mailru/easyjson v0.9.0
+go: downloading github.com/josharian/intern v1.0.0
+
+*********************************WARNING****************************************
+bky-as starts and communicates with a local BLOCKY Attestation Service server,
+which produces non-TEE attestations. To access BLOCKY Attestation Service hosted
+in a TEE reach out to us on Telegram at http://t.me/blocky_rocks, or via email
+at info@blocky.rocks. To stay up to date, follow us on https://x.com/blockytees.
+*********************************WARNING****************************************
+

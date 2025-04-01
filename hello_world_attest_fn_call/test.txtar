@@ -1,3 +1,4 @@
-exec bky-as inspect
-cp stdout out.json
-grep '"Version": ".*SNAPSHOT.*"' out.json
+exec make clean
+exec make run
+cmp stderr golden-stderr.txt
+cmp stdout golden-stdout.txt
