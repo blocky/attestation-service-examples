@@ -48,9 +48,9 @@ contract in the
 [Hello World - Bringing A Blocky AS Function Call Attestation On Chain](../../hello_world_on_chain)
 example.
 
-In this example, we go a step further and show you how to parse out the
-the `Result` struct attested in the output of the `successFunc` and `errorFunc`
-function calls in the [Error Handling](../error_handling) example.
+In this example, we go a step further and show you how to extract the `Result`
+struct from the `successFunc` and `errorFunc` function call attestations in the
+[Error Handling](../error_handling) example.
 
 In [`contracts/User.sol`](contracts/User.sol), we define a `parseResult` function:
 
