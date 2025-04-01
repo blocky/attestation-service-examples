@@ -5,6 +5,7 @@ let
     overlays = [ ];
   };
 
+  go-internal = pkgs.callPackage ./nix/go-internal.nix { pkgs = pkgs; };
   mkDevShell = import ./nix/mkDevShell.nix;
 in
 mkDevShell {
@@ -26,5 +27,7 @@ mkDevShell {
     pkgs.nixfmt-rfc-style # for formatting nix files
     pkgs.nodejs_18 # for on chain examples
     pkgs.tinygo # for building wasm
+
+    go-internal
   ];
 }

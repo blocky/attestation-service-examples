@@ -1,9 +1,6 @@
-# this is the command to do it!
-# ~/go/bin/txtar-c  -script ./hello_world_attest_fn_call/test.txtar  ./hello_world_attest_fn_call/. | ~/go/bin/testscript
-
 run-hello-world-attest-fn-call:
 	@echo "Running run-hello-world-attest-fn-call..."
-	@make -C hello_world_attest_fn_call run > /dev/null 2>&1
+	txtar-c -script ./hello_world_attest_fn_call/test.txtar ./hello_world_attest_fn_call/. | testscript
 
 run-hello-world-on-chain:
 	@echo "Running run-hello-world-on-chain..."
