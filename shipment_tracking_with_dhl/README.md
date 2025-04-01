@@ -4,7 +4,8 @@ This example shows you how to use the Blocky Attestation Service (Blocky AS) to
 attest a function call that fetches and processes data from the DHL Tracking API.
 
 Before starting this example, make sure you are familiar with the
-[Hello World - Attesting a Function Call](../hello_world_attest_fn_call/README.md)
+[Hello World - Attesting a Function Call](../hello_world_attest_fn_call/README.md),
+[Passing Input Parameters and Secrets](../params_and_secrets/README.md)
 and the
 [Error Handling](../error_handling/README.md)
 examples.
@@ -138,23 +139,12 @@ func trackingFunc(inputPtr uint64, secretPtr uint64) uint64 {
 }
 ```
 
-The function takes two `uint64` arguments and returns a `uint64`. These are fat
-pointers to shared memory managed by the Blocky AS server, where the first 32
-bits are a memory address and the second 32 bits are the size of the data. The
-memory space is sandboxed and shared between the TEE host program (Blocky AS
-server) and the WASM runtime (your function). The `inputPtr` and `secretPtr`
-arguments carry serialized `input` and `secret` sections of
-[`fn-call.json`](./fn-call.json).
-
-To parse the `input` data, we first fetch the data pointed to by `inputPtr`
-using the `basm`
-[Blocky Attestation Service WASM Go SDK](https://github.com/blocky/basm-go-sdk/tree/v0.1.0-beta.4)
-`basm.ReadFromHost` function and then unmarshal it into the `Args` struct. We do
-the same for the `secret` data. Next, we call the `getTrackingInfoFromDHL`
-function to fetch tracking information for `input.TrackingNumber` using the
-`secret.DHLAPIKey` API key. Finally, we return the `trackingInfo` to user by
-converting its data to a fat pointer using the `WriteOutput` function and
-returning the pointer from `trackingFunc` to the Blocky AS server host runtime.
+First, we get the input parameters and secrets. Next, we call
+the `getTrackingInfoFromDHL` function to fetch tracking information for 
+`input.TrackingNumber` using the `secret.DHLAPIKey` API key. Finally, we 
+return the `trackingInfo` to user by converting its data to a fat pointer
+using the `WriteOutput` function and returning the pointer from `trackingFunc`
+to the Blocky AS server host runtime.
 
 ### Step 2: Make a request to the DHL API
 
