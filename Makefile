@@ -12,6 +12,10 @@ run-error-handling:
 	@make -C error_handling run-error > /dev/null 2>&1
 	@make -C error_handling run-panic > /dev/null 2>&1
 
+run-error-handling-on-chain:
+	@echo "Running run-error-handling-on-chain..."
+	@make -C error_handling_on_chain test-local > /dev/null
+
 run-coin-prices-from-coingecko:
 	@echo "Running run-coin-prices-from-coingecko..."
 	@make -C coin_prices_from_coingecko run > /dev/null 2>&1
@@ -42,6 +46,7 @@ run-all: \
 	run-hello-world-attest-fn-call \
 	run-hello-world-on-chain \
 	run-error-handling \
+	run-error-handling-on-chain \
 	run-coin-prices-from-coingecko \
 	run-esports-data-from-pandascore \
 	run-shipment_tracking_with_dhl \
