@@ -12,5 +12,5 @@ in
     else if arch == "aarch64" then
       "arm64"
     else
-      throw "unknow arch '${arch}', supported arches are 'x86_64' and 'aarch64'";
+      throw "unknown arch '${arch}', supported arches are 'x86_64' and 'aarch64'";
 }
