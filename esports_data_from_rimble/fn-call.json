@@ -1,0 +1,12 @@
+{
+  "code_file": "tmp/x.wasm",
+  "function": "scoreFunc",
+  "input": {
+    "statistic": "match winner",
+    "date": "2025-02-18",
+    "match_id": "2379357"
+  },
+  "secret": {
+    "api_key": "Rimble API key"
+  }
+}
