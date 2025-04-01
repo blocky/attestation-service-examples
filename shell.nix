@@ -14,7 +14,7 @@ mkDevShell {
   # development shell. On release branches, such as "release/v0.1.0-beta.4"
   # this value should be "v0.1.0-beta.4".  On main, it should be set to
   # "unstable"
-  version = "unstable";
+  version = "v0.1.0-beta.6";
 
   devDependencies = [
     pkgs.git # for project management
