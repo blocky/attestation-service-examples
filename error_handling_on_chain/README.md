@@ -7,7 +7,8 @@ which shows you how to verify and parse a Blocky AS attestation on chain.
 In this example, you'll learn how to:
 
 - Write a smart contract to extract the `Result` from a function attestation
-- Check `Result` to return output or to revoke tx upon error
+- Check `Result` for an error to determine whether to return the output or to
+revoke the transaction
 
 ## Setup
 
