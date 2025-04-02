@@ -5,7 +5,8 @@ let
     overlays = [ ];
   };
 
-  go-internal = pkgs.callPackage ./nix/go-internal.nix { pkgs = pkgs; };
+  txtar-c = pkgs.callPackage ./nix/txtar-c.nix { pkgs = pkgs; };
+  testscript = pkgs.callPackage ./nix/testscript.nix { pkgs = pkgs; };
   mkDevShell = import ./nix/mkDevShell.nix;
 in
 mkDevShell {
@@ -28,6 +29,7 @@ mkDevShell {
     pkgs.nodejs_18 # for on chain examples
     pkgs.tinygo # for building wasm
 
-    go-internal
+    testscript
+    txtar-c
   ];
 }

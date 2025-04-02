@@ -1,6 +1,6 @@
 run-hello-world-attest-fn-call:
 	@echo "Running run-hello-world-attest-fn-call..."
-	txtar-c -script ./hello_world_attest_fn_call/test.txtar ./hello_world_attest_fn_call/. | testscript
+	@make -C hello_world_attest_fn_call run > /dev/null 2>&1
 
 run-hello-world-on-chain:
 	@echo "Running run-hello-world-on-chain..."
@@ -49,3 +49,6 @@ run-all: \
 	run-twap-on-chain \
 	run-random
 	@echo "All tests passed!"
+
+test-demo:
+	txtar-c -script ./hello_world_attest_fn_call/test.txtar ./hello_world_attest_fn_call/. | testscript
