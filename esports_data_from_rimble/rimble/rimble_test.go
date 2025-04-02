@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"regexp"
 	"testing"
 	"time"
 
@@ -73,58 +74,173 @@ func fetchRawMatchData(date, matchID, apiKey string) (rimble.MatchData, error) {
 	return matches[0], nil
 }
 
-func TestGetMatchWinner(t *testing.T) {
+func TestGetGameNumbersForMap(t *testing.T) {
+	matches, err := fetchRawMatchData("2025-02-18", "2379357", RIMBLE_DEMO_API_KEY)
+	require.NoError(t, err)
+
 	t.Run("happy path", func(t *testing.T) {
 		// given
-		matchID := "2379357"
-		date := "2025-02-18"
-
-		matches, err := fetchRawMatchData(date, matchID, RIMBLE_DEMO_API_KEY)
-		require.NoError(t, err)
+		mapName := "Mirage"
 
 		// when
-		winner, err := rimble.GetMatchWinner(matches)
+		gameNumbers, err := rimble.GetGameNumbersForMap(matches, mapName)
 
 		// then
 		require.NoError(t, err)
-		assert.Equal(t, "MOUZ", winner)
+		assert.Equal(t, []int{3}, gameNumbers)
+	})
+
+	t.Run("map not found", func(t *testing.T) {
+		// given
+		mapName := "Non existent map"
+
+		// when
+		_, err = rimble.GetGameNumbersForMap(matches, mapName)
+
+		// then
+		require.ErrorContains(t, err, "not found")
 	})
 }
 
-func TestGetPlayerKills(t *testing.T) {
+func TestGetPlayerKillsOnMap(t *testing.T) {
+	matches, err := fetchRawMatchData("2025-02-18", "2379357", RIMBLE_DEMO_API_KEY)
+	require.NoError(t, err)
+
 	t.Run("happy path", func(t *testing.T) {
 		// given
-		matchID := "2379357"
-		date := "2025-02-18"
+		mapName := "Mirage"
 		playerUsername := "Brollan"
 
-		matches, err := fetchRawMatchData(date, matchID, RIMBLE_DEMO_API_KEY)
-		require.NoError(t, err)
-
 		// when
-		kills, err := rimble.GetPlayerKills(matches, playerUsername)
+		kills, err := rimble.GetPlayerKillsOnMap(matches, mapName, playerUsername)
 
 		// then
 		require.NoError(t, err)
-		assert.Equal(t, 36, kills)
+		assert.Equal(t, 10, kills)
+	})
+
+	t.Run("map not found", func(t *testing.T) {
+		// given
+		mapName := "Non existent map"
+		playerUsername := "Brollan"
+
+		// when
+		_, err = rimble.GetPlayerKillsOnMap(matches, mapName, playerUsername)
+
+		// then
+		require.Error(t, err)
+		require.Regexp(t, regexp.MustCompile("map .* not found"), err.Error())
+	})
+
+	t.Run("player not found", func(t *testing.T) {
+		// given
+		mapName := "Mirage"
+		playerUsername := "Non existent player"
+
+		// when
+		_, err = rimble.GetPlayerKillsOnMap(matches, mapName, playerUsername)
+
+		// then
+		require.Error(t, err)
+		require.Regexp(t, regexp.MustCompile("player .* not found"), err.Error())
 	})
 }
 
-func TestGetTeamKills(t *testing.T) {
+func TestGetTeamKillsOnMap(t *testing.T) {
+	matches, err := fetchRawMatchData("2025-02-18", "2379357", RIMBLE_DEMO_API_KEY)
+	require.NoError(t, err)
+
 	t.Run("happy path", func(t *testing.T) {
 		// given
-		matchID := "2379357"
-		date := "2025-02-18"
+		mapName := "Mirage"
 		team := "MOUZ"
 
-		matches, err := fetchRawMatchData(date, matchID, RIMBLE_DEMO_API_KEY)
-		require.NoError(t, err)
-
 		// when
-		kills, err := rimble.GetTeamKills(matches, team)
+		kills, err := rimble.GetTeamKillsOnMap(matches, mapName, team)
 
 		// then
 		require.NoError(t, err)
-		assert.Equal(t, 229, kills)
+		assert.Equal(t, 68, kills)
+	})
+
+	t.Run("map not found", func(t *testing.T) {
+		// given
+		mapName := "Non existent map"
+		team := "MOUZ"
+
+		// when
+		_, err = rimble.GetTeamKillsOnMap(matches, mapName, team)
+
+		// then
+		require.Error(t, err)
+		require.Regexp(t, regexp.MustCompile("map .* not found"), err.Error())
+	})
+
+	t.Run("team not found", func(t *testing.T) {
+		// given
+		mapName := "Mirage"
+		team := "Non existent team"
+
+		// when
+		_, err = rimble.GetTeamKillsOnMap(matches, mapName, team)
+
+		// then
+		require.Error(t, err)
+		require.Regexp(t, regexp.MustCompile("team .* not found"), err.Error())
+	})
+}
+
+func TestGetTeamsOnMap(t *testing.T) {
+	matches, err := fetchRawMatchData("2025-02-18", "2379357", RIMBLE_DEMO_API_KEY)
+	require.NoError(t, err)
+
+	t.Run("happy path", func(t *testing.T) {
+		// given
+		mapName := "Mirage"
+
+		// when
+		teams, err := rimble.GetTeamsOnMap(matches, mapName)
+
+		// then
+		require.NoError(t, err)
+		assert.Equal(t, []string{"MOUZ", "Virtus.pro"}, teams)
+	})
+
+	t.Run("map not found", func(t *testing.T) {
+		// given
+		mapName := "Non existent map"
+
+		// when
+		_, err = rimble.GetTeamsOnMap(matches, mapName)
+
+		// then
+		require.Error(t, err)
+		require.Regexp(t, regexp.MustCompile("map .* not found"), err.Error())
+	})
+}
+
+func TestGetTeamKillDifferenceOnMap(t *testing.T) {
+	matches, err := fetchRawMatchData("2025-02-18", "2379357", RIMBLE_DEMO_API_KEY)
+	require.NoError(t, err)
+
+	t.Run("happy path", func(t *testing.T) {
+		// given
+		mapName := "Mirage"
+
+		// when
+		teamKillDiff, err := rimble.GetTeamKillDifferenceOnMap(matches, mapName)
+
+		// then
+		require.NoError(t, err)
+		assert.Equal(
+			t,
+			rimble.TeamKillDifferenceOnMap{
+				Map:            "Mirage",
+				Team1:          "MOUZ",
+				Team2:          "Virtus.pro",
+				KillDifference: 34,
+			},
+			teamKillDiff,
+		)
 	})
 }

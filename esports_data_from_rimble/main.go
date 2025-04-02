@@ -69,17 +69,17 @@ func getMatchDataFromRimble(
 }
 
 type Args struct {
-	Statistic string `json:"statistic"`
-	Date      string `json:"date"`
-	MatchID   string `json:"match_id"`
+	Date    string `json:"date"`
+	MatchID string `json:"match_id"`
+	MapName string `json:"map_name"`
 }
 
 type SecretArgs struct {
 	RimbleAPIKey string `json:"api_key"`
 }
 
-//export rimbleStats
-func rimbleStats(inputPtr uint64, secretPtr uint64) uint64 {
+//export rimbleTeamKillDifferenceOnMap
+func rimbleTeamKillDifferenceOnMap(inputPtr uint64, secretPtr uint64) uint64 {
 	var input Args
 	inputData := basm.ReadFromHost(inputPtr)
 	err := json.Unmarshal(inputData, &input)
@@ -106,20 +106,13 @@ func rimbleStats(inputPtr uint64, secretPtr uint64) uint64 {
 		return WriteError(outErr)
 	}
 
-	var stat any
-	switch input.Statistic {
-	case "match winner":
-		stat, err = rimble.GetMatchWinner(match)
-		if err != nil {
-			outErr := fmt.Errorf("getting match winner: %w", err)
-			return WriteError(outErr)
-		}
-	default:
-		err = fmt.Errorf("unsupported statistic: %s", input.Statistic)
-		return WriteError(err)
+	teamKillDiff, err := rimble.GetTeamKillDifferenceOnMap(match, input.MapName)
+	if err != nil {
+		outErr := fmt.Errorf("getting team kill difference: %w", err)
+		return WriteError(outErr)
 	}
 
-	return WriteOutput(stat)
+	return WriteOutput(teamKillDiff)
 }
 
 func main() {}
