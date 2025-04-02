@@ -1,6 +1,6 @@
 {
   "code_file": "tmp/x.wasm",
-  "function": "rimbleTeamKillDifferenceOnMap",
+  "function": "teamKillDifferenceFromRimble",
   "input": {
     "date": "2025-02-18",
     "match_id": "2379357",

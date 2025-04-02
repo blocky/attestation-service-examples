@@ -252,30 +252,49 @@ func TestMatchData_TeamKillDifferenceOnMap(t *testing.T) {
 	t.Run("happy path", func(t *testing.T) {
 		// given
 		mapName := "Mirage"
+		teams, err := match.TeamsOnMap(mapName)
+		require.NoError(t, err)
 
 		// when
-		teamKillDiff, err := match.TeamKillDifferenceOnMap(mapName)
+		teamKillDiff, err := match.TeamKillDifferenceOnMap(mapName, teams)
 
 		// then
 		require.NoError(t, err)
-		assert.Equal(
-			t,
-			rimble.TeamKillDifferenceOnMap{
-				Map:            "Mirage",
-				Team1:          "MOUZ",
-				Team2:          "Virtus.pro",
-				KillDifference: 34,
-			},
-			teamKillDiff,
-		)
+		assert.Equal(t, 34, teamKillDiff)
+	})
+
+	t.Run("happy path with swapped teams", func(t *testing.T) {
+		// given
+		mapName := "Mirage"
+		teams := []string{"Virtus.pro", "MOUZ"}
+
+		// when
+		teamKillDiff, err := match.TeamKillDifferenceOnMap(mapName, teams)
+
+		// then
+		require.NoError(t, err)
+		assert.Equal(t, -34, teamKillDiff)
+	})
+
+	t.Run("wrong number of teams", func(t *testing.T) {
+		// given
+		mapName := "Mirage"
+		teams := []string{"MOUZ"}
+
+		// when
+		_, err = match.TeamKillDifferenceOnMap(mapName, teams)
+
+		// then
+		require.ErrorContains(t, err, "expected 2 teams, got 1")
 	})
 
 	t.Run("map not found", func(t *testing.T) {
 		// given
 		mapName := "Non existent map"
+		teams := []string{"MOUZ", "Virtus.pro"}
 
 		// when
-		_, err = match.TeamKillDifferenceOnMap(mapName)
+		_, err = match.TeamKillDifferenceOnMap(mapName, teams)
 
 		// then
 		require.Error(t, err)

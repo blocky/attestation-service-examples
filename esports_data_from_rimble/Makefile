@@ -23,10 +23,17 @@ tmp/x.wasm: $(SRCS) $(DEPS) | tmp check
 .PHONY: build
 build: tmp/x.wasm
 
-.PHONY: run
-run: check build
+.PHONY: match-winner
+match-winner: check build
 	@echo "Running WASM module..."
-	@cat fn-call.json | bky-as attest-fn-call >tmp/out.json
+	@cat matchWinner.json | bky-as attest-fn-call >tmp/out.json
+	@echo "Output:"
+	@jq -r '.transitive_attested_function_call.claims.output | @base64d | fromjson' tmp/out.json
+
+.PHONY: team-kill-diff
+team-kill-diff: check build
+	@echo "Running WASM module..."
+	@cat teamKillDiff.json | bky-as attest-fn-call >tmp/out.json
 	@echo "Output:"
 	@jq -r '.transitive_attested_function_call.claims.output | @base64d | fromjson' tmp/out.json
 
