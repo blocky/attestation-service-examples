@@ -53,7 +53,17 @@ type MatchData struct {
 	MatchStatus string   `json:"match_status"`
 }
 
-func GetGameNumbersForMap(match MatchData, mapName string) ([]int, error) {
+func (match MatchData) TeamWinner() (string, error) {
+	for _, team := range match.Teams {
+		if team.WinResult == 1 {
+			return team.Name, nil
+		}
+	}
+
+	return "", fmt.Errorf("no match winner found")
+}
+
+func (match MatchData) GameNumbersForMap(mapName string) ([]int, error) {
 	mapFound := false
 
 	var gameNumbers []int
@@ -71,11 +81,11 @@ func GetGameNumbersForMap(match MatchData, mapName string) ([]int, error) {
 	return gameNumbers, nil
 }
 
-func GetPlayerKillsOnMap(match MatchData, mapName string, playerUsername string) (
+func (match MatchData) PlayerKillsOnMap(mapName string, playerUsername string) (
 	int,
 	error,
 ) {
-	gameNumbers, err := GetGameNumbersForMap(match, mapName)
+	gameNumbers, err := match.GameNumbersForMap(mapName)
 	if err != nil {
 		return 0, fmt.Errorf("getting game numbers for map '%s': %w", mapName, err)
 	}
@@ -104,13 +114,13 @@ func GetPlayerKillsOnMap(match MatchData, mapName string, playerUsername string)
 	return totalKills, nil
 }
 
-func GetTeamKillsOnMap(match MatchData, mapName string, teamName string) (int, error) {
+func (match MatchData) TeamKillsOnMap(mapName string, teamName string) (int, error) {
 	totalKills := 0
 
 	for _, team := range match.Teams {
 		if team.Name == teamName {
 			for _, player := range team.Players {
-				playerKills, err := GetPlayerKillsOnMap(match, mapName, player.Username)
+				playerKills, err := match.PlayerKillsOnMap(mapName, player.Username)
 				if err != nil {
 					return 0, fmt.Errorf(
 						"getting kills for player '%s' in team '%s': %w",
@@ -128,7 +138,7 @@ func GetTeamKillsOnMap(match MatchData, mapName string, teamName string) (int, e
 	return 0, fmt.Errorf("team '%s' not found in match data", teamName)
 }
 
-func GetTeamsOnMap(match MatchData, mapName string) ([]string, error) {
+func (match MatchData) TeamsOnMap(mapName string) ([]string, error) {
 	mapFound := false
 
 	var teamNames []string
@@ -155,14 +165,13 @@ type TeamKillDifferenceOnMap struct {
 	KillDifference int
 }
 
-func GetTeamKillDifferenceOnMap(
-	match MatchData,
+func (match MatchData) TeamKillDifferenceOnMap(
 	mapName string,
 ) (
 	TeamKillDifferenceOnMap,
 	error,
 ) {
-	teams, err := GetTeamsOnMap(match, mapName)
+	teams, err := match.TeamsOnMap(mapName)
 	if err != nil {
 		err = fmt.Errorf("getting teams on map: %w", err)
 		return TeamKillDifferenceOnMap{}, err
@@ -174,7 +183,7 @@ func GetTeamKillDifferenceOnMap(
 
 	teamKills := make(map[string]int)
 	for _, team := range teams {
-		kills, err := GetTeamKillsOnMap(match, mapName, team)
+		kills, err := match.TeamKillsOnMap(mapName, team)
 		if err != nil {
 			err = fmt.Errorf("getting kills for team '%s': %w", team, err)
 			return TeamKillDifferenceOnMap{}, err
@@ -454,7 +463,7 @@ func GetTeamKillDifferenceOnMap(
 //
 // 	switch statType {
 // 	case "winner":
-// 		winner, err := GetMatchWinner(matchID, date, apiKey)
+// 		winner, err := TeamWinner(matchID, date, apiKey)
 // 		if err != nil {
 // 			fmt.Printf("Error: %v\n", err)
 // 			return
@@ -467,7 +476,7 @@ func GetTeamKillDifferenceOnMap(
 // 			return
 // 		}
 // 		teamName := os.Args[5]
-// 		kills, err := GetTeamKillsOnMap(matchID, date, apiKey, teamName)
+// 		kills, err := TeamKillsOnMap(matchID, date, apiKey, teamName)
 // 		if err != nil {
 // 			fmt.Printf("Error: %v\n", err)
 // 			return
@@ -480,7 +489,7 @@ func GetTeamKillDifferenceOnMap(
 // 			return
 // 		}
 // 		username := os.Args[5]
-// 		kills, err := GetPlayerKillsOnMap(matchID, date, apiKey, username)
+// 		kills, err := PlayerKillsOnMap(matchID, date, apiKey, username)
 // 		if err != nil {
 // 			fmt.Printf("Error: %v\n", err)
 // 			return

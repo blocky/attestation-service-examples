@@ -74,8 +74,34 @@ func fetchRawMatchData(date, matchID, apiKey string) (rimble.MatchData, error) {
 	return matches[0], nil
 }
 
-func TestGetGameNumbersForMap(t *testing.T) {
-	matches, err := fetchRawMatchData("2025-02-18", "2379357", RIMBLE_DEMO_API_KEY)
+func TestMatchData_TeamWinner(t *testing.T) {
+	match, err := fetchRawMatchData("2025-02-18", "2379357", RIMBLE_DEMO_API_KEY)
+	require.NoError(t, err)
+
+	t.Run("happy path", func(t *testing.T) {
+		// when
+		winner, err := match.TeamWinner()
+
+		// then
+		require.NoError(t, err)
+		assert.Equal(t, "MOUZ", winner)
+	})
+
+	t.Run("no winner", func(t *testing.T) {
+		// given
+		noWinnerMatch := rimble.MatchData{}
+
+		// when
+		_, err := noWinnerMatch.TeamWinner()
+
+		// then
+		require.Error(t, err)
+		require.Regexp(t, regexp.MustCompile("no match winner"), err.Error())
+	})
+}
+
+func TestMatchData_GameNumbersForMap(t *testing.T) {
+	match, err := fetchRawMatchData("2025-02-18", "2379357", RIMBLE_DEMO_API_KEY)
 	require.NoError(t, err)
 
 	t.Run("happy path", func(t *testing.T) {
@@ -83,7 +109,7 @@ func TestGetGameNumbersForMap(t *testing.T) {
 		mapName := "Mirage"
 
 		// when
-		gameNumbers, err := rimble.GetGameNumbersForMap(matches, mapName)
+		gameNumbers, err := match.GameNumbersForMap(mapName)
 
 		// then
 		require.NoError(t, err)
@@ -95,15 +121,15 @@ func TestGetGameNumbersForMap(t *testing.T) {
 		mapName := "Non existent map"
 
 		// when
-		_, err = rimble.GetGameNumbersForMap(matches, mapName)
+		_, err = match.GameNumbersForMap(mapName)
 
 		// then
 		require.ErrorContains(t, err, "not found")
 	})
 }
 
-func TestGetPlayerKillsOnMap(t *testing.T) {
-	matches, err := fetchRawMatchData("2025-02-18", "2379357", RIMBLE_DEMO_API_KEY)
+func TestMatchData_PlayerKillsOnMap(t *testing.T) {
+	match, err := fetchRawMatchData("2025-02-18", "2379357", RIMBLE_DEMO_API_KEY)
 	require.NoError(t, err)
 
 	t.Run("happy path", func(t *testing.T) {
@@ -112,7 +138,7 @@ func TestGetPlayerKillsOnMap(t *testing.T) {
 		playerUsername := "Brollan"
 
 		// when
-		kills, err := rimble.GetPlayerKillsOnMap(matches, mapName, playerUsername)
+		kills, err := match.PlayerKillsOnMap(mapName, playerUsername)
 
 		// then
 		require.NoError(t, err)
@@ -125,7 +151,7 @@ func TestGetPlayerKillsOnMap(t *testing.T) {
 		playerUsername := "Brollan"
 
 		// when
-		_, err = rimble.GetPlayerKillsOnMap(matches, mapName, playerUsername)
+		_, err = match.PlayerKillsOnMap(mapName, playerUsername)
 
 		// then
 		require.Error(t, err)
@@ -138,7 +164,7 @@ func TestGetPlayerKillsOnMap(t *testing.T) {
 		playerUsername := "Non existent player"
 
 		// when
-		_, err = rimble.GetPlayerKillsOnMap(matches, mapName, playerUsername)
+		_, err = match.PlayerKillsOnMap(mapName, playerUsername)
 
 		// then
 		require.Error(t, err)
@@ -146,8 +172,8 @@ func TestGetPlayerKillsOnMap(t *testing.T) {
 	})
 }
 
-func TestGetTeamKillsOnMap(t *testing.T) {
-	matches, err := fetchRawMatchData("2025-02-18", "2379357", RIMBLE_DEMO_API_KEY)
+func TestMatchData_TeamKillsOnMap(t *testing.T) {
+	match, err := fetchRawMatchData("2025-02-18", "2379357", RIMBLE_DEMO_API_KEY)
 	require.NoError(t, err)
 
 	t.Run("happy path", func(t *testing.T) {
@@ -156,7 +182,7 @@ func TestGetTeamKillsOnMap(t *testing.T) {
 		team := "MOUZ"
 
 		// when
-		kills, err := rimble.GetTeamKillsOnMap(matches, mapName, team)
+		kills, err := match.TeamKillsOnMap(mapName, team)
 
 		// then
 		require.NoError(t, err)
@@ -169,7 +195,7 @@ func TestGetTeamKillsOnMap(t *testing.T) {
 		team := "MOUZ"
 
 		// when
-		_, err = rimble.GetTeamKillsOnMap(matches, mapName, team)
+		_, err = match.TeamKillsOnMap(mapName, team)
 
 		// then
 		require.Error(t, err)
@@ -182,7 +208,7 @@ func TestGetTeamKillsOnMap(t *testing.T) {
 		team := "Non existent team"
 
 		// when
-		_, err = rimble.GetTeamKillsOnMap(matches, mapName, team)
+		_, err = match.TeamKillsOnMap(mapName, team)
 
 		// then
 		require.Error(t, err)
@@ -190,8 +216,8 @@ func TestGetTeamKillsOnMap(t *testing.T) {
 	})
 }
 
-func TestGetTeamsOnMap(t *testing.T) {
-	matches, err := fetchRawMatchData("2025-02-18", "2379357", RIMBLE_DEMO_API_KEY)
+func TestMatchData_TeamsOnMap(t *testing.T) {
+	match, err := fetchRawMatchData("2025-02-18", "2379357", RIMBLE_DEMO_API_KEY)
 	require.NoError(t, err)
 
 	t.Run("happy path", func(t *testing.T) {
@@ -199,7 +225,7 @@ func TestGetTeamsOnMap(t *testing.T) {
 		mapName := "Mirage"
 
 		// when
-		teams, err := rimble.GetTeamsOnMap(matches, mapName)
+		teams, err := match.TeamsOnMap(mapName)
 
 		// then
 		require.NoError(t, err)
@@ -211,7 +237,7 @@ func TestGetTeamsOnMap(t *testing.T) {
 		mapName := "Non existent map"
 
 		// when
-		_, err = rimble.GetTeamsOnMap(matches, mapName)
+		_, err = match.TeamsOnMap(mapName)
 
 		// then
 		require.Error(t, err)
@@ -219,8 +245,8 @@ func TestGetTeamsOnMap(t *testing.T) {
 	})
 }
 
-func TestGetTeamKillDifferenceOnMap(t *testing.T) {
-	matches, err := fetchRawMatchData("2025-02-18", "2379357", RIMBLE_DEMO_API_KEY)
+func TestMatchData_TeamKillDifferenceOnMap(t *testing.T) {
+	match, err := fetchRawMatchData("2025-02-18", "2379357", RIMBLE_DEMO_API_KEY)
 	require.NoError(t, err)
 
 	t.Run("happy path", func(t *testing.T) {
@@ -228,7 +254,7 @@ func TestGetTeamKillDifferenceOnMap(t *testing.T) {
 		mapName := "Mirage"
 
 		// when
-		teamKillDiff, err := rimble.GetTeamKillDifferenceOnMap(matches, mapName)
+		teamKillDiff, err := match.TeamKillDifferenceOnMap(mapName)
 
 		// then
 		require.NoError(t, err)
@@ -242,5 +268,17 @@ func TestGetTeamKillDifferenceOnMap(t *testing.T) {
 			},
 			teamKillDiff,
 		)
+	})
+
+	t.Run("map not found", func(t *testing.T) {
+		// given
+		mapName := "Non existent map"
+
+		// when
+		_, err = match.TeamKillDifferenceOnMap(mapName)
+
+		// then
+		require.Error(t, err)
+		require.Regexp(t, regexp.MustCompile("map .* not found"), err.Error())
 	})
 }
