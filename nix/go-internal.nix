@@ -2,7 +2,7 @@
   pkgs,
 }:
 pkgs.buildGoModule rec {
-  pname = "testscript";
+  pname = "go-internal";
   version = "1.14.1";
 
   src = pkgs.fetchFromGitHub {
@@ -15,7 +15,6 @@ pkgs.buildGoModule rec {
   vendorHash = "sha256-WoRmZbYYpwVVetlxJDjUu9jGgwLXUD3/PnUF6ksUT70=";
 
   doCheck = false;
-  subPackages = [ "./cmd/testscript" ];
 
   meta = {
     description = "The testscript command runs testscript scripts in a fresh temporary work directory tree";

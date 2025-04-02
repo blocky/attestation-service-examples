@@ -51,4 +51,4 @@ run-all: \
 	@echo "All tests passed!"
 
 test-demo:
-	txtar-c -script ./hello_world_attest_fn_call/test.txtar ./hello_world_attest_fn_call/. | testscript
+	txtar-c ./hello_world_attest_fn_call/. | cat ./hello_world_attest_fn_call/test.txtar - | testscript
