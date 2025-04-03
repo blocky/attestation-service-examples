@@ -4,7 +4,7 @@ run-hello-world-attest-fn-call:
 
 run-hello-world-on-chain:
 	@echo "Running run-hello-world-on-chain..."
-	@cd hello_world_on_chain && make test-local 2cd > /dev/null
+	@cd hello_world_on_chain && make test-local 2> /dev/null
 
 run-error-handling:
 	@echo "Running run-error-handling..."
