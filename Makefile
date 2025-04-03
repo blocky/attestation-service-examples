@@ -1,47 +1,47 @@
 run-hello-world-attest-fn-call:
 	@echo "Running run-hello-world-attest-fn-call..."
-	@make -C hello_world_attest_fn_call run > /dev/null 2>&1
+	@cd hello_world_attest_fn_call && make run 2> /dev/null
 
 run-hello-world-on-chain:
 	@echo "Running run-hello-world-on-chain..."
-	@make -C hello_world_on_chain test-local > /dev/null
+	@cd hello_world_on_chain && make test-local 2cd > /dev/null
 
 run-error-handling:
 	@echo "Running run-error-handling..."
-	@make -C error_handling run-success > /dev/null 2>&1
-	@make -C error_handling run-error > /dev/null 2>&1
-	@make -C error_handling run-panic > /dev/null 2>&1
+	@cd error_handling && make run-success 2> /dev/null
+	@cd error_handling && make run-error 2> /dev/null
+	@cd error_handling && make run-panic 2> /dev/null
 
 run-coin-prices-from-coingecko:
 	@echo "Running run-coin-prices-from-coingecko..."
-	@make -C coin_prices_from_coingecko run > /dev/null 2>&1
+	@cd coin_prices_from_coingecko && make run 2> /dev/null
 
 run-esports-data-from-pandascore:
 	@echo "Running run-esports-data-from-pandascore..."
-	@make -C esports_data_from_pandascore run > /dev/null 2>&1
+	@cd esports_data_from_pandascore && make run 2> /dev/null
 
 run-shipment_tracking_with_dhl:
 	@echo "Running run-shipment_tracking_with_dhl..."
-	@make -C shipment_tracking_with_dhl run > /dev/null 2>&1
+	@cd shipment_tracking_with_dhl && make run 2> /dev/null
 
 run-twap-fn-call:
 	@echo "Running run-twap-fn-call..."
-	@make -C time_weighted_average_price/attest_fn_call init > /dev/null 2>&1
-	@make -C time_weighted_average_price/attest_fn_call iteration > /dev/null 2>&1
-	@make -C time_weighted_average_price/attest_fn_call twap > /dev/null 2>&1
+	@cd time_weighted_average_price/attest_fn_call && make init 2> /dev/null
+	@cd time_weighted_average_price/attest_fn_call && make iteration 2> /dev/null
+	@cd time_weighted_average_price/attest_fn_call && make twap 2> /dev/null
 
 run-twap-on-chain:
 	@echo "Running run-twap-on-chain..."
-	@make -C time_weighted_average_price/on_chain test-local > /dev/null
+	@cd time_weighted_average_price/on_chain && make test-local > /dev/null
 
 run-random:
 	@echo "Running random..."
-	@make -C random clean run 2> /dev/null
+	@cd random &&  make run 2> /dev/null
 
 run-params-and-secrets:
 	@echo "Running params-and-secrets..."
-	@make -C params_and_secrets run > /dev/null 2>&1
-	@make -C params_and_secrets run-error > /dev/null 2>&1
+	@cd params_and_secrets && make run 2> /dev/null
+	@cd params_and_secrets && make run-error 2> /dev/null
 
 run-all: \
 	run-hello-world-attest-fn-call \
