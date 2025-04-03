@@ -1,0 +1,10 @@
+{
+  "code_file": "tmp/x.wasm",
+  "function": "extractInputs",
+  "input": {
+    "data": "E8Pe7+S5fJR4u3XT5MdfQUi/H0zIWw18lL6ms33vq73YDA3s+QjtlVb14mCzaKFa+8TG8je/"
+  },
+  "secret": {
+    "password": "wrong-password"
+  }
+}

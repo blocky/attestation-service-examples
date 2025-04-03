@@ -5,7 +5,8 @@ attest simple function call that generates random numbers to simulate a die
 roll.
 
 Before starting this example, make sure you are familiar with the
-[Hello World - Attesting a Function Call](../hello_world_attest_fn_call/README.md)
+[Hello World - Attesting a Function Call](../hello_world_attest_fn_call/README.md),
+[Passing Input Parameters and Secrets](../params_and_secrets/README.md),
 and the
 [Error Handling - Attested Function Calls](../error_handling_attest_fn_call/README.md)
 examples.
@@ -98,18 +99,8 @@ func rollDie(inputPtr uint64, secretPtr uint64) uint64 {
 
 You will notice a few things:
 
-- The function takes two `uint64` arguments and returns a `uint64`. These are
-  fat pointers to shared memory managed by the Blocky AS server, where the first
-  32 bits are a memory address and the second 32 bits are the size of the data.
-  The memory space is sandboxed and shared between the TEE host program (Blocky
-  AS server) and the WASM runtime (your function). The `inputPtr` and
-  `secretPtr` arguments carry user-defined function input and secrets,
-  though we only make use of input in this example. The output of the function
-  is also a memory pointer, whose value will be returned to the user.
-- The function uses the `basm`
-  [Blocky Attestation Service WASM Go SDK](https://github.com/blocky/basm-go-sdk)
-  `basm.ReadFromHost` to fetch the input data and unmarshal it into the
-  `Args` struct.
+- First, we fetch the input data and unmarshal it into the
+  `Args` struct. We don't fetch any secrets.
 - We are able to generate random numbers the way you would in a normal Go
   program (i.e., via `math/rand` or `crypto/rand`). This is because `tinygo`
   provides implementations for `math/rand` and `crypto/rand`, and because we

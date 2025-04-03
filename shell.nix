@@ -1,6 +1,3 @@
-{
-  githubPAT ? builtins.getEnv "GITHUB_PAT",
-}:
 let
   nixpkgs = fetchTarball "https://github.com/NixOS/nixpkgs/tarball/nixos-24.11";
   pkgs = import nixpkgs {
@@ -8,47 +5,26 @@ let
     overlays = [ ];
   };
 
-  bky-as = pkgs.buildGoModule rec {
-    pname = "bky-as";
-    version = "v0.1.0-beta.4";
-
-    tmpDir = "/tmp";
-
-    env = {
-      GOPRIVATE = "github.com/blocky/*";
-      HOME = tmpDir;
-    };
-
-    src = builtins.fetchGit {
-      rev = "f6a2c0f965cfca9583ab29e10b9e2e5acf006046";
-      url = "git@github.com:blocky/delphi.git";
-    };
-
-    doCheck = false;
-
-    preBuild = ''
-      echo machine github.com login doesNotMatter password ${githubPAT} > ${tmpDir}/.netrc
-    '';
-
-    postBuild = ''
-      alias bky-as=cli
-    '';
-
-    vendorHash = "sha256-GXlZz3L5vd1v9NHlaagKw6aY3LEyt9E10reh6EvZ4Bw=";
-
-  };
+  mkDevShell = import ./nix/mkDevShell.nix;
 in
-pkgs.mkShellNoCC {
-  packages = [
-    pkgs.git
-    pkgs.go
-    pkgs.gotools # for tools like goimports
-    pkgs.golangci-lint # for linting go files
-    pkgs.tinygo # for building wasm
-    pkgs.nixfmt-rfc-style # for tools like nix fmt
-    pkgs.gnumake # for project management
-    pkgs.nodejs_18 # for on chain examples
+mkDevShell {
+  pkgs = pkgs;
 
-    bky-as
+  # this value controls the version of the bky-as cli that is setup in the
+  # development shell. On release branches, such as "release/v0.1.0-beta.4"
+  # this value should be "v0.1.0-beta.4".  On main, it should be set to
+  # "unstable"
+  version = "unstable";
+
+  devDependencies = [
+    pkgs.git # for project management
+    pkgs.gnumake # for project management
+    pkgs.go # for prepping for building wasm
+    pkgs.golangci-lint # for linting go files
+    pkgs.gotools # for tools like goimports
+    pkgs.jq # for processing data in examples
+    pkgs.nixfmt-rfc-style # for formatting nix files
+    pkgs.nodejs_18 # for on chain examples
+    pkgs.tinygo # for building wasm
   ];
 }

@@ -42,6 +42,11 @@ run-random:
 	@echo "Running random..."
 	@make -C random clean run 2> /dev/null
 
+run-params-and-secrets:
+	@echo "Running params-and-secrets..."
+	@make -C params_and_secrets run > /dev/null 2>&1
+	@make -C params_and_secrets run-error > /dev/null 2>&1
+
 run-all: \
 	run-hello-world-attest-fn-call \
 	run-hello-world-on-chain \
@@ -52,5 +57,6 @@ run-all: \
 	run-shipment_tracking_with_dhl \
 	run-twap-fn-call  \
 	run-twap-on-chain \
-	run-random
+	run-random \
+	run-params-and-secrets
 	@echo "All tests passed!"
