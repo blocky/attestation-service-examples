@@ -40,9 +40,9 @@ You can use
 to get CS:GO matches. Let's say you're interested in match with the ID `2379357`
 that took place on 2025-02-18.
 
-### Step 2: Create a parameterized Blocky AS function to attest match winner
+### Step 2: Create a parameterized  function to attest match winner
 
-We'll implement the oracle as `matchWinnerFromRimble` function in
+We'll implement the oracle in the `matchWinnerFromRimble` function in
 [`main.go`](./main.go). 
 
 ```go
@@ -170,9 +170,11 @@ which tells you that the team `MOUZ` won the match with ID `2379357` played on
 2025-02-18.
 
 
-### Step 3: Create a parameterized Blocky AS function to attest team kill difference
+### Step 2: Create a parameterized oracle function to attest team kill difference
 
-Now let's implement the `teamKillDiffFromRimble` function in
+Now let's say that you want to compute a more custom statistic about the match
+like the difference in kills between the two teams on a specific map. We'll
+implement this oracle in the `teamKillDiffFromRimble` function in
 [`main.go`](./main.go). 
 
 ```go
