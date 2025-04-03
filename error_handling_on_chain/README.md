@@ -1,8 +1,8 @@
-# Error Handling On Chain
+# Error Handling - Handling Attested Function Call Errors On Chain
 
 This example shows you how to handle errors in Blocky AS function calls on chain.
 It builds on the [Hello World On Chain](../hello_world_on_chain) and the
-[Error Handling Attest Function Call](../error_handling_attest_fn_call)
+[Error Handling - Attested Function Calls](../error_handling_attest_fn_call)
 examples, which show you how to verify and parse Blocky AS attestations on
 chain and handle errors returned by attested function calls.
 
@@ -54,8 +54,8 @@ example.
 
 In this example, we go a step further and show you how to extract the `Result`
 struct from the `successFunc` and `errorFunc` function call attestations in the
-[Error Handling Attest Function Call](../error_handling_attest_fn_call) example.
-The attestations from calling said functions can be found in
+[Error Handling - Attested Function Calls](../error_handling_attest_fn_call)
+example. The attestations from calling said functions can be found in
 `inputs/out-success.json` and `inputs/out-error.json`.
 
 In [`contracts/User.sol`](contracts/User.sol), we define a `parseResult` function:

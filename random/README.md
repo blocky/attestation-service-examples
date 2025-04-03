@@ -7,7 +7,7 @@ roll.
 Before starting this example, make sure you are familiar with the
 [Hello World - Attesting a Function Call](../hello_world_attest_fn_call/README.md)
 and the
-[Error Handling](../error_handling_attest_fn_callREADME.md)
+[Error Handling - Attested Function Calls](../error_handling_attest_fn_call/README.md)
 examples.
 
 You'll learn how to:
