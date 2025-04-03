@@ -46,6 +46,7 @@ within a local test environment:
 
 ## Walkthrough
 
+### Step 1: Parse an attested function call `Result`
 We cover the basics of how to verify an attested function call in a smart
 contract in the
 [Hello World - Bringing A Blocky AS Function Call Attestation On Chain](../../hello_world_on_chain)
@@ -53,7 +54,9 @@ example.
 
 In this example, we go a step further and show you how to extract the `Result`
 struct from the `successFunc` and `errorFunc` function call attestations in the
-[Error Handling](../error_handling_attest_fn_call) example.
+[Error Handling Attest Function Call](../error_handling_attest_fn_call) example.
+The attestations from calling said functions can be found in
+`inputs/out-success.json` and `inputs/out-error.json`.
 
 In [`contracts/User.sol`](contracts/User.sol), we define a `parseResult` function:
 
@@ -121,9 +124,33 @@ If `Result.Success` is `true`, we emit `Result.Value` as an event, where
 `Result.Value` itself may be a JSON serialized struct representing the output
 of the function call.
 
+### Step 2: Test the `User` contract locally
+
+To test the smart contract locally, we use the
+[Hardhat](https://hardhat.org/) framework.
+We define the `"Local Test"` in [`test/user.ts`](test/user.ts) which contains
+two subtests: one for a successful result and one that errored. The tests load
+the appropriate attested function call output from `inputs`, call the
+`setTASigningKeyAddress` and `verifyAttestedFnCallClaims` functions on the
+[`User`](contracts/User.sol) contract, and check that the contract either emitted the 
+`ResultValue` event with `"{\"number\":42}"` or revoked the transaction with
+the error message `"expected error"`. You will see the test output:
+
+```
+  Local Test
+        Success: true
+        Error: 
+        Value: {"number":42}
+    ✔ Verify TA and parse Result w/success (616ms)
+        Success: false
+        Error: expected error
+        Value: null
+    ✔ Verify TA and parse Result w/error (189ms)
+```
+
 ## Next steps
 
 Now that you have successfully run the example, you can start modifying it to
-fit your own needs. For instance, write a function that extracts the`Output`
+fit your own needs. For instance, write a function that extracts the `Output`
 struct from the `ResultValue(valueString)` event. Check out other examples in
 this repository, to learn what else you can do with Blocky AS.
