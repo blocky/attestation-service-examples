@@ -9,6 +9,7 @@ import (
 	"testing"
 	"time"
 
+	lom "github.com/samber/lo/mutable"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
@@ -95,8 +96,29 @@ func TestMatchData_TeamWinner(t *testing.T) {
 		_, err := noWinnerMatch.TeamWinner()
 
 		// then
-		require.Error(t, err)
-		require.Regexp(t, regexp.MustCompile("no match winner"), err.Error())
+		require.ErrorContains(t, err, "no winning team found")
+	})
+
+	t.Run("multiple winners", func(t *testing.T) {
+		// given
+		multipleWinnersMatch := rimble.MatchData{
+			Teams: []rimble.Team{
+				{
+					Name:      "Team A",
+					WinResult: 1,
+				},
+				{
+					Name:      "Team B",
+					WinResult: 1,
+				},
+			},
+		}
+
+		// when
+		_, err := multipleWinnersMatch.TeamWinner()
+
+		// then
+		require.ErrorContains(t, err, "multiple winning teams found")
 	})
 }
 
@@ -216,35 +238,6 @@ func TestMatchData_TeamKillsOnMap(t *testing.T) {
 	})
 }
 
-func TestMatchData_TeamsOnMap(t *testing.T) {
-	match, err := fetchRawMatchData("2025-02-18", "2379357", RIMBLE_DEMO_API_KEY)
-	require.NoError(t, err)
-
-	t.Run("happy path", func(t *testing.T) {
-		// given
-		mapName := "Mirage"
-
-		// when
-		teams, err := match.TeamsOnMap(mapName)
-
-		// then
-		require.NoError(t, err)
-		assert.Equal(t, []string{"MOUZ", "Virtus.pro"}, teams)
-	})
-
-	t.Run("map not found", func(t *testing.T) {
-		// given
-		mapName := "Non existent map"
-
-		// when
-		_, err = match.TeamsOnMap(mapName)
-
-		// then
-		require.Error(t, err)
-		require.Regexp(t, regexp.MustCompile("map .* not found"), err.Error())
-	})
-}
-
 func TestMatchData_TeamKillDifferenceOnMap(t *testing.T) {
 	match, err := fetchRawMatchData("2025-02-18", "2379357", RIMBLE_DEMO_API_KEY)
 	require.NoError(t, err)
@@ -252,11 +245,10 @@ func TestMatchData_TeamKillDifferenceOnMap(t *testing.T) {
 	t.Run("happy path", func(t *testing.T) {
 		// given
 		mapName := "Mirage"
-		teams, err := match.TeamsOnMap(mapName)
 		require.NoError(t, err)
 
 		// when
-		teamKillDiff, err := match.TeamKillDifferenceOnMap(mapName, teams)
+		teamKillDiff, err := match.TeamKillDifferenceOnMap(mapName)
 
 		// then
 		require.NoError(t, err)
@@ -266,10 +258,11 @@ func TestMatchData_TeamKillDifferenceOnMap(t *testing.T) {
 	t.Run("happy path with swapped teams", func(t *testing.T) {
 		// given
 		mapName := "Mirage"
-		teams := []string{"Virtus.pro", "MOUZ"}
+		matchCopy, err := cloneMatchData(match)
+		lom.Reverse(matchCopy.Teams)
 
 		// when
-		teamKillDiff, err := match.TeamKillDifferenceOnMap(mapName, teams)
+		teamKillDiff, err := matchCopy.TeamKillDifferenceOnMap(mapName)
 
 		// then
 		require.NoError(t, err)
@@ -279,10 +272,11 @@ func TestMatchData_TeamKillDifferenceOnMap(t *testing.T) {
 	t.Run("wrong number of teams", func(t *testing.T) {
 		// given
 		mapName := "Mirage"
-		teams := []string{"MOUZ"}
+		matchCopy, err := cloneMatchData(match)
+		matchCopy.Teams = matchCopy.Teams[:1]
 
 		// when
-		_, err = match.TeamKillDifferenceOnMap(mapName, teams)
+		_, err = matchCopy.TeamKillDifferenceOnMap(mapName)
 
 		// then
 		require.ErrorContains(t, err, "expected 2 teams, got 1")
@@ -291,13 +285,25 @@ func TestMatchData_TeamKillDifferenceOnMap(t *testing.T) {
 	t.Run("map not found", func(t *testing.T) {
 		// given
 		mapName := "Non existent map"
-		teams := []string{"MOUZ", "Virtus.pro"}
 
 		// when
-		_, err = match.TeamKillDifferenceOnMap(mapName, teams)
+		_, err = match.TeamKillDifferenceOnMap(mapName)
 
 		// then
 		require.Error(t, err)
 		require.Regexp(t, regexp.MustCompile("map .* not found"), err.Error())
 	})
+}
+
+func cloneMatchData(match rimble.MatchData) (rimble.MatchData, error) {
+	var clone rimble.MatchData
+	data, err := json.Marshal(match)
+	if err != nil {
+		return rimble.MatchData{}, err
+	}
+	err = json.Unmarshal(data, &clone)
+	if err != nil {
+		return rimble.MatchData{}, err
+	}
+	return clone, nil
 }

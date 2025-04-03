@@ -2,6 +2,8 @@ package rimble
 
 import (
 	"fmt"
+
+	"github.com/samber/lo"
 )
 
 type PlayerResult struct {
@@ -54,27 +56,28 @@ type MatchData struct {
 }
 
 func (match MatchData) TeamWinner() (string, error) {
-	for _, team := range match.Teams {
-		if team.WinResult == 1 {
-			return team.Name, nil
-		}
+	winningTeams := lo.Filter(match.Teams, func(team Team, _ int) bool {
+		return team.WinResult == 1
+	})
+	switch {
+	case len(winningTeams) == 0:
+		return "", fmt.Errorf("no winning team found")
+	case len(winningTeams) > 1:
+		return "", fmt.Errorf("multiple winning teams found")
 	}
 
-	return "", fmt.Errorf("no match winner found")
+	return winningTeams[0].Name, nil
 }
 
 func (match MatchData) GameNumbersForMap(mapName string) ([]int, error) {
-	mapFound := false
-
-	var gameNumbers []int
-	for _, game := range match.Metadata.Games {
+	gameNumbers := lo.FilterMap(match.Metadata.Games, func(game Game, _ int) (int, bool) {
 		if game.MapName == mapName {
-			mapFound = true
-			gameNumbers = append(gameNumbers, game.GameNumber)
+			return game.GameNumber, true
 		}
-	}
+		return 0, false
+	})
 
-	if !mapFound {
+	if len(gameNumbers) == 0 {
 		return nil, fmt.Errorf("map '%s' not found in match data", mapName)
 	}
 
@@ -90,95 +93,87 @@ func (match MatchData) PlayerKillsOnMap(mapName string, playerUsername string) (
 		return 0, fmt.Errorf("getting game numbers for map '%s': %w", mapName, err)
 	}
 
-	totalKills := 0
-	playerFound := false
-	for _, gameNumber := range gameNumbers {
-		for _, team := range match.Teams {
-			for _, player := range team.Players {
-				if player.Username == playerUsername {
-					playerFound = true
-					for _, result := range player.Results {
-						if result.GameNumber == gameNumber {
-							totalKills += result.Kills
-						}
-					}
-				}
-			}
-		}
+	teamsWithPlayer := lo.Filter(match.Teams, func(team Team, _ int) bool {
+		return lo.ContainsBy(team.Players, func(player Player) bool {
+			return player.Username == playerUsername
+		})
+	})
+
+	switch {
+	case len(teamsWithPlayer) == 0:
+		return 0, fmt.Errorf("player '%s' not found in match data", playerUsername)
+	case len(teamsWithPlayer) > 1:
+		return 0, fmt.Errorf("player '%s' found in multiple teams", playerUsername)
 	}
 
-	if !playerFound {
-		return 0, fmt.Errorf("player '%s' not found in match data", playerUsername)
+	player, found := lo.Find(teamsWithPlayer[0].Players, func(player Player) bool {
+		return player.Username == playerUsername
+	})
+
+	if !found {
+		return 0, fmt.Errorf("player '%s' not found in their team", playerUsername)
 	}
+
+	results := lo.Filter(player.Results, func(result PlayerResult, _ int) bool {
+		return lo.Contains(gameNumbers, result.GameNumber)
+	})
+
+	if len(results) == 0 {
+		return 0, fmt.Errorf("player '%s' has no results for map '%s'", playerUsername, mapName)
+	}
+
+	totalKills := lo.SumBy(results, func(result PlayerResult) int {
+		return result.Kills
+	})
 
 	return totalKills, nil
 }
 
 func (match MatchData) TeamKillsOnMap(mapName string, teamName string) (int, error) {
-	totalKills := 0
-
-	for _, team := range match.Teams {
-		if team.Name == teamName {
-			for _, player := range team.Players {
-				playerKills, err := match.PlayerKillsOnMap(mapName, player.Username)
-				if err != nil {
-					return 0, fmt.Errorf(
-						"getting kills for player '%s' in team '%s': %w",
-						player.Username,
-						team.Name,
-						err,
-					)
-				}
-				totalKills += playerKills
-			}
-			return totalKills, nil
-		}
+	teams := lo.Filter(match.Teams, func(team Team, _ int) bool {
+		return team.Name == teamName
+	})
+	switch {
+	case len(teams) == 0:
+		return 0, fmt.Errorf("team '%s' not found in match data", teamName)
+	case len(teams) > 1:
+		return 0, fmt.Errorf("team '%s' found multiple times in match data", teamName)
 	}
 
-	return 0, fmt.Errorf("team '%s' not found in match data", teamName)
+	var playerKillsOnMapError error = nil
+	totalKills := lo.SumBy(teams[0].Players, func(player Player) int {
+		playerKills, err := match.PlayerKillsOnMap(mapName, player.Username)
+		if err != nil {
+			err = fmt.Errorf("getting kills for player '%s': %w", player.Username, err)
+			playerKillsOnMapError = err
+			return 0
+		}
+		return playerKills
+	})
+
+	return totalKills, playerKillsOnMapError
 }
 
-func (match MatchData) TeamsOnMap(mapName string) ([]string, error) {
-	mapFound := false
-
-	var teamNames []string
-	for _, game := range match.Metadata.Games {
-		if game.MapName == mapName {
-			mapFound = true
-			for _, team := range match.Teams {
-				teamNames = append(teamNames, team.Name)
-			}
-		}
-	}
-
-	if !mapFound {
-		return nil, fmt.Errorf("map '%s' not found in match data", mapName)
-	}
-
-	return teamNames, nil
-}
-
-func (match MatchData) TeamKillDifferenceOnMap(
-	mapName string,
-	teams []string,
-) (
-	int,
-	error,
-) {
-	if len(teams) != 2 {
-		err := fmt.Errorf("expected 2 teams, got %d", len(teams))
+func (match MatchData) TeamKillDifferenceOnMap(mapName string) (int, error) {
+	if len(match.Teams) != 2 {
+		err := fmt.Errorf("expected 2 teams, got %d", len(match.Teams))
 		return 0, err
 	}
 
-	teamKills := make(map[string]int)
-	for _, team := range teams {
-		kills, err := match.TeamKillsOnMap(mapName, team)
+	var teamKillsOnMapError error = nil
+	teamKills := lo.Map(match.Teams, func(team Team, _ int) int {
+		kills, err := match.TeamKillsOnMap(mapName, team.Name)
 		if err != nil {
-			err = fmt.Errorf("getting kills for team '%s': %w", team, err)
-			return 0, err
+			err = fmt.Errorf("getting kills for team '%s': %w", team.Name, err)
+			teamKillsOnMapError = err
+			return 0
 		}
-		teamKills[team] = kills
+		return kills
+	})
+
+	if teamKillsOnMapError != nil {
+		return 0, teamKillsOnMapError
 	}
 
-	return teamKills[teams[0]] - teamKills[teams[1]], nil
+	return teamKills[0] - teamKills[1], nil
 }
