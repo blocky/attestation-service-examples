@@ -152,5 +152,9 @@ the error message `"expected error"`. You will see the test output:
 
 Now that you have successfully run the example, you can start modifying it to
 fit your own needs. For instance, write a function that extracts the `Output`
-struct from the `ResultValue(valueString)` event. Check out other examples in
-this repository, to learn what else you can do with Blocky AS.
+struct from the `valueString` variable. Note that `Output` is defined by the
+[`successFunc`](../error_handling_attest_fn_call/main.go) in the error handling
+attest function call example, but may differ between functions (e.g., 
+the `priceFunc` from the [Coin Prices](../coin_prices_from_coingecko) example
+defines a `Price` struct as its "output"). Check out other examples in this
+repository, to learn what else you can do with Blocky AS.
