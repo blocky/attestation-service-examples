@@ -32,7 +32,7 @@ run-twap-fn-call:
 
 run-twap-on-chain:
 	@echo "Running run-twap-on-chain..."
-	@cd time_weighted_average_price/on_chain && make test-local > /dev/null
+	@cd time_weighted_average_price/on_chain && make test-local 2> /dev/null
 
 run-random:
 	@echo "Running random..."
