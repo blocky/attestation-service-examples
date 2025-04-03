@@ -6,11 +6,11 @@ run-hello-world-on-chain:
 	@echo "Running run-hello-world-on-chain..."
 	@make -C hello_world_on_chain test-local > /dev/null
 
-run-error-handling:
-	@echo "Running run-error-handling..."
-	@make -C error_handling run-success > /dev/null 2>&1
-	@make -C error_handling run-error > /dev/null 2>&1
-	@make -C error_handling run-panic > /dev/null 2>&1
+run-error-handling-attest-fn-call:
+	@echo "Running run-error-handling-attest-fn-call..."
+	@make -C error_handling_attest_fn_call run-success > /dev/null 2>&1
+	@make -C error_handling_attest_fn_call run-error > /dev/null 2>&1
+	@make -C error_handling_attest_fn_call run-panic > /dev/null 2>&1
 
 run-error-handling-on-chain:
 	@echo "Running run-error-handling-on-chain..."
@@ -45,7 +45,7 @@ run-random:
 run-all: \
 	run-hello-world-attest-fn-call \
 	run-hello-world-on-chain \
-	run-error-handling \
+	run-error-handling-attest-fn-call \
 	run-error-handling-on-chain \
 	run-coin-prices-from-coingecko \
 	run-esports-data-from-pandascore \

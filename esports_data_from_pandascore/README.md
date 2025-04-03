@@ -6,7 +6,7 @@ it.
 
 Before starting this example, make sure you are familiar with the
 [Hello World - Attesting a Function Call](../hello_world_attest_fn_call/README.md),
-and [Error Handling](../error_handling/README.md) examples.
+and [Error Handling](../error_handling_attest_fn_callREADME.md) examples.
 
 In this example, you'll learn how to:
 
