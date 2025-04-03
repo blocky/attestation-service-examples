@@ -80,8 +80,8 @@ func extractPriceSamples(
 
 	verifiedTA, err := basm.VerifyAttestation(
 		basm.VerifyAttestationInput{
-			EnclaveAttestedKey:       eAttest,
-			TransitiveAttestedClaims: tAttest,
+			EnclaveAttestedKey:       basm.EnclaveAttestation(eAttest),
+			TransitiveAttestedClaims: basm.TransitiveAttestation(tAttest),
 			AcceptableMeasures:       whitelist,
 		},
 	)
