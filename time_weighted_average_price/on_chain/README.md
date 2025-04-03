@@ -48,7 +48,7 @@ In this example, we go a step further and show you how to parse out the
 TWAP value from the `Result` struct attested in the output of the `twap` function
 call in the [Attesting A Time-Weighted Average Price](../attest_fn_call) example.
 If you would like more background on how we use the `Result` struct, please 
-review the [Error Handling](../../error_handling) example.
+review the [Error Handling - Attested Function Calls](../../error_handling_attest_fn_call) example.
 
 In [`contracts/User.sol`](contracts/User.sol), we define a `parseTWAP` function:
 

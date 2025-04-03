@@ -56,7 +56,7 @@ The contents of `out.json` have been verified by the Blocky AS CLI.
 To learn more about that process, revisit the
 [Hello World - Attesting a Function Call](../hello_world_attest_fn_call)
 example, or read about
-[Attestations in the Blocky Attestation Service](https://blocky-docs.redocly.app/attestation-service/concepts#attestations-in-the-blocky-attestation-service)
+[Attestations in the Blocky Attestation Service](https://blocky-docs.redocly.app/v0.1.0-beta.4/attestation-service/concepts#attestations-in-the-blocky-attestation-service)
 in our documentation.
 
 For this example, we have copied `out.json` from the previous example into
@@ -177,7 +177,7 @@ Sepolia testnet. To do so, we need to do a bit more setup:
 > [Step 5](#step-5-test-the-user-contract-on-base-sepolia) to test the
 > [`User`](contracts/User.sol) contract on Base Sepolia using
 > deployed contract address in the
-> [`deploymnets/user_deployed_address`](deployments/user_deployed_addressoyed_address)
+> [`deploymnets/user_deployed_address`](deployments/user_deployed_address)
 > file.
 
 To deploy the smart contract, call:

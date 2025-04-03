@@ -10,8 +10,8 @@
   "dependencies": {
     "@nomicfoundation/hardhat-toolbox": "^5.0.0",
     "base64-sol": "github:brechtpd/base64",
-    "dotenv": "^16.4.5",
-    "hardhat": "^2.22.18",
+    "dotenv": "^16.4.7",
+    "hardhat": "^2.22.19",
     "npm": "^10.9.0",
     "solidity-bytes-utils": "^0.8.3"
   }
