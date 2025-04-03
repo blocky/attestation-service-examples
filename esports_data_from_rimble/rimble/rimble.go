@@ -1,6 +1,7 @@
 package rimble
 
 import (
+	"encoding/json"
 	"fmt"
 
 	"github.com/samber/lo"
@@ -55,18 +56,39 @@ type MatchData struct {
 	MatchStatus string   `json:"match_status"`
 }
 
-func (match MatchData) TeamWinner() (string, error) {
+func MakeMatchDataFromMatchesJSON(matchesJSON []byte) (MatchData, error) {
+	var matches []MatchData
+	err := json.Unmarshal(matchesJSON, &matches)
+	if err != nil {
+		return MatchData{}, fmt.Errorf("error unmarshaling JSON: %w", err)
+	}
+
+	switch len(matches) {
+	case 0:
+		err = fmt.Errorf("found no matches")
+		return MatchData{}, err
+	case 1:
+		break // only one match found, proceed to return it
+	default:
+		err = fmt.Errorf("found multiple matches")
+		return MatchData{}, err
+	}
+
+	return matches[0], nil
+}
+
+func (match MatchData) Winner() (Team, error) {
 	winningTeams := lo.Filter(match.Teams, func(team Team, _ int) bool {
 		return team.WinResult == 1
 	})
 	switch {
 	case len(winningTeams) == 0:
-		return "", fmt.Errorf("no winning team found")
+		return Team{}, fmt.Errorf("no winning team found")
 	case len(winningTeams) > 1:
-		return "", fmt.Errorf("multiple winning teams found")
+		return Team{}, fmt.Errorf("multiple winning teams found")
 	}
 
-	return winningTeams[0].Name, nil
+	return winningTeams[0], nil
 }
 
 func (match MatchData) GameNumbersForMap(mapName string) ([]int, error) {

@@ -39,35 +39,18 @@ func getMatchDataFromRimble(
 		)
 	}
 
-	var matches []rimble.MatchData
-	err = json.Unmarshal(resp.Body, &matches)
+	match, err := rimble.MakeMatchDataFromMatchesJSON(resp.Body)
 	if err != nil {
-		return rimble.MatchData{}, fmt.Errorf(
-			"unmarshaling  data: %w...%s", err,
-			resp.Body,
-		)
-	}
-
-	switch len(matches) {
-	case 0:
 		err = fmt.Errorf(
-			`no match found for match ID: "%s" on date: "%s"`,
-			matchID,
+			"making match given data '%s' and match ID '%s': %w",
 			date,
-		)
-		return rimble.MatchData{}, err
-	case 1:
-		break // only one match found, proceed to return it
-	default:
-		err = fmt.Errorf(
-			`multiple matches found for match ID: "%s" on date: "%s"`,
 			matchID,
-			date,
+			err,
 		)
 		return rimble.MatchData{}, err
 	}
 
-	return matches[0], nil
+	return match, nil
 }
 
 type MatchWinner struct {
@@ -77,7 +60,7 @@ type MatchWinner struct {
 }
 
 func TeamWinner(match rimble.MatchData, date string) (MatchWinner, error) {
-	team, err := match.TeamWinner()
+	team, err := match.Winner()
 	if err != nil {
 		return MatchWinner{}, fmt.Errorf("getting team winner: %w", err)
 	}
@@ -85,7 +68,7 @@ func TeamWinner(match rimble.MatchData, date string) (MatchWinner, error) {
 	return MatchWinner{
 		MatchID: match.MatchID,
 		Date:    date,
-		Winner:  team,
+		Winner:  team.Name,
 	}, nil
 }
 

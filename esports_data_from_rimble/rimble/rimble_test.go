@@ -47,45 +47,31 @@ func fetchRawMatchData(date, matchID, apiKey string) (rimble.MatchData, error) {
 		return rimble.MatchData{}, fmt.Errorf("error reading response body: %w", err)
 	}
 
-	var matches []rimble.MatchData
-	err = json.Unmarshal(body, &matches)
+	match, err := rimble.MakeMatchDataFromMatchesJSON(body)
 	if err != nil {
-		return rimble.MatchData{}, fmt.Errorf("error unmarshaling JSON: %w", err)
-	}
-
-	switch len(matches) {
-	case 0:
 		err = fmt.Errorf(
-			`no match found for match ID: "%s" on date: "%s"`,
-			matchID,
+			"making match given data '%s' and match ID '%s': %w",
 			date,
-		)
-		return rimble.MatchData{}, err
-	case 1:
-		break // only one match found, proceed to return it
-	default:
-		err = fmt.Errorf(
-			`multiple matches found for match ID: "%s" on date: "%s"`,
 			matchID,
-			date,
+			err,
 		)
 		return rimble.MatchData{}, err
 	}
 
-	return matches[0], nil
+	return match, nil
 }
 
-func TestMatchData_TeamWinner(t *testing.T) {
+func TestMatchData_Winner(t *testing.T) {
 	match, err := fetchRawMatchData("2025-02-18", "2379357", RIMBLE_DEMO_API_KEY)
 	require.NoError(t, err)
 
 	t.Run("happy path", func(t *testing.T) {
 		// when
-		winner, err := match.TeamWinner()
+		winner, err := match.Winner()
 
 		// then
 		require.NoError(t, err)
-		assert.Equal(t, "MOUZ", winner)
+		assert.Equal(t, "MOUZ", winner.Name)
 	})
 
 	t.Run("no winner", func(t *testing.T) {
@@ -93,7 +79,7 @@ func TestMatchData_TeamWinner(t *testing.T) {
 		noWinnerMatch := rimble.MatchData{}
 
 		// when
-		_, err := noWinnerMatch.TeamWinner()
+		_, err := noWinnerMatch.Winner()
 
 		// then
 		require.ErrorContains(t, err, "no winning team found")
@@ -102,20 +88,11 @@ func TestMatchData_TeamWinner(t *testing.T) {
 	t.Run("multiple winners", func(t *testing.T) {
 		// given
 		multipleWinnersMatch := rimble.MatchData{
-			Teams: []rimble.Team{
-				{
-					Name:      "Team A",
-					WinResult: 1,
-				},
-				{
-					Name:      "Team B",
-					WinResult: 1,
-				},
-			},
+			Teams: []rimble.Team{{WinResult: 1}, {WinResult: 1}},
 		}
 
 		// when
-		_, err := multipleWinnersMatch.TeamWinner()
+		_, err := multipleWinnersMatch.Winner()
 
 		// then
 		require.ErrorContains(t, err, "multiple winning teams found")
