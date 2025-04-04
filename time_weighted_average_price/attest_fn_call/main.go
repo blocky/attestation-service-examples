@@ -66,8 +66,8 @@ func getNewPriceSample(coinID string, apiKey string) (price.Price, error) {
 }
 
 func extractPriceSamples(
-	eAttest json.RawMessage,
-	tAttest json.RawMessage,
+	eAttest basm.EnclaveAttestation,
+	tAttest basm.TransitiveAttestation,
 	whitelist []basm.EnclaveMeasurement,
 ) (
 	[]price.Price,
@@ -149,7 +149,11 @@ func iteration(inputPtr uint64, secretPtr uint64) uint64 {
 		return WriteError(outErr)
 	}
 
-	priceSamples, err := extractPriceSamples(args.EAttest, args.TAttest, args.Whitelist)
+	priceSamples, err := extractPriceSamples(
+		basm.EnclaveAttestation(args.EAttest),
+		basm.TransitiveAttestation(args.TAttest),
+		args.Whitelist,
+	)
 	if err != nil {
 		outErr := fmt.Errorf("extracting priceSamples: %w", err)
 		return WriteError(outErr)
@@ -186,7 +190,11 @@ func twap(inputPtr uint64, secretPtr uint64) uint64 {
 		return WriteError(outErr)
 	}
 
-	priceSamples, err := extractPriceSamples(args.EAttest, args.TAttest, args.Whitelist)
+	priceSamples, err := extractPriceSamples(
+		basm.EnclaveAttestation(args.EAttest),
+		basm.TransitiveAttestation(args.TAttest),
+		args.Whitelist,
+	)
 	if err != nil {
 		outErr := fmt.Errorf("extracting samples: %w", err)
 		return WriteError(outErr)
