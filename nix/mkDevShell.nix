@@ -8,6 +8,8 @@ let
   goos = system.goos;
   goarch = system.goarch;
 
+  isCommit = x: builtins.match "^[0-9a-f]{40}$" x != null;
+
   bky-as-stable = pkgs.stdenv.mkDerivation {
     pname = "bky-as";
     version = version;
@@ -22,11 +24,14 @@ let
 
   stableShell = pkgs.mkShellNoCC {
     packages = devDependencies ++ [ bky-as-stable ];
+    shellHook = ''
+      echo "Stable bky-as version: ${version}"
+    '';
   };
 
   bky-as-unstable = pkgs.stdenv.mkDerivation {
     pname = "bky-as";
-    version = "unstable";
+    version = version;
     src = ./fetch-bky-as.sh;
     unpackPhase = ":";
     installPhase = ''
@@ -46,9 +51,15 @@ let
       ];
     shellHook = ''
       bin=$(pwd)/tmp/bin
-      fetch-bky-as.sh $bin ${goos} ${goarch}
+      fetch-bky-as.sh ${version} $bin ${goos} ${goarch}
       export PATH=$bin:$PATH
+      echo "Unstable bky-as version: ${version}"
     '';
   };
 in
-if version == "unstable" then unstableShell else stableShell
+if isCommit version || version == "latest" then
+  unstableShell
+else
+  # If the version is not a commit hash or "latest", we assume it is a stable
+  # release version.
+  stableShell
