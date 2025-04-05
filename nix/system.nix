@@ -1,8 +1,8 @@
 { pkgs }:
 let
-  system = builtins.split "-" pkgs.stdenv.hostPlatform.system;
+  system = pkgs.lib.strings.splitString "-" pkgs.stdenv.hostPlatform.system;
   arch = builtins.elemAt (system) 0;
-  os = builtins.elemAt (system) 2;
+  os = builtins.elemAt (system) 1;
 in
 {
   goos = os;
