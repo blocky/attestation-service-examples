@@ -24,7 +24,7 @@ let
     packages = devDependencies ++ [ bky-as-stable ];
     shellHook = ''
       export AS_VERSION=${version}
-      update-docs() {
+      render-md() {
         for file in $(find . -type f -name '*.md'); do
           mo "$file" > "$file.tmp" && mv "$file.tmp" "$file"
         done
