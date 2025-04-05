@@ -2,9 +2,10 @@
 
 set -e
 
-bin=$1
-os=$2
-arch=$3
+commit=$1
+bin=$2
+os=$3
+arch=$4
 
 mkdir -p $bin
 
@@ -17,13 +18,15 @@ else
     echo "no current version"
 fi
 
-echo -n "Getting the latest commit..."
-latest_commit=$(gh api repos/blocky/delphi/commits --jq '.[0].sha')
-echo "'$latest_commit'"
+if [[ $commit == "latest" ]]; then
+  echo -n "Getting the latest commit..."
+  commit=$(gh api repos/blocky/delphi/commits --jq '.[0].sha')
+  echo "'$commit'"
+fi
 
-if [[ $current_version_commit != $latest_commit ]]; then
+if [[ $current_version_commit != "$commit" ]]; then
     echo "Versions differ ...updating"
-    aws s3 cp s3://blocky-internal-release/delphi/cli/$latest_commit/${os}_${arch} ${bin}/bky-as
+    aws s3 cp "s3://blocky-internal-release/delphi/cli/${commit}/${os}_${arch}" "${bin}/bky-as"
     chmod +x "$bin/bky-as"
 else
     echo "Version up to date"
