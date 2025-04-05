@@ -22,6 +22,14 @@ let
 
   stableShell = pkgs.mkShellNoCC {
     packages = devDependencies ++ [ bky-as-stable ];
+    shellHook = ''
+      export AS_VERSION=${version}
+      render-md() {
+        for file in $(find . -type f -name '*.md'); do
+          mo "$file" > "$file.tmp" && mv "$file.tmp" "$file"
+        done
+      }
+    '';
   };
 
   bky-as-unstable = pkgs.stdenv.mkDerivation {
@@ -48,6 +56,7 @@ let
       bin=$(pwd)/tmp/bin
       fetch-bky-as.sh $bin ${goos} ${goarch}
       export PATH=$bin:$PATH
+      export AS_VERSION=${version};
     '';
   };
 in
