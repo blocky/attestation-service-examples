@@ -23,7 +23,12 @@ let
   stableShell = pkgs.mkShellNoCC {
     packages = devDependencies ++ [ bky-as-stable ];
     shellHook = ''
-      export AS_VERSION=${version};
+      export AS_VERSION=${version}
+      update-docs() {
+        for file in $(find . -type f -name '*.md'); do
+          mo "$file" > "$file.tmp" && mv "$file.tmp" "$file"
+        done
+      }
     '';
   };
 
