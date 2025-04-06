@@ -20,6 +20,10 @@ run-esports-data-from-pandascore:
 	@echo "Running run-esports-data-from-pandascore..."
 	@make -C esports_data_from_pandascore run > /dev/null 2>&1
 
+run-esports-data-from-rimble:
+	@echo "Running run-esports-data-from-rimble..."
+	@make -C esports_data_from_rimble run 2> /dev/null
+
 run-shipment_tracking_with_dhl:
 	@echo "Running run-shipment_tracking_with_dhl..."
 	@make -C shipment_tracking_with_dhl run > /dev/null 2>&1
@@ -49,6 +53,7 @@ run-all: \
 	run-error-handling \
 	run-coin-prices-from-coingecko \
 	run-esports-data-from-pandascore \
+	run-esports-data-from-rimble \
 	run-shipment_tracking_with_dhl \
 	run-twap-fn-call  \
 	run-twap-on-chain \
