@@ -5,7 +5,8 @@ compute a time-weighted average price (TWAP) of a token.
 
 Before starting this example, make sure you are familiar with the
 [Hello World - Attesting a Function Call](../../hello_world_attest_fn_call/README.md),
-[Error Handling](../../error_handling/README.md), and
+[Passing Input Parameters and Secrets](../../params_and_secrets/README.md),
+[Error Handling - Attested Function Calls](../../error_handling_attest_fn_call/README.md), and
 [Getting Coin Prices From CoinGecko](../../coin_prices_from_coingecko/README.md)
 examples.
 
@@ -18,7 +19,7 @@ In this example, you'll learn how to:
 ## Setup
 
 - Install the Blocky AS CLI by following the
-  [setup instructions](https://blocky-docs.redocly.app/v0.1.0-beta.4/attestation-service/setup)
+  [setup instructions](https://blocky-docs.redocly.app/attestation-service/v0.1.0-beta.6/setup)
   in the Blocky AS documentation.
 - Make sure you also have
   [Docker](https://www.docker.com/) and [jq](https://jqlang.org/) installed on
@@ -290,12 +291,12 @@ The `extractPriceSamples` function takes the enclave attested application public
 key `eAttest`, the transitive attested function call `tAttest`, and a
 `whitelist` of acceptable enclave measurements as parameters. It uses these to
 call the`basm` 
-[Blocky Attestation Service WASM Go SDK](https://github.com/blocky/basm-go-sdk/tree/v0.1.0-beta.4)
+[Blocky Attestation Service WASM Go SDK](https://github.com/blocky/basm-go-sdk/tree/v0.1.0-beta.6)
 `basm.VerifyAttestation` function to verify that `tAttest` has been signed by
 the enclave attested application public key from `eAttest`, and checks that the
 code measurement in `eAttest` is present in the `whitelist`. If you'd like to
 learn more about the attestation verification process, please visit the
-[Attestations in the Blocky Attestation Service](https://blocky-docs.redocly.app/v0.1.0-beta.4/attestation-service/concepts#attestations-in-the-blocky-attestation-service)
+[Attestations in the Blocky Attestation Service](https://blocky-docs.redocly.app/attestation-service/v0.1.0-beta.6/concepts#attestations-in-the-blocky-attestation-service)
 page in our documentation. The `extractPriceSamples` function proceeds to parse
 out the verified transitive attestation claims `verifiedClaims` using the
 experimental `xbasm` package of our SDK. (We use the `xbasm` package to stage

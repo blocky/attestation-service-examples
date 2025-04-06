@@ -23,12 +23,17 @@ following order:
    - Deploy the smart contract to Base Sepolia to verify a function call
      attestation on chain and use the attested function output in your smart
      contract
-- [Error Handling](./error_handling) shows you how to handle errors in your
+- [Error Handling - Attested Function Calls](./error_handling_attest_fn_call)
+  shows you how to handle errors in your
   Blocky AS functions. You'll learn how to:
    - Use the result pattern in your function
    - Return structured data from your function
    - Report errors from your function
    - Log errors in your function
+- [Random](./random) shows you how to generate random numbers in your Blocky AS
+  functions. You'll learn how to:
+  - Generate random numbers in the Blocky AS runtime
+  - Create a function that returns a random number within a given range
 - [Getting Coin Prices From CoinGecko](./coin_prices_from_coingecko) shows you
   how to use Blocky AS to fetch and process coin price data from the CoinGecko 
   API. You'll learn how to:
@@ -45,4 +50,4 @@ following order:
   price of an asset through iterative calls to Blocky AS.
 
 To learn more about Blocky AS, check out our
-[documentation](https://blocky-docs.redocly.app/v0.1.0-beta.4/).
+[documentation](https://blocky-docs.redocly.app/).
