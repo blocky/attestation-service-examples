@@ -262,8 +262,11 @@ on the map `Mirage` during the match with ID `2379357` played on 2025-02-18.
 ## Next steps
 
 Now that you have successfully run the example, you can start modifying it to
-fit your own needs. If you want to take expand this 
-example with an on chain component, you may explore the
+fit your own needs. For example, you can add functions to 
+[`rimble.go`](rimble/rimble.go) to compute additional game statistics and then
+user them in [`main.go`](./main.go) to create additional Blocky AS oracle
+functions. You can also expand this example with an on chain component, you may
+explore the 
 [Hello World - Bringing A Blocky AS Function Call Attestation On Chain](../hello_world_on_chain/README.md)
 example to learn you can bring the match results and statistics into a smart
 contract.
