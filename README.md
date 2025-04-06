@@ -43,7 +43,7 @@ following order:
   you how to use Blocky AS to attest and process esports data from the 
   PandaScore API.
 - [Getting Esports Data From Rimble](./esports_data_from_rimble) shows you how
-    to use Blocky AS to attest and process esports data from the Rimble API.
+  to use Blocky AS to attest and process esports data from the Rimble API.
 - [Tracking a Shipment with DHL](./shipment_tracking_with_dhl) shows
   you how to use Blocky AS to track a shipment using the DHL API.
 - [Time Weighted Average Price](./time_weighted_average_price) is a more
