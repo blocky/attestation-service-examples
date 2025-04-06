@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"net/http"
 
-	lom "github.com/samber/lo/mutable"
-
 	"github.com/blocky/attestation-service-examples/esports-data-from-rimble/rimble"
 	"github.com/blocky/basm-go-sdk"
 )
@@ -143,8 +141,14 @@ func TeamKillDifferenceOnMap(
 	}
 
 	if killDiff < 1 {
-		lom.Reverse(match.Teams)
-		killDiff = -killDiff
+		return TeamKillDiff{
+			MatchID:  match.MatchID,
+			Date:     date,
+			MapName:  mapName,
+			Team1:    match.Teams[1].Name,
+			Team2:    match.Teams[0].Name,
+			KillDiff: -killDiff,
+		}, nil
 	}
 
 	return TeamKillDiff{
