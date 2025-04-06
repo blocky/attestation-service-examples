@@ -23,9 +23,9 @@ In this example, you'll learn how to:
   your system.
 - [Get a key for the Rimble API](https://documenter.getpostman.com/view/16449503/Tzm8FvFw#authentication)
   and set it in the `api_key` field in `matchWinner.json` and
-  `teamKillDiff.json`. For the purpose of this example you can use the demo key
-  included in those files.
-
+  `teamKillDiff.json`. For the purpose of this example you can use the public 
+  demo key provided by Rimble and already included in those files.
+  
 ## Walkthrough
 
 Let's say you're implementing an on chain fantasy application that needs to
