@@ -40,7 +40,7 @@ You can use
 to get CS:GO matches. Let's say you're interested in match with the ID `2379357`
 that took place on 2025-02-18.
 
-### Step 2: Create a parameterized  function to attest match winner
+### Step 2: Create a parameterized function to attest match winner
 
 We'll implement the oracle in the `matchWinnerFromRimble` function in
 [`main.go`](./main.go). 
@@ -93,9 +93,10 @@ func matchWinnerFromRimble(inputPtr uint64, secretPtr uint64) uint64 {
 }
 ```
 
-The `matchWinnerFromRimble` function uses a helper function `getMatchDataFromRimble`
-to fetch the match data from the Rimble API. The `matchWinnerFromRimble` function
-then calls the `TeamWinner` function to get the match winner. 
+The `matchWinnerFromRimble` function uses a helper function
+`getMatchDataFromRimble` to fetch the match data from the Rimble API. The
+`matchWinnerFromRimble` function then calls the `TeamWinner` function to get the
+match winner.
 
 ```go
 type MatchWinner struct {
@@ -123,9 +124,13 @@ The `TeamWinner` function uses the `MatchData.Winner` function defined in
 
 ```go
 func (match MatchData) Winner() (Team, error) {
-	winningTeams := lo.Filter(match.Teams, func(team Team, _ int) bool {
+	// create a function that returns true if the team is a winner
+	teamIsWinner := func(team Team, _ int) bool {
 		return team.WinResult == 1
-	})
+	}
+
+	// filter match.Teams to find all teams that are winners
+	winningTeams := lo.Filter(match.Teams, teamIsWinner)
 	switch {
 	case len(winningTeams) == 0:
 		return Team{}, fmt.Errorf("no winning team found")
@@ -137,14 +142,21 @@ func (match MatchData) Winner() (Team, error) {
 }
 ```
 
-As you can see, in the `MatchData.Winner` function we use the imported 
+In the `rimble` package we use the functional programming paradigm using the
 [`samber/lo`](https://github.com/samber/lo) package to process deserialized
-Rimble API data.
+Rimble API data. In some ways, this is easier to read and understand than
+looping through `MatchData` and checking conditions along the way. If you're
+more comfortable looping and testing conditions, feel free to do so and
+visit the 
+[Getting Coin Prices From CoinGecko](../coin_prices_from_coingecko)
+to see how we use that approach to process data from the CoinGecko API.
+
+## Step 3: Attest match winner
 
 As in previous examples, we'll invoke `matchWinnerFromRimble` through the 
-`bky-as` CLI, specifically using [`matchWinner.json`](./matchWinner.json), which
+`bky-as` CLI. We define [`matchWinner.json`](./matchWinner.json), which
 already contains the `match_id` and the `date` of the match, as well as the 
-demo Rimble `api_key`.
+demo Rimble `api_key`, and then pass it to the `bky-as` CLI.
 
 To invoke `matchWinnerFromRimble`, run:
 
@@ -170,7 +182,7 @@ which tells you that the team `MOUZ` won the match with ID `2379357` played on
 2025-02-18.
 
 
-### Step 2: Create a parameterized oracle function to attest team kill difference
+### Step 4: Create a parameterized oracle function to attest team kill difference
 
 Now let's say that you want to compute a more custom statistic about the match
 like the difference in kills between the two teams on a specific map. We'll
@@ -225,14 +237,69 @@ func teamKillDifferenceFromRimble(inputPtr uint64, secretPtr uint64) uint64 {
 The `teamKillDifferenceFromRimble` function uses a helper function
 `getMatchDataFromRimble` to fetch the match data from the Rimble API. The
 `teamKillDifferenceFromRimble` function then calls the `TeamKillDifferenceOnMap`
-function to get the team kill difference again using the `rimble` package.
+function to get the team kill difference on a particular map.
 
-We'll invoke `teamKillDifferenceFromRimble` through the
-`bky-as` CLI, specifically using [`teamKillDiff.json`](./teamKillDiff.json),
-which already contains the `match_id` and the `date` of the match and the
+```go
+type TeamKillDiff struct {
+	MatchID  string
+	Date     string
+	MapName  string
+	Team1    string
+	Team2    string
+	KillDiff int
+}
+
+func TeamKillDifferenceOnMap(
+	match rimble.MatchData,
+	date string,
+	mapName string,
+) (TeamKillDiff, error) {
+	gamesOnMap, err := match.GamesOnMap(mapName)
+	if err != nil {
+		return TeamKillDiff{}, fmt.Errorf("getting games on map: %w", err)
+	}
+
+	killDiff, err := match.TeamKillDifferenceInGames(gamesOnMap)
+	if err != nil {
+		return TeamKillDiff{}, fmt.Errorf("getting team kill difference: %w", err)
+	}
+
+	if killDiff < 1 {
+		return TeamKillDiff{
+			MatchID:  match.MatchID,
+			Date:     date,
+			MapName:  mapName,
+			Team1:    match.Teams[1].Name,
+			Team2:    match.Teams[0].Name,
+			KillDiff: -killDiff,
+		}, nil
+	}
+
+	return TeamKillDiff{
+		MatchID:  match.MatchID,
+		Date:     date,
+		MapName:  mapName,
+		Team1:    match.Teams[0].Name,
+		Team2:    match.Teams[1].Name,
+		KillDiff: killDiff,
+	}, nil
+}
+```
+
+In `TeamKillDifferenceOnMap`, we first get the games played on the map using
+the `MatchData.GamesOnMap` function defined in 
+[`rimble.go`](./rimble/rimble.go). We then form the `TeamKillDiff` struct
+where the `KillDiff` field is the difference in kills between `Team1` and
+`Team2`.
+
+### Step 5: Attest team kill difference
+
+As in previous examples, we'll invoke `teamKillDifferenceFromRimble` through the
+`bky-as` CLI. We define [`teamKillDiff.json`](./teamKillDiff.json), which
+already contains the `match_id` and the `date`of the match and the
 `map_name` of interest, as well as the demo Rimble `api_key`.
 
-To invoke `matchWinnerFromRimble`, run:
+To invoke `teamKillDifferenceFromRimble`, run:
 
 ```bash
 make team-kill-diff
