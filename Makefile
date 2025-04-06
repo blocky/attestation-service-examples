@@ -22,7 +22,8 @@ run-esports-data-from-pandascore:
 
 run-esports-data-from-rimble:
 	@echo "Running run-esports-data-from-rimble..."
-	@make -C esports_data_from_rimble run 2> /dev/null
+	@cd esports_data_from_rimble && make match-winner 2> /dev/null
+	@cd esports_data_from_rimble && make team-kill-diff 2> /dev/null
 
 run-shipment_tracking_with_dhl:
 	@echo "Running run-shipment_tracking_with_dhl..."
