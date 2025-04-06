@@ -7,7 +7,7 @@ Before starting this example, make sure you are familiar with the
 [Hello World - Attesting a Function Call](../hello_world_attest_fn_call/README.md),
 [Passing Input Parameters and Secrets](../params_and_secrets/README.md)
 and the
-[Error Handling](../error_handling/README.md)
+[Error Handling - Attested Function Calls](../error_handling_attest_fn_call/README.md)
 examples.
 
 In this example, you'll learn how to:
@@ -19,7 +19,7 @@ In this example, you'll learn how to:
 ## Setup
 
 - Install the Blocky AS CLI by following the
-  [setup instructions](https://blocky-docs.redocly.app/v0.1.0-beta.4/attestation-service/setup)
+  [setup instructions](https://blocky-docs.redocly.app/attestation-service/v0.1.0-beta.6/setup)
   in the Blocky AS documentation.
 - Make sure you also have
   [Docker](https://www.docker.com/) and [jq](https://jqlang.org/) installed on
