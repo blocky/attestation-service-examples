@@ -37,3 +37,7 @@ run: check build
 clean:
 	@rm -rf tmp
 
+.PHONY: update-testdata
+update-testdata:
+	@curl -s https://api.sportradar.com/nba/trial/v8/en/games/aaa3ddb3-dd1b-459e-a686-d2bfc4408881/summary.json?api_key=$(SPORTRADAR_API_KEY) \
+		-o sportradar/testdata/nba_game_summary.json

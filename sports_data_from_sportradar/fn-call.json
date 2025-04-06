@@ -1,6 +1,6 @@
 {
   "code_file": "tmp/x.wasm",
-  "function": "pointsLeaderNBA",
+  "function": "getNBAPlayersPointsComparison",
   "input": {
     "game_id": "aaa3ddb3-dd1b-459e-a686-d2bfc4408881",
     "players": [
@@ -9,6 +9,6 @@
     ]
   },
   "secret": {
-    "api_key": "Sportradar API key"
+    "api_key": "SportRadar API Key"
   }
 }

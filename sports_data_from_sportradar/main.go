@@ -4,43 +4,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"strconv"
-	"strings"
-	"time"
 
+	"github.com/blocky/as-demo/sportradar"
 	"github.com/blocky/basm-go-sdk"
 )
 
-type GameSummary struct {
-	Id        string    `json:"id"`
-	Title     string    `json:"title"`
-	Coverage  string    `json:"coverage"`
-	Scheduled time.Time `json:"scheduled"`
-	Home      struct {
-		Name    string `json:"name"`
-		Market  string `json:"market"`
-		Players []struct {
-			FullName   string `json:"full_name"`
-			Statistics struct {
-				Minutes string `json:"minutes"`
-				Points  int    `json:"points"`
-			} `json:"statistics"`
-		} `json:"players"`
-	} `json:"home"`
-	Away struct {
-		Name    string `json:"name"`
-		Market  string `json:"market"`
-		Players []struct {
-			FullName   string `json:"full_name"`
-			Statistics struct {
-				Minutes string `json:"minutes"`
-				Points  int    `json:"points"`
-			} `json:"statistics"`
-		} `json:"players"`
-	} `json:"away"`
-}
-
-func getGameSummary(gameID string, apiKey string) (GameSummary, error) {
+func getNBAGameSummary(gameID string, apiKey string) (sportradar.NBAGameSummary, error) {
 	req := basm.HTTPRequestInput{
 		Method: "GET",
 		URL: fmt.Sprintf(
@@ -49,70 +18,29 @@ func getGameSummary(gameID string, apiKey string) (GameSummary, error) {
 			apiKey,
 		),
 	}
+
 	resp, err := basm.HTTPRequest(req)
 	switch {
 	case err != nil:
-		return GameSummary{}, fmt.Errorf("making http request: %w", err)
+		return sportradar.NBAGameSummary{}, fmt.Errorf("making http request: %w", err)
 	case resp.StatusCode != http.StatusOK:
-		return GameSummary{}, fmt.Errorf(
+		return sportradar.NBAGameSummary{}, fmt.Errorf(
 			"http request failed with status code %d",
 			resp.StatusCode,
 		)
 	}
 
-	gameSummary := GameSummary{}
-	err = json.Unmarshal(resp.Body, &gameSummary)
-	if err != nil {
-		return GameSummary{}, fmt.Errorf(
-			"unmarshaling  data: %w...%s", err,
-			resp.Body,
-		)
-	}
+	return sportradar.MakeNBAGameSummaryFromJSON(resp.Body)
+}
 
-	return gameSummary, nil
+type NBAPlayerPointsPerMinuteComparison struct {
+	PointsPerMinute []PointsPerMinute `json:"points_per_minute"`
+	Winner          string            `json:"winner"`
 }
 
 type PointsPerMinute struct {
-	PlayerName      string  `json:"player_name"`
-	PointsPerMinute float64 `json:"points_per_minute"`
-}
-
-func pointsPerMinute(summary GameSummary, playerName string) (PointsPerMinute, error) {
-	var playerFound bool
-	var playerStats struct {
-		Minutes string `json:"minutes"`
-		Points  int    `json:"points"`
-	}
-	for _, player := range summary.Home.Players {
-		if player.FullName == playerName {
-			playerStats = player.Statistics
-			playerFound = true
-		}
-	}
-	for _, player := range summary.Away.Players {
-		if player.FullName == playerName {
-			playerStats = player.Statistics
-			playerFound = true
-		}
-	}
-
-	if !playerFound {
-		return PointsPerMinute{}, fmt.Errorf(`player "%s" not found`, playerName)
-	}
-
-	if playerStats.Minutes == "00:00" {
-		return PointsPerMinute{}, nil
-	}
-
-	minutes, err := minutesToFloat(playerStats.Minutes)
-	if err != nil {
-		return PointsPerMinute{}, err
-	}
-
-	return PointsPerMinute{
-		PlayerName:      playerName,
-		PointsPerMinute: float64(playerStats.Points) / minutes,
-	}, nil
+	Player string  `json:"player"`
+	PPM    float64 `json:"ppm"`
 }
 
 type Args struct {
@@ -124,8 +52,8 @@ type SecretArgs struct {
 	SportRadarAPIKey string `json:"api_key"`
 }
 
-//export pointsLeaderNBA
-func pointsLeaderNBA(inputPtr uint64, secretPtr uint64) uint64 {
+//export getNBAPlayersPointsComparison
+func getNBAPlayersPointsComparison(inputPtr uint64, secretPtr uint64) uint64 {
 	var input Args
 	inputData := basm.ReadFromHost(inputPtr)
 	err := json.Unmarshal(inputData, &input)
@@ -142,7 +70,7 @@ func pointsLeaderNBA(inputPtr uint64, secretPtr uint64) uint64 {
 		return WriteError(outErr)
 	}
 
-	gameSummary, err := getGameSummary(
+	gameSummary, err := getNBAGameSummary(
 		input.GameID,
 		secret.SportRadarAPIKey,
 	)
@@ -151,38 +79,42 @@ func pointsLeaderNBA(inputPtr uint64, secretPtr uint64) uint64 {
 		return WriteError(outErr)
 	}
 
-	var pointEfficiency []PointsPerMinute
-	for _, player := range input.Players {
-		ppm, err := pointsPerMinute(gameSummary, player)
-		if err != nil {
-			outErr := fmt.Errorf("computing points per minute: %w", err)
-			return WriteError(outErr)
-		}
-		pointEfficiency = append(pointEfficiency, ppm)
+	if len(input.Players) != 2 {
+		outErr := fmt.Errorf("exactly two players are required")
+		return WriteError(outErr)
 	}
 
-	return WriteOutput(pointEfficiency)
+	var comparison NBAPlayerPointsPerMinuteComparison
+	for _, playerName := range input.Players {
+		player, err := gameSummary.Player(playerName)
+		if err != nil {
+			outErr := fmt.Errorf("getting player: %w", err)
+			return WriteError(outErr)
+		}
+
+		ppm, err := player.PointsPerMinute()
+		if err != nil {
+			outErr := fmt.Errorf("getting points per minute: %w", err)
+			return WriteError(outErr)
+		}
+
+		comparison.PointsPerMinute = append(
+			comparison.PointsPerMinute,
+			PointsPerMinute{
+				Player: player.FullName,
+				PPM:    ppm,
+			},
+		)
+	}
+
+	comparison.Winner = comparison.PointsPerMinute[0].Player
+	if comparison.PointsPerMinute[1].PPM >
+		comparison.PointsPerMinute[0].PPM {
+		comparison.Winner = comparison.PointsPerMinute[1].Player
+	}
+
+	return WriteOutput(comparison)
 }
 
 func main() {
-}
-
-func minutesToFloat(timeStr string) (float64, error) {
-	parts := strings.Split(timeStr, ":")
-	if len(parts) != 2 {
-		return 0, fmt.Errorf("invalid time format: %s", timeStr)
-	}
-
-	minutes, err := strconv.Atoi(parts[0])
-	if err != nil {
-		return 0, fmt.Errorf("invalid minutes value: %s", parts[0])
-	}
-
-	seconds, err := strconv.Atoi(parts[1])
-	if err != nil {
-		return 0, fmt.Errorf("invalid seconds value: %s", parts[1])
-	}
-
-	totalMinutes := float64(minutes) + float64(seconds)/60.0
-	return totalMinutes, nil
 }
