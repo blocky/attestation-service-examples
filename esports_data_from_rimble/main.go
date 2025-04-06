@@ -132,7 +132,12 @@ func TeamKillDifferenceOnMap(
 	date string,
 	mapName string,
 ) (TeamKillDiff, error) {
-	killDiff, err := match.TeamKillDifferenceOnMap(mapName)
+	gamesOnMap, err := match.GamesOnMap(mapName)
+	if err != nil {
+		return TeamKillDiff{}, fmt.Errorf("getting games on map: %w", err)
+	}
+
+	killDiff, err := match.TeamKillDifferenceInGames(gamesOnMap)
 	if err != nil {
 		return TeamKillDiff{}, fmt.Errorf("getting team kill difference: %w", err)
 	}
