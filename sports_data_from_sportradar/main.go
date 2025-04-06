@@ -43,6 +43,50 @@ type PointsPerMinute struct {
 	PPM    float64 `json:"ppm"`
 }
 
+func makeNBAPlayerPointsPerMinuteComparison(
+	gameSummary sportradar.NBAGameSummary,
+	players []string,
+) (
+	NBAPlayerPointsPerMinuteComparison,
+	error,
+) {
+	if len(players) != 2 {
+		outErr := fmt.Errorf("exactly two players are required")
+		return NBAPlayerPointsPerMinuteComparison{}, outErr
+	}
+
+	var comparison NBAPlayerPointsPerMinuteComparison
+	for _, playerName := range players {
+		player, err := gameSummary.Player(playerName)
+		if err != nil {
+			outErr := fmt.Errorf("getting player: %w", err)
+			return NBAPlayerPointsPerMinuteComparison{}, outErr
+		}
+
+		ppm, err := player.PointsPerMinute()
+		if err != nil {
+			outErr := fmt.Errorf("getting points per minute: %w", err)
+			return NBAPlayerPointsPerMinuteComparison{}, outErr
+		}
+
+		comparison.PointsPerMinute = append(
+			comparison.PointsPerMinute,
+			PointsPerMinute{
+				Player: player.FullName,
+				PPM:    ppm,
+			},
+		)
+	}
+
+	comparison.Winner = comparison.PointsPerMinute[0].Player
+	if comparison.PointsPerMinute[1].PPM >
+		comparison.PointsPerMinute[0].PPM {
+		comparison.Winner = comparison.PointsPerMinute[1].Player
+	}
+
+	return comparison, nil
+}
+
 type Args struct {
 	GameID  string   `json:"game_id"`
 	Players []string `json:"players"`
@@ -79,38 +123,13 @@ func getNBAPlayersPointsComparison(inputPtr uint64, secretPtr uint64) uint64 {
 		return WriteError(outErr)
 	}
 
-	if len(input.Players) != 2 {
-		outErr := fmt.Errorf("exactly two players are required")
+	comparison, err := makeNBAPlayerPointsPerMinuteComparison(
+		gameSummary,
+		input.Players,
+	)
+	if err != nil {
+		outErr := fmt.Errorf("getting points per minute comparison: %w", err)
 		return WriteError(outErr)
-	}
-
-	var comparison NBAPlayerPointsPerMinuteComparison
-	for _, playerName := range input.Players {
-		player, err := gameSummary.Player(playerName)
-		if err != nil {
-			outErr := fmt.Errorf("getting player: %w", err)
-			return WriteError(outErr)
-		}
-
-		ppm, err := player.PointsPerMinute()
-		if err != nil {
-			outErr := fmt.Errorf("getting points per minute: %w", err)
-			return WriteError(outErr)
-		}
-
-		comparison.PointsPerMinute = append(
-			comparison.PointsPerMinute,
-			PointsPerMinute{
-				Player: player.FullName,
-				PPM:    ppm,
-			},
-		)
-	}
-
-	comparison.Winner = comparison.PointsPerMinute[0].Player
-	if comparison.PointsPerMinute[1].PPM >
-		comparison.PointsPerMinute[0].PPM {
-		comparison.Winner = comparison.PointsPerMinute[1].Player
 	}
 
 	return WriteOutput(comparison)
