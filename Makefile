@@ -14,7 +14,7 @@ run-error-handling-attest-fn-call:
 
 run-error-handling-on-chain:
 	@echo "Running run-error-handling-on-chain..."
-	@cd error_handling_on_chain && @make  test-local 2> /dev/null
+	@cd error_handling_on_chain && make test-local 2> /dev/null
 
 run-coin-prices-from-coingecko:
 	@echo "Running run-coin-prices-from-coingecko..."
