@@ -51,7 +51,7 @@ let
       ];
     shellHook = ''
       bin=$(pwd)/tmp/bin
-      fetch-bky-as.sh ${version} $bin ${goos} ${goarch}
+      fetch-bky-as.sh $bin ${version} ${goos} ${goarch}
       export PATH=$bin:$PATH
       echo "Unstable bky-as version: ${version}"
     '';

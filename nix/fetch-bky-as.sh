@@ -2,8 +2,8 @@
 
 set -e
 
-commit=$1
-bin=$2
+bin=$1
+commit=$2
 os=$3
 arch=$4
 
