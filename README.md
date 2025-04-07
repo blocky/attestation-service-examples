@@ -43,6 +43,9 @@ following order:
 - [Getting Esports Data From PandaScore](./esports_data_from_pandascore) shows
   you how to use Blocky AS to attest and process esports data from the 
   PandaScore API. 
+- [Getting Sports Data From SportRadar](./sports_data_from_sportradar) shows
+  you how to use Blocky AS to attest and process sports data from the
+  SportRadar API.
 - [Tracking a Shipment with DHL](./shipment_tracking_with_dhl) shows
   you how to use Blocky AS to track a shipment using the DHL API.
 - [Time Weighted Average Price](./time_weighted_average_price) is a more

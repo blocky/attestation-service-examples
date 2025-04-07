@@ -24,6 +24,10 @@ run-esports-data-from-pandascore:
 	@echo "Running run-esports-data-from-pandascore..."
 	@cd esports_data_from_pandascore && make run 2> /dev/null
 
+run-sports-data-from-sportradar:
+	@echo "Running run-ssports-data-from-sportradar..."
+	@cd sports_data_from_sportradar && make run 2> /dev/null
+
 run-shipment_tracking_with_dhl:
 	@echo "Running run-shipment_tracking_with_dhl..."
 	@cd shipment_tracking_with_dhl && make run 2> /dev/null
@@ -54,6 +58,7 @@ run-all: \
 	run-error-handling-on-chain \
 	run-coin-prices-from-coingecko \
 	run-esports-data-from-pandascore \
+	run-sports-data-from-sportradar \
 	run-shipment_tracking_with_dhl \
 	run-twap-fn-call  \
 	run-twap-on-chain \
