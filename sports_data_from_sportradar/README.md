@@ -1,4 +1,4 @@
-# Getting Coin Prices From CoinGecko
+# Getting Sports Data from SportRadar
 
 This example shows you how to use the Blocky Attestation Service (Blocky AS) to
 attest a function call that fetches NBA game results from the SportRadar API
