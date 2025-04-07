@@ -15,8 +15,6 @@ import (
 //go:embed testdata/match_data.json
 var matchDataJSON []byte
 
-// todo: add a bit to the README about this package and how to trigger tests and update the test data
-
 func TestMakeMatchDataFromMatchesJSON(t *testing.T) {
 	t.Run("happy path", func(t *testing.T) {
 		// when

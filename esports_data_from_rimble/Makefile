@@ -43,7 +43,10 @@ clean:
 
 .PHONY: update-rimble-test-data
 update-rimble-test-data:
-# Fetch the latest test data from Rimble using their public demo API key
 	@curl -s "https://rimbleanalytics.com/raw/csgo/match-status/?matchid=2379357&date=2025-02-18" \
-		-H "x-api-key: TU167z1Pwb9SAbUErPZN2aepia1MOsBN3nXbC1eE" \
+		-H "x-api-key: $(RIMBLE_API_KEY)" \
 		> rimble/testdata/match_data.json
+
+.PHONY: test-rimble
+test-rimble:
+	go test -v ./rimble/...

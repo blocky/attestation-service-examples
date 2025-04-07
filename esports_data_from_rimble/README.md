@@ -7,7 +7,7 @@ it.
 Before starting this example, make sure you are familiar with the
 [Hello World - Attesting a Function Call](../hello_world_attest_fn_call/README.md),
 [Passing Input Parameters and Secrets](../params_and_secrets/README.md),
-and [Error Handling](../error_handling/README.md) examples.
+and [Error Handling](../error_handling_attest_fn_call/README.md) examples.
 
 In this example, you'll learn how to:
 
@@ -22,9 +22,14 @@ In this example, you'll learn how to:
   [Docker](https://www.docker.com/) and [jq](https://jqlang.org/) installed on
   your system.
 - [Get a key for the Rimble API](https://documenter.getpostman.com/view/16449503/Tzm8FvFw#authentication)
-  and set it in the `api_key` field in `matchWinner.json` and
-  `teamKillDiff.json`. For the purpose of this example you can use the public 
-  demo key provided by Rimble and already included in those files.
+  and set it in your environment. FOr the purpose of this example, you can use
+   the demo key provided by Rimble. You can set the key in your environment
+  by running:
+
+  ```bash
+   export RIMBLE_API_KEY=TU167z1Pwb9SAbUErPZN2aepia1MOsBN3nXbC1eE
+   ```
+
   
 ## Walkthrough
 
@@ -324,6 +329,28 @@ to get the output:
 
 which tells you that the team `MOUZ` scored 34 more kills than team `Virtus.pro`
 on the map `Mirage` during the match with ID `2379357` played on 2025-02-18.
+
+
+### Step 6: Work with Rimble data
+
+The `rimble` package contains the data structures and functions to process
+Rimble API data. You can extend [`rimble.go`](./rimble/rimble.go) to add 
+functionality to process additional data from the Rimble API and then use it
+in your oracle functions. The [`rimble_test.go`](./rimble/rimble_test.go) file
+contains tests for the `rimble` package. You can run the tests using:
+
+```bash
+make test-rimble
+```
+
+The tests in [`rimble_test.go`](./rimble/rimble_test.go) use a response from the
+Rimble API saved in [`match_data.json`](./rimble/testdata/match_data.json).
+To update the test data with a fresh API response, you can run:
+
+```bash
+make update-rimble-test-data
+```
+
 
 
 ## Next steps
