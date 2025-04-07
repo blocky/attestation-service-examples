@@ -1,9 +1,16 @@
 {
-  # Specify version from the command line by using a valid semver tag to grab a stable version, e.g.
-  #   `nix-shell --argstr version "v0.1.0-beta.5"`
-  # or a full git commit sha to grab an unstable version, e.g.
-  #   `nix-shell --argstr version "<full git commit sha>"`
-  # or use the default value of "latest" to get the latest unstable version, e.g.
+  # This value controls the default version of the bky-as cli that is setup in
+  # the development shell. On release branches, such as "release/v0.1.0-beta.4"
+  # this value should be "v0.1.0-beta.4".  On main, it should be set to
+  # "latest".
+  #
+  # This default value can be overwritten from the command line by using a valid
+  # semver tag to grab a stable version, a git commit to grab a specific unstable
+  # version, or "latest" to grab the latest unstable version, e.g.
+  #   `nix-shell --argstr version v0.1.0-beta.5`
+  #   `nix-shell --argstr version <full git commit sha>`
+  #   `nix-shell --argstr version latest`
+  # or use the default value by omitting the argument, e.g.
   #   `nix-shell`
   version ? "latest",
 }:
@@ -19,10 +26,6 @@ in
 mkDevShell {
   pkgs = pkgs;
 
-  # this value controls the version of the bky-as cli that is setup in the
-  # development shell. On release branches, such as "release/v0.1.0-beta.4"
-  # this value should be "v0.1.0-beta.4".  On main, it should be set to
-  # "unstable"
   version = version;
 
   devDependencies = [
