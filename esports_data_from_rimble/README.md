@@ -22,7 +22,7 @@ In this example, you'll learn how to:
   [Docker](https://www.docker.com/) and [jq](https://jqlang.org/) installed on
   your system.
 - [Get a key for the Rimble API](https://documenter.getpostman.com/view/16449503/Tzm8FvFw#authentication)
-  and set it in your environment. FOr the purpose of this example, you can use
+  and set it in your environment. For the purpose of this example, you can use
    the demo key provided by Rimble. You can set the key in your environment
   by running:
 
@@ -159,7 +159,7 @@ to see how we use that approach to process data from the CoinGecko API.
 ## Step 3: Attest match winner
 
 As in previous examples, we'll invoke `matchWinnerFromRimble` through the 
-`bky-as` CLI. We define [`matchWinner.json`](./matchWinner.json), which
+`bky-as` CLI. We define [`matchWinner.json`](./match-winner.json.template), which
 already contains the `match_id` and the `date` of the match, as well as the 
 demo Rimble `api_key`, and then pass it to the `bky-as` CLI.
 
@@ -300,7 +300,7 @@ where the `KillDiff` field is the difference in kills between `Team1` and
 ### Step 5: Attest team kill difference
 
 As in previous examples, we'll invoke `teamKillDifferenceFromRimble` through the
-`bky-as` CLI. We define [`teamKillDiff.json`](./teamKillDiff.json), which
+`bky-as` CLI. We define [`teamKillDiff.json`](./team-kill-diff.json.template), which
 already contains the `match_id` and the `date`of the match and the
 `map_name` of interest, as well as the demo Rimble `api_key`.
 
@@ -350,8 +350,6 @@ To update the test data with a fresh API response, you can run:
 ```bash
 make update-rimble-test-data
 ```
-
-
 
 ## Next steps
 
