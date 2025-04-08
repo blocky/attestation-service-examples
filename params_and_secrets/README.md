@@ -39,7 +39,7 @@ outside of this example.
 ## Setup
 
 - Install the Blocky AS CLI by following the
-  [setup instructions](https://blocky-docs.redocly.app/attestation-service/v0.1.0-beta.6/setup)
+  [setup instructions](https://blocky-docs.redocly.app/attestation-service/{{AS_VERSION}}/setup)
   in the Blocky AS documentation.
 - Make sure you also have
   [Docker](https://www.docker.com/) and [jq](https://jqlang.org/) installed on
@@ -154,7 +154,7 @@ You will notice a few things:
   input and secrets. They are used to access the data provided in the `input`
   and `secret` sections of the `bky-as` [CLI input](./fn-call.json)
 - The function uses the `basm`
-  [Blocky Attestation Service WASM Go SDK](https://github.com/blocky/basm-go-sdk/tree/v0.1.0-beta.6)
+  [Blocky Attestation Service WASM Go SDK](https://github.com/blocky/basm-go-sdk/tree/{{AS_VERSION}})
   `basm.ReadFromHost` to fetch the input parameter and secret data
   and unmarshal then into the `Params` and `Secrets` structs. These structs need
   to match the `json` structure of the `input` and `secret` sections of the 
