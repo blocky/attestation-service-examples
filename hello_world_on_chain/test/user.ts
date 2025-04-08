@@ -70,8 +70,8 @@ interface UserContract extends ethers.Contract {
 }
 
 describe("Local Test", function (): void {
-    async function deployUser(): Promise<{ userContract: User}> {
-        const contract: User = await hre.ethers.deployContract("User");
+    async function deployUser(): Promise<{ userContract: User }> {
+        const contract: User = await hre.ethers.deployContract("User") ;
         return {userContract: contract};
     }
 
