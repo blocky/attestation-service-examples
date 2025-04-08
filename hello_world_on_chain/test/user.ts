@@ -7,7 +7,9 @@ import {ethers} from "ethers";
 import fs from "fs";
 import path from "path";
 
-function loadEVMLinkData(jsonPath: string) {
+function loadEVMLinkData(
+    jsonPath: string,
+): { publicKey: string, transitiveAttestation: string} | Error {
     try {
         const dir = path.resolve( __dirname, jsonPath);
         const file = fs.readFileSync(dir, "utf8");
@@ -26,7 +28,7 @@ function loadEVMLinkData(jsonPath: string) {
             transitiveAttestation: ta
         };
     } catch (e) {
-        console.log(`loading EVM link data: `, e)
+        return new Error(`Error loading EVM link data: ${e}`);
     }
 }
 
@@ -71,6 +73,9 @@ describe("Local Test", function () {
     it("Verify TA", async () => {
         // given
         const evmLinkData = loadEVMLinkData("../inputs/out.json");
+        if (evmLinkData instanceof Error) {
+            throw evmLinkData;
+        }
         const publicKey = evmLinkData.publicKey;
 
         const {userContract} = await loadFixture(deployUser);
@@ -103,6 +108,9 @@ describe("Base Sepolia Tests", function () {
     );
 
     const evmLinkData = loadEVMLinkData("../inputs/out.json");
+    if (evmLinkData instanceof Error) {
+        throw evmLinkData;
+    }
 
     it("Verify TA", async () => {
         const publicKey = evmLinkData.publicKey;
