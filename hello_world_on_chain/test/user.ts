@@ -26,7 +26,7 @@ function loadEVMLinkData(jsonPath: string) {
             transitiveAttestation: ta
         };
     } catch (e) {
-        console.log(`e`, e)
+        console.log(`loading EVM link data: `, e)
     }
 }
 
@@ -40,7 +40,7 @@ const loadUserDeployedAddress = () => {
 
         return file.toString()
     } catch (e) {
-        console.log(`e`, e)
+        console.log(`loading user deployed address: `, e)
     }
 }
 
@@ -54,7 +54,7 @@ const loadUserContractABI = () => {
         const json = JSON.parse(file)
         return json.abi
     } catch (e) {
-        console.log(`e`, e)
+        console.log(`loading user contract ABI: `, e)
     }
 }
 
