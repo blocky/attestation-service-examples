@@ -42,6 +42,10 @@ run-random:
 	@echo "Running random..."
 	@cd random &&  make run 2> /dev/null
 
+run-time:
+	@echo "Running time..."
+	@cd time &&  make run 2> /dev/null
+
 run-params-and-secrets:
 	@echo "Running params-and-secrets..."
 	@cd params_and_secrets && make run 2> /dev/null
@@ -58,5 +62,6 @@ run-all: \
 	run-twap-fn-call  \
 	run-twap-on-chain \
 	run-random \
+	run-time \
 	run-params-and-secrets
 	@echo "All tests passed!"
