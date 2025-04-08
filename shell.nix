@@ -38,5 +38,6 @@ mkDevShell {
     pkgs.nixfmt-rfc-style # for formatting nix files
     pkgs.nodejs_18 # for on chain examples
     pkgs.tinygo # for building wasm
+    pkgs.mo # for stamping version
   ];
 }
