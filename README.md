@@ -34,6 +34,8 @@ following order:
   functions. You'll learn how to:
   - Generate random numbers in the Blocky AS runtime
   - Create a function that returns a random number within a given range
+- [Time](./time) shows you how to retrieve the wall clock time in your Blocky AS
+  functions.
 - [Getting Coin Prices From CoinGecko](./coin_prices_from_coingecko) shows you
   how to use Blocky AS to fetch and process coin price data from the CoinGecko 
   API. You'll learn how to:
