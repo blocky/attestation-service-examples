@@ -9,7 +9,7 @@ import path from "path";
 
 function loadEVMLinkData(
     jsonPath: string,
-): { publicKey: string, transitiveAttestation: string} | Error {
+): { publicKey: string, transitiveAttestation: string} {
     try {
         const dir = path.resolve( __dirname, jsonPath);
         const file = fs.readFileSync(dir, "utf8");
@@ -28,12 +28,12 @@ function loadEVMLinkData(
             transitiveAttestation: ta
         };
     } catch (e) {
-        return new Error(`Error loading EVM link data: ${e}`);
+        throw new Error(`Error loading EVM link data: ` + e);
     }
 }
 
-const loadUserDeployedAddress: () => string | undefined = (
-) : string | undefined => {
+const loadUserDeployedAddress: () => string  = (
+) : string  => {
     try {
         const dir = path.resolve(
             __dirname,
@@ -43,8 +43,7 @@ const loadUserDeployedAddress: () => string | undefined = (
 
         return file.toString()
     } catch (e) {
-        console.log(`loading user deployed address: `, e)
-        return undefined;
+        throw new Error(`loading user deployed address: ` + e);
     }
 }
 
@@ -59,8 +58,7 @@ const loadUserContractABI: () => any = (
         const json = JSON.parse(file)
         return json.abi
     } catch (e) {
-        console.log(`loading user contract ABI: `, e)
-        return undefined;
+        throw new Error(`loading user contract ABI: ` + e);
     }
 }
 
@@ -77,9 +75,6 @@ describe("Local Test", function () {
     it("Verify TA", async () => {
         // given
         const evmLinkData = loadEVMLinkData("../inputs/out.json");
-        if (evmLinkData instanceof Error) {
-            throw evmLinkData;
-        }
         const publicKey = evmLinkData.publicKey;
 
         const {userContract} = await loadFixture(deployUser);
@@ -112,9 +107,6 @@ describe("Base Sepolia Tests", function () {
     );
 
     const evmLinkData = loadEVMLinkData("../inputs/out.json");
-    if (evmLinkData instanceof Error) {
-        throw evmLinkData;
-    }
 
     it("Verify TA", async () => {
         const publicKey = evmLinkData.publicKey;
