@@ -1,0 +1,12 @@
+{
+  "code_file": "tmp/x.wasm",
+  "function": "teamKillDifferenceFromRimble",
+  "input": {
+    "date": "2025-02-18",
+    "match_id": "2379357",
+    "map_name": "Mirage"
+  },
+  "secret": {
+    "api_key": "Rimble API key"
+  }
+}

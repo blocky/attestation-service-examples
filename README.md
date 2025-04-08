@@ -42,6 +42,9 @@ following order:
    - Parse a JSON response from an API
 - [Getting Esports Data From PandaScore](./esports_data_from_pandascore) shows
   you how to use Blocky AS to attest and process esports data from the 
+  PandaScore API.
+- [Getting Esports Data From Rimble](./esports_data_from_rimble) shows you how
+  to use Blocky AS to attest and process esports data from the Rimble API.
   PandaScore API. 
 - [Getting Sports Data From SportRadar](./sports_data_from_sportradar) shows
   you how to use Blocky AS to attest and process sports data from the

@@ -14,7 +14,7 @@ run-error-handling-attest-fn-call:
 
 run-error-handling-on-chain:
 	@echo "Running run-error-handling-on-chain..."
-	@cd error_handling_on_chain && @make  test-local 2> /dev/null
+	@cd error_handling_on_chain && make test-local 2> /dev/null
 
 run-coin-prices-from-coingecko:
 	@echo "Running run-coin-prices-from-coingecko..."
@@ -23,6 +23,11 @@ run-coin-prices-from-coingecko:
 run-esports-data-from-pandascore:
 	@echo "Running run-esports-data-from-pandascore..."
 	@cd esports_data_from_pandascore && make run 2> /dev/null
+
+run-esports-data-from-rimble:
+	@echo "Running run-esports-data-from-rimble..."
+	@cd esports_data_from_rimble && make match-winner 2> /dev/null
+	@cd esports_data_from_rimble && make team-kill-diff 2> /dev/null
 
 run-sports-data-from-sportradar:
 	@echo "Running run-ssports-data-from-sportradar..."
@@ -58,6 +63,7 @@ run-all: \
 	run-error-handling-on-chain \
 	run-coin-prices-from-coingecko \
 	run-esports-data-from-pandascore \
+	run-esports-data-from-rimble \
 	run-sports-data-from-sportradar \
 	run-shipment_tracking_with_dhl \
 	run-twap-fn-call  \
