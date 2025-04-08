@@ -32,7 +32,8 @@ function loadEVMLinkData(
     }
 }
 
-const loadUserDeployedAddress = () => {
+const loadUserDeployedAddress: () => string | undefined = (
+) : string | undefined => {
     try {
         const dir = path.resolve(
             __dirname,
@@ -43,10 +44,12 @@ const loadUserDeployedAddress = () => {
         return file.toString()
     } catch (e) {
         console.log(`loading user deployed address: `, e)
+        return undefined;
     }
 }
 
-const loadUserContractABI = () => {
+const loadUserContractABI: () => any = (
+) : any =>  {
     try {
         const dir = path.resolve(
             __dirname,
@@ -57,6 +60,7 @@ const loadUserContractABI = () => {
         return json.abi
     } catch (e) {
         console.log(`loading user contract ABI: `, e)
+        return undefined;
     }
 }
 
