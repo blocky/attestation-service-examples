@@ -19,7 +19,7 @@ In this example, you'll learn how to:
 ## Setup
 
 - Install the Blocky AS CLI by following the
-  [setup instructions](https://blocky-docs.redocly.app/v0.1.0-beta.4/attestation-service/setup)
+  [setup instructions](https://blocky-docs.redocly.app/attestation-service/{{AS_VERSION}}/setup)
   in the Blocky AS documentation.
 - Make sure you also have
   [Docker](https://www.docker.com/) and [jq](https://jqlang.org/) installed on
@@ -291,12 +291,12 @@ The `extractPriceSamples` function takes the enclave attested application public
 key `eAttest`, the transitive attested function call `tAttest`, and a
 `whitelist` of acceptable enclave measurements as parameters. It uses these to
 call the`basm` 
-[Blocky Attestation Service WASM Go SDK](https://github.com/blocky/basm-go-sdk/tree/v0.1.0-beta.4)
+[Blocky Attestation Service WASM Go SDK](https://github.com/blocky/basm-go-sdk/tree/{{AS_VERSION}})
 `basm.VerifyAttestation` function to verify that `tAttest` has been signed by
 the enclave attested application public key from `eAttest`, and checks that the
 code measurement in `eAttest` is present in the `whitelist`. If you'd like to
 learn more about the attestation verification process, please visit the
-[Attestations in the Blocky Attestation Service](https://blocky-docs.redocly.app/v0.1.0-beta.4/attestation-service/concepts#attestations-in-the-blocky-attestation-service)
+[Attestations in the Blocky Attestation Service](https://blocky-docs.redocly.app/attestation-service/{{AS_VERSION}}/concepts#attestations-in-the-blocky-attestation-service)
 page in our documentation. The `extractPriceSamples` function proceeds to parse
 out the verified transitive attestation claims `verifiedClaims` using the
 experimental `xbasm` package of our SDK. (We use the `xbasm` package to stage
