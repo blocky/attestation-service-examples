@@ -65,6 +65,7 @@ const loadUserContractABI: () => any = () : any =>  {
 }
 
 interface UserContract extends ethers.Contract {
+    // @ts-ignore
     processTAHelloWorld(publicKey: any, ta: any): Promise<ethers.ContractTransactionResponse>;
 }
 
