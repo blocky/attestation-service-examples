@@ -29,6 +29,10 @@ run-esports-data-from-rimble:
 	@cd esports_data_from_rimble && make match-winner 2> /dev/null
 	@cd esports_data_from_rimble && make team-kill-diff 2> /dev/null
 
+run-sports-data-from-sportradar:
+	@echo "Running run-ssports-data-from-sportradar..."
+	@cd sports_data_from_sportradar && make run 2> /dev/null
+
 run-shipment_tracking_with_dhl:
 	@echo "Running run-shipment_tracking_with_dhl..."
 	@cd shipment_tracking_with_dhl && make run 2> /dev/null
@@ -60,6 +64,7 @@ run-all: \
 	run-coin-prices-from-coingecko \
 	run-esports-data-from-pandascore \
 	run-esports-data-from-rimble \
+	run-sports-data-from-sportradar \
 	run-shipment_tracking_with_dhl \
 	run-twap-fn-call  \
 	run-twap-on-chain \

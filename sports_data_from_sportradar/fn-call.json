@@ -1,0 +1,14 @@
+{
+  "code_file": "tmp/x.wasm",
+  "function": "getNBAPlayersPointsComparison",
+  "input": {
+    "game_id": "aaa3ddb3-dd1b-459e-a686-d2bfc4408881",
+    "players": [
+      "Jayson Tatum",
+      "Luka Doncic"
+    ]
+  },
+  "secret": {
+    "api_key": "SportRadar API Key"
+  }
+}
