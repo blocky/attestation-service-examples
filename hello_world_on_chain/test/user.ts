@@ -1,15 +1,16 @@
+// noinspection DuplicatedCode
+
 import hre from "hardhat";
 import {loadFixture} from "@nomicfoundation/hardhat-toolbox/network-helpers";
 import {expect} from "chai";
 import {ethers} from "ethers";
-
-const fs = require("fs")
-const path = require("path")
+import fs from "fs";
+import path from "path";
 
 function loadEVMLinkData(jsonPath: string) {
     try {
         const dir = path.resolve( __dirname, jsonPath);
-        const file = fs.readFileSync(dir);
+        const file = fs.readFileSync(dir, "utf8");
 
         const data = JSON.parse(file);
 
