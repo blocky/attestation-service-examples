@@ -64,9 +64,10 @@ function loadUserContractABI(): any {
     }
 }
 
+
 interface UserContract extends ethers.Contract {
     // @ts-ignore
-    processTAHelloWorld(publicKey: any, ta: any): Promise<ethers.ContractTransactionResponse>;
+    processTransitivelyAttestedHelloWorldOutput(publicKey: string, ta: string): Promise<ethers.ContractTransactionResponse>;
 }
 
 describe("Local Test", function (): void {
@@ -80,13 +81,14 @@ describe("Local Test", function (): void {
         const evmLinkData: EVMLinkData = loadEVMLinkData("../inputs/out.json");
         const publicKey: string = evmLinkData.publicKey;
 
-        const {userContract} = await loadFixture(deployUser);
+        const {userContract} = await loadFixture(deployUser) as UserContract;
 
         // when
         const ta: string = evmLinkData.transitiveAttestation;
-        const tx: ethers.ContractTransactionResponse = await userContract.processTAHelloWorld(
-            publicKey as any,
-            ta as any
+        const tx: ethers.ContractTransactionResponse =
+            await userContract.processTransitivelyAttestedHelloWorldOutput(
+            publicKey,
+            ta,
         )
 
         // then
@@ -115,7 +117,10 @@ describe("Base Sepolia Tests", function (): void {
         const publicKey: string = evmLinkData.publicKey;
         const ta: string = evmLinkData.transitiveAttestation;
         const tx: ethers.ContractTransactionResponse =
-            await userContract.processTAHelloWorld(publicKey, ta)
+            await userContract.processTransitivelyAttestedHelloWorldOutput(
+                publicKey,
+                ta,
+            )
         // poll instead of tx.wait() to get the lowest possible delay
         for (; ;) {
             const txReceipt: ethers.TransactionReceipt | null =

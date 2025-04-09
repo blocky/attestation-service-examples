@@ -7,7 +7,7 @@ import {console} from "hardhat/console.sol";
 contract User {
     event AttestedFunctionCallOutput(string output);
 
-    function processTAHelloWorld(
+    function processTransitivelyAttestedHelloWorldOutput(
         bytes calldata applicationPublicKey,
         string calldata transitiveAttestation
     )
@@ -16,7 +16,7 @@ contract User {
         address applicationPublicKeyAsAddress  = TAParserLib.publicKeyToAddress(
             applicationPublicKey
         );
-        TAParserLib.FnCallClaims memory claims = TAParserLib.verifyAttestedFnCall(
+        TAParserLib.FnCallClaims memory claims = TAParserLib.verifyTransitivelyAttestedFnCall(
             applicationPublicKeyAsAddress,
             transitiveAttestation
         );
