@@ -11,15 +11,18 @@ contract User {
         bytes calldata applicationPublicKey,
         string calldata transitiveAttestation
     )
-        public
+    public
     {
-        address applicationPublicKeyAsAddress  = TAParserLib.publicKeyToAddress(
+        TAParserLib.FnCallClaims memory claims;
+
+        address applicationPublicKeyAsAddress = TAParserLib.publicKeyToAddress(
             applicationPublicKey
         );
-        TAParserLib.FnCallClaims memory claims = TAParserLib.verifyTransitivelyAttestedFnCall(
-            applicationPublicKeyAsAddress,
-            transitiveAttestation
-        );
+
+        claims = TAParserLib.verifyTransitivelyAttestedFnCall(
+                applicationPublicKeyAsAddress,
+                transitiveAttestation
+            );
 
         console.log("Verified attest-fn-call claims:");
         console.log("\tFunction: %s", claims.Function);
