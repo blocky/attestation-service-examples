@@ -50,11 +50,12 @@ Output:
 
 ### Step 1: Create a function for getting the current time
 
-By default, the `wazero` runtime does not provide sandboxed functions access to
+Normally, the Blocky AS runtime does not provide sandboxed functions access to
 the system clock. Instead, they are given a hardcoded time that monotonically 
-increases by "1ns" for every subsequent call. In the Blocky AS environment,
-however, we have configured `wazero` to grant functions access to the system
-clock.
+increases by "1ns" for every subsequent call. Starting with 0.1.0-beta.6, the
+Blocky AS runtime fetches the current time from a remote time-server and
+provides these values to functions in the sandboxed environment via standard
+system calls.
 
 This means that your Blocky AS functions can fetch time using standard library
 calls same as if they were executing in a non-TEE environment. We define a 
