@@ -57,9 +57,8 @@ however, we have configured `wazero` to grant functions access to the system
 clock.
 
 This means that your Blocky AS functions can fetch time using standard library
-calls same as if they were executing in a normal environment. Indeed, the time
-function defined in [`main.go`](./main.go) is a simple wrapper for the
-`time.Now()` standard library call.
+calls same as if they were executing in a non-TEE environment. We define a 
+simple function in [`main.go`](./main.go) that calls `time.Now()`.
 
 ```go
 //export timeNow
@@ -72,29 +71,7 @@ While time related functions are supported, it is important to note that system
 sleep functions **are not**. Attempting to use functions that rely on system
 sleep (e.g., `time.Sleep()`) will cause your function to panic.
 
-### Step 2: Compile the function to WebAssembly (WASM)
-
-To invoke our function in the Blocky AS server, we first need to compile
-it into a WASM file. If you inspect the `build` target in the
-[`Makefile`](./Makefile), you'll see the build command:
-
-```bash
-@docker run --rm \
-    -v .:/src \
-    -w /src \
-    tinygo/tinygo:0.31.2 \
-    tinygo build -o tmp/x.wasm -target=wasi ./...
-```
-
-where we use `docker` to run [`tinygo`](https://tinygo.org/) to compile
-[`main.go`](./main.go) to WASM and save it to `tmp/x.wasm`. You can build our
-function by calling:
-
-```bash
-make build
-```
-
-### Step 3: Invoke the function on the Blocky AS server
+### Step 2: Invoke the function on the Blocky AS server
 
 To invoke the `timeNow` example, call:
 
