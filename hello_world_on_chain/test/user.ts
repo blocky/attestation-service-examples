@@ -15,7 +15,7 @@ type EVMLinkData = {
 
 function loadEVMLinkData(jsonPath: string): EVMLinkData {
     try {
-        const dir: string = path.resolve( __dirname, jsonPath);
+        const dir: string = path.resolve(__dirname, jsonPath);
         const file: string = fs.readFileSync(dir, "utf8");
 
         const data: any = JSON.parse(file);
@@ -25,18 +25,18 @@ function loadEVMLinkData(jsonPath: string): EVMLinkData {
         const pubKeyBytes: Uint8Array = ethers.decodeBase64(k)
         const publicKeyHex: string = Buffer.from(pubKeyBytes).toString('hex');
 
-        const taBytes:Uint8Array = ethers.decodeBase64(
+        const taBytes: Uint8Array = ethers.decodeBase64(
             data.transitive_attested_function_call.transitive_attestation
         )
         const ta: string = Buffer.from(taBytes).toString('utf-8');
 
-        return { publicKey: `0x${publicKeyHex}`, transitiveAttestation: ta};
+        return {publicKey: `0x${publicKeyHex}`, transitiveAttestation: ta};
     } catch (e) {
         throw new Error(`Error loading EVM link data: ` + e);
     }
 }
 
-const loadUserDeployedAddress: () => string  = () : string  => {
+function loadUserDeployedAddress(): string {
     try {
         const dir: string = path.resolve(
             __dirname,
@@ -50,7 +50,7 @@ const loadUserDeployedAddress: () => string  = () : string  => {
     }
 }
 
-const loadUserContractABI: () => any = () : any =>  {
+function loadUserContractABI(): any {
     try {
         const dir: string = path.resolve(
             __dirname,
@@ -71,7 +71,7 @@ interface UserContract extends ethers.Contract {
 
 describe("Local Test", function (): void {
     async function deployUser(): Promise<{ userContract: User }> {
-        const contract: User = await hre.ethers.deployContract("User") ;
+        const contract: User = await hre.ethers.deployContract("User");
         return {userContract: contract};
     }
 
@@ -114,15 +114,12 @@ describe("Base Sepolia Tests", function (): void {
     it("Verify TA", async (): Promise<void> => {
         const publicKey: string = evmLinkData.publicKey;
         const ta: string = evmLinkData.transitiveAttestation;
-        const tx: ethers.ContractTransactionResponse = await userContract.processTAHelloWorld(
-            publicKey as any,
-            ta as any
-        )
+        const tx: ethers.ContractTransactionResponse =
+            await userContract.processTAHelloWorld(publicKey, ta)
         // poll instead of tx.wait() to get the lowest possible delay
         for (; ;) {
-            const txReceipt: ethers.TransactionReceipt | null = await provider.getTransactionReceipt(
-                tx.hash,
-            );
+            const txReceipt: ethers.TransactionReceipt | null =
+                await provider.getTransactionReceipt(tx.hash);
             if (txReceipt && txReceipt.blockNumber) {
                 break
             }
