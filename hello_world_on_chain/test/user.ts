@@ -1,79 +1,95 @@
+// noinspection DuplicatedCode
+
 import hre from "hardhat";
 import {loadFixture} from "@nomicfoundation/hardhat-toolbox/network-helpers";
 import {expect} from "chai";
 import {ethers} from "ethers";
+import fs from "fs";
+import path from "path";
+import {User} from "../typechain-types";
 
-const fs = require("fs")
-const path = require("path")
+type EVMLinkData = {
+    publicKey: string;
+    transitiveAttestation: string;
+};
 
-function loadEVMLinkData(jsonPath: string) {
+function loadEVMLinkData(jsonPath: string): EVMLinkData {
     try {
-        const dir = path.resolve( __dirname, jsonPath);
-        const file = fs.readFileSync(dir);
+        const dir: string = path.resolve(__dirname, jsonPath);
+        const file: string = fs.readFileSync(dir, "utf8");
 
-        const data = JSON.parse(file);
+        const data: any = JSON.parse(file);
 
-        const k = data.enclave_attested_application_public_key.claims.public_key.data
-        const pubKeyBytes = ethers.decodeBase64(k)
-        const publicKeyHex = Buffer.from(pubKeyBytes).toString('hex');
+        const k: any =
+            data.enclave_attested_application_public_key.claims.public_key.data
+        const pubKeyBytes: Uint8Array = ethers.decodeBase64(k)
+        const publicKeyHex: string = Buffer.from(pubKeyBytes).toString('hex');
 
-        const taBytes = ethers.decodeBase64(data.transitive_attested_function_call.transitive_attestation)
-        const ta = Buffer.from(taBytes).toString('utf-8');
+        const taBytes: Uint8Array = ethers.decodeBase64(
+            data.transitive_attested_function_call.transitive_attestation
+        )
+        const ta: string = Buffer.from(taBytes).toString('utf-8');
 
-        return {
-            publicKey: `0x${publicKeyHex}`,
-            transitiveAttestation: ta
-        };
+        return {publicKey: `0x${publicKeyHex}`, transitiveAttestation: ta};
     } catch (e) {
-        console.log(`e`, e)
+        throw new Error(`Error loading EVM link data: ` + e);
     }
 }
 
-const loadUserDeployedAddress = () => {
+function loadUserDeployedAddress(): string {
     try {
-        const dir = path.resolve(
+        const dir: string = path.resolve(
             __dirname,
             "../deployments/user_deployed_address"
         )
-        const file = fs.readFileSync(dir, "utf8")
+        const file: string = fs.readFileSync(dir, "utf8")
 
         return file.toString()
     } catch (e) {
-        console.log(`e`, e)
+        throw new Error(`loading user deployed address: ` + e);
     }
 }
 
-const loadUserContractABI = () => {
+function loadUserContractABI(): any {
     try {
-        const dir = path.resolve(
+        const dir: string = path.resolve(
             __dirname,
             "../artifacts/contracts/User.sol/User.json"
         )
-        const file = fs.readFileSync(dir, "utf8")
-        const json = JSON.parse(file)
+        const file: string = fs.readFileSync(dir, "utf8")
+        const json: any = JSON.parse(file)
         return json.abi
     } catch (e) {
-        console.log(`e`, e)
+        throw new Error(`loading user contract ABI: ` + e);
     }
 }
 
-describe("Local Test", function () {
-    async function deployUser() {
-        const contract = await hre.ethers.deployContract("User");
+
+interface UserContract extends ethers.Contract {
+    // @ts-ignore
+    processTransitivelyAttestedHelloWorldOutput(publicKey: string, ta: string): Promise<ethers.ContractTransactionResponse>;
+}
+
+describe("Local Test", function (): void {
+    async function deployUser(): Promise<{ userContract: User }> {
+        const contract: User = await hre.ethers.deployContract("User");
         return {userContract: contract};
     }
 
-    it("Set signing key and verify TA", async () => {
+    it("Verify TA", async (): Promise<void> => {
         // given
-        const evmLinkData = loadEVMLinkData("../inputs/out.json");
-        const publicKey = evmLinkData.publicKey;
+        const evmLinkData: EVMLinkData = loadEVMLinkData("../inputs/out.json");
+        const publicKey: string = evmLinkData.publicKey;
 
-        const {userContract} = await loadFixture(deployUser);
-        await userContract.setTASigningKeyAddress(publicKey as any);
+        const {userContract} = await loadFixture(deployUser) as UserContract;
 
         // when
-        const ta = evmLinkData.transitiveAttestation;
-        const tx = await userContract.verifyAttestedFnCallClaims(ta as any)
+        const ta: string = evmLinkData.transitiveAttestation;
+        const tx: ethers.ContractTransactionResponse =
+            await userContract.processTransitivelyAttestedHelloWorldOutput(
+            publicKey,
+            ta,
+        )
 
         // then
         await expect(tx).to.emit(
@@ -83,7 +99,7 @@ describe("Local Test", function () {
     })
 });
 
-describe("Base Sepolia Tests", function () {
+describe("Base Sepolia Tests", function (): void {
     const url = 'https://sepolia.base.org';
     const provider = new ethers.JsonRpcProvider(url);
     const privateKey = process.env.WALLET_KEY as string
@@ -93,22 +109,22 @@ describe("Base Sepolia Tests", function () {
         loadUserDeployedAddress(),
         loadUserContractABI(),
         signer
-    );
+    ) as UserContract;
 
-    const evmLinkData = loadEVMLinkData("../inputs/out.json");
+    const evmLinkData: EVMLinkData = loadEVMLinkData("../inputs/out.json");
 
-    it("Set signing key", async () => {
-        const publicKey = evmLinkData.publicKey;
-        const tx = await userContract.setTASigningKeyAddress(publicKey as any);
-        await tx.wait()
-    })
-
-    it("Verify TA", async () => {
-        const ta = evmLinkData.transitiveAttestation;
-        const tx = await userContract.verifyAttestedFnCallClaims(ta)
+    it("Verify TA", async (): Promise<void> => {
+        const publicKey: string = evmLinkData.publicKey;
+        const ta: string = evmLinkData.transitiveAttestation;
+        const tx: ethers.ContractTransactionResponse =
+            await userContract.processTransitivelyAttestedHelloWorldOutput(
+                publicKey,
+                ta,
+            )
         // poll instead of tx.wait() to get the lowest possible delay
         for (; ;) {
-            const txReceipt = await provider.getTransactionReceipt(tx.hash);
+            const txReceipt: ethers.TransactionReceipt | null =
+                await provider.getTransactionReceipt(tx.hash);
             if (txReceipt && txReceipt.blockNumber) {
                 break
             }
