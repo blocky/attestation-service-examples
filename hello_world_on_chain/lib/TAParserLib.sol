@@ -23,7 +23,7 @@ library TAParserLib {
     function publicKeyToAddress(
         bytes calldata publicKey
     )
-    internal pure returns (address)
+        internal pure returns (address)
     {
         // strip out the public key prefix byte
         bytes memory strippedPublicKey = new bytes(publicKey.length - 1);
@@ -34,13 +34,29 @@ library TAParserLib {
         return address(uint160(uint256(keccak256(strippedPublicKey))));
     }
 
-    function parseTA(
-        string calldata taData,
-        address publicKeyAddress
+    function verifyTransitivelyAttestedFnCall(
+        address applicationPublicKey,
+        string calldata transitiveAttestation
     )
-    internal pure returns (FnCallClaims memory)
+        internal pure returns (FnCallClaims memory)
     {
-        TA memory ta = decodeTA(taData);
+        string memory verifiedTAData = verifyTA(
+            applicationPublicKey,
+            transitiveAttestation
+        );
+        TAParserLib.FnCallClaims memory verifiedClaims = decodeFnCallClaims(
+            verifiedTAData
+        );
+        return verifiedClaims;
+    }
+
+    function verifyTA(
+        address publicKeyAddress,
+        string calldata transitiveAttestation
+    )
+        private pure returns (string memory)
+    {
+        TA memory ta = decodeTA(transitiveAttestation);
 
         bytes memory sigAsBytes = Base64.decode(ta.Sig);
         bytes32 r = BytesLib.toBytes32(sigAsBytes, 0);
@@ -53,23 +69,13 @@ library TAParserLib {
 
         require(publicKeyAddress == recovered, "Could not verify signature");
 
-        FnCallClaims memory claims = decodeFnCallClaims(ta.Data);
-
-        return claims;
-    }
-
-    function base64d(
-        string memory base64Input
-    )
-    private pure returns (string memory) {
-        bytes memory decodedBytes = Base64.decode(base64Input);
-        return string(decodedBytes);
+        return ta.Data;
     }
 
     function decodeTA(
         string calldata taData
     )
-    private pure returns (TA memory)
+        private pure returns (TA memory)
     {
         TA memory ta;
 
@@ -78,6 +84,10 @@ library TAParserLib {
         uint success;
         (success, tokens, number) = JsmnSolLib.parse(taData, 3);
 
+        // The flat rep of a TA is an array of 2 byte arrays.
+        // As such, we expect to have 3 tokens.
+        // Item 0 is the array of byte arrays with 1 and 2 as the content.
+        require(number == 3, "Wrong number of tokens");
         ta.Data = JsmnSolLib.getBytes(taData, tokens[1].start, tokens[1].end);
         ta.Sig = JsmnSolLib.getBytes(taData, tokens[2].start, tokens[2].end);
 
@@ -87,7 +97,7 @@ library TAParserLib {
     function decodeFnCallClaims(
         string memory data
     )
-    private pure returns (FnCallClaims memory)
+        private pure returns (FnCallClaims memory)
     {
         FnCallClaims memory claims;
 
@@ -96,8 +106,12 @@ library TAParserLib {
         JsmnSolLib.Token[] memory tokens;
         uint number;
         uint success;
-        (success, tokens, number) = JsmnSolLib.parse(b64, 20);
+        (success, tokens, number) = JsmnSolLib.parse(b64, 6);
 
+        // The flat rep of fn call claims is an array of 5 byte arrays.
+        // As such, we expect to have 6 tokens.
+        // Item 0 is the array of byte arrays with 1..5 as the content.
+        require(number == 6, "Wrong number of tokens");
         claims.HashOfCode = base64d(JsmnSolLib.getBytes(b64, tokens[1].start, tokens[1].end));
         claims.Function = base64d(JsmnSolLib.getBytes(b64, tokens[2].start, tokens[2].end));
         claims.HashOfInput = base64d(JsmnSolLib.getBytes(b64, tokens[3].start, tokens[3].end));
@@ -105,5 +119,14 @@ library TAParserLib {
         claims.HashOfSecrets = base64d(JsmnSolLib.getBytes(b64, tokens[5].start, tokens[5].end));
 
         return claims;
+    }
+
+    function base64d(
+        string memory base64Input
+    )
+        private pure returns (string memory)
+    {
+        bytes memory decodedBytes = Base64.decode(base64Input);
+        return string(decodedBytes);
     }
 }
