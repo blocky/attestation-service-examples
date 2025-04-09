@@ -1,4 +1,4 @@
-# Time - Getting Wall Time
+# Accessing Wall Clock Time
 
 This example shows you how to use the Blocky Attestation Service (Blocky AS) to
 attest simple function call that gets the current wall clock time.
