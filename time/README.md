@@ -12,7 +12,7 @@ examples.
 
 You'll learn how to:
 
-- Get the current wall clock time
+- Access the current wall clock time in your WASM function
 
 *Note: Wall time only works on Blocky AS versions 0.1.0-beta.6 and above.
 While this example may run on previous versions it will generate time based
