@@ -9,19 +9,19 @@ check:
 	@command -v bky-as >/dev/null 2>&1 || { echo >&2 "bky-as not found in PATH. Aborting."; exit 1; }
 	@command -v jq >/dev/null 2>&1 || { echo >&2 "jq not found in PATH. Aborting."; exit 1; }
 
-SRCS := $(shell find . -name '*.go')
-DEPS := go.mod go.sum
+init:
+	@install -d -o 1000 -g 1000 ${HOME}/.cache/bky-as/tinygo-dot-cache
+	@install -d -o 1000 -g 1000 ${HOME}/.cache/bky-as/tinygo-go-path
 
-tmp/x.wasm: $(SRCS) $(DEPS) | tmp check
-	@echo "Building WASM module..."
+build: 
+	@echo "Building WASM **module..."
 	@docker run --rm \
-        -v .:/src \
-        -w /src \
-        tinygo/tinygo:0.31.2 \
-        tinygo build -o tmp/x.wasm -target=wasi ./...
-
-.PHONY: build
-build: tmp/x.wasm
+		-v .:/src \
+		-v ${HOME}/.cache/bky-as/tinygo-dot-cache:/home/tinygo/.cache \
+		-v ${HOME}/.cache/bky-as/tinygo-go-path:/home/tinygo/go \
+		-w /src \
+		tinygo/tinygo:0.31.2 \
+		tinygo build -x -o tmp/x.wasm -target=wasi ./...
 
 .PHONY: run
 run: check build
