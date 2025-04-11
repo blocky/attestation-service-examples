@@ -16,8 +16,10 @@ init:
 SRCS := $(shell find . -name '*.go')
 DEPS := go.mod go.sum
 
+# Working version, ~minute cold start, ~6s with caching
 tmp/x.wasm: $(SRCS) $(DEPS) | tmp check
 	@echo "Building WASM **module..."
+	-docker rm -f tinygo-builder 2>/dev/null || true
 	-docker run -dit --name tinygo-builder \
 		-v .:/src \
 		-v ${HOME}/.cache/bky-as/tinygo-dot-cache:/home/tinygo/.cache \
@@ -28,8 +30,7 @@ tmp/x.wasm: $(SRCS) $(DEPS) | tmp check
 	-docker exec -u root tinygo-builder chown -R 1000:1000 /home/tinygo/go
 	-docker exec -w /src  -u tinygo tinygo-builder \
  		tinygo build -x -o tmp/x.wasm -target=wasi ./...
-	-docker stop tinygo-builder
-	-docker rm tinygo-builder
+	-docker stop tinygo-builder > /dev/null 2>&1 && docker rm tinygo-builder > /dev/null 2>&1 &
 
 .PHONY: build
 build: tmp/x.wasm
