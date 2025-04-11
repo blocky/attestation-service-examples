@@ -9,19 +9,64 @@ check:
 	@command -v bky-as >/dev/null 2>&1 || { echo >&2 "bky-as not found in PATH. Aborting."; exit 1; }
 	@command -v jq >/dev/null 2>&1 || { echo >&2 "jq not found in PATH. Aborting."; exit 1; }
 
+init:
+	@install -d -o 1000 -g 1000 ${HOME}/.cache/bky-as/tinygo-dot-cache
+	@install -d -o 1000 -g 1000 ${HOME}/.cache/bky-as/tinygo-go-path
+
 SRCS := $(shell find . -name '*.go')
 DEPS := go.mod go.sum
 
 tmp/x.wasm: $(SRCS) $(DEPS) | tmp check
-	@echo "Building WASM module..."
-	@docker run --rm \
-        -v .:/src \
-        -w /src \
-        tinygo/tinygo:0.31.2 \
-        tinygo build -o tmp/x.wasm -target=wasi ./...
+	@echo "Building WASM **module..."
+	-docker run -dit --name tinygo-builder \
+		-v .:/src \
+		-v ${HOME}/.cache/bky-as/tinygo-dot-cache:/home/tinygo/.cache \
+		-v ${HOME}/.cache/bky-as/tinygo-go-path:/home/tinygo/go \
+		-w /src \
+	    tinygo/tinygo:0.31.2 sleep infinity
+	-docker exec -u root tinygo-builder chown -R 1000:1000 /home/tinygo/.cache
+	-docker exec -u root tinygo-builder chown -R 1000:1000 /home/tinygo/go
+	-docker exec -w /src  -u tinygo tinygo-builder \
+ 		tinygo build -x -o tmp/x.wasm -target=wasi ./...
+	-docker stop tinygo-builder
+	-docker rm tinygo-builder
 
 .PHONY: build
 build: tmp/x.wasm
+
+#	@docker run --rm -u root \
+#		-v .:/src \
+#		-v ${HOME}/.cache/bky-as/tinygo-dot-cache:/home/tinygo/.cache \
+#		-v ${HOME}/.cache/bky-as/tinygo-go-path:/home/tinygo/go \
+#		-w /src \
+#		tinygo/tinygo:0.31.2 \
+#		sh -c "chown -R 1000:1000 /home/tinygo/.cache && chown -R 1000:1000 /home/tinygo/go && tinygo build -x -o tmp/x.wasm -target=wasi ./..."
+
+#docker run -dit --name tinygo-builder \
+#  -v "$PWD":/src \
+#  -v tinygo-modcache:/go \
+#  -v tinygo-cache:/home/tinygo/.cache \
+#  -w /src \
+#  tinygo/tinygo:0.31.2 sleep infinity
+#
+## then:
+#docker exec tinygo-builder tinygo build -o bin.wasm -target=wasi ./...
+
+
+#docker run --rm -u root \
+#  -v ${HOME}/.cache/myCache:/home/tinygo/.cache \
+#  -w /src \
+#  tinygo/tinygo:0.31.2 \
+#  sh -c "chown -R 1000:1000 /home/tinygo/.cache && tinygo build -o bin.wasm -target=wasi ./main.go"
+
+
+#docker run --rm \
+#  -v ${HOME}/.cache/myCache:/home/tinygo/.cache \
+#  -v $(pwd):/src \
+#  -w /src \
+#  tinygo/tinygo:0.31.2 \
+#  sh -c "chown -R root:root /home/tinygo/.cache && chown -R 1000:1000 /home/tinygo/.cache/myCache && tinygo build -o bin.wasm -target=wasi ./main.go"
+
 
 .PHONY: run
 run: check build
@@ -35,4 +80,3 @@ run: check build
 .PHONY: clean
 clean:
 	@rm -rf tmp
-
