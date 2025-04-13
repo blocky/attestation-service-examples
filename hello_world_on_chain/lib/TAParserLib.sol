@@ -1,10 +1,7 @@
 //  SPDX-License-Identifier: MIT
 pragma solidity ^0.8.10;
 
-import {JsmnSolLib} from "./JsmnSolLib.sol";
-import {Base64} from "base64-sol/base64.sol";
 import {BytesLib} from "solidity-bytes-utils/contracts/BytesLib.sol";
-import {console} from "hardhat/console.sol";
 
 library TAParserLib {
 
@@ -59,13 +56,11 @@ library TAParserLib {
     {
         TA memory ta = decodeTA(transitiveAttestation);
 
-        // bytes memory sigAsBytes = Base64.decode(ta.Sig);
         bytes memory sigAsBytes = ta.Sig;
         bytes32 r = BytesLib.toBytes32(sigAsBytes, 0);
         bytes32 s = BytesLib.toBytes32(sigAsBytes, 32);
         uint8 v = 27 + uint8(sigAsBytes[64]);
 
-        // bytes memory dataAsBytes = Base64.decode(ta.Data);
         bytes memory dataAsBytes = ta.Data;
         bytes32 dataHash = keccak256(dataAsBytes);
         address recovered = ecrecover(dataHash, v, r, s);
@@ -74,13 +69,6 @@ library TAParserLib {
 
         return ta.Data;
     }
-
-
-     function decodeInput(bytes calldata input) external pure returns (bytes memory, bytes memory) {
-            bytes[] memory decoded = abi.decode(input, (bytes[]));
-            return (decoded[0], decoded[1]);
-        }
-
 
     function decodeTA(
         bytes calldata taData
@@ -115,14 +103,5 @@ library TAParserLib {
         claims.HashOfSecrets = decodedData[4];
 
         return claims;
-    }
-
-    function base64d(
-        string memory base64Input
-    )
-        private pure returns (string memory)
-    {
-        bytes memory decodedBytes = Base64.decode(base64Input);
-        return string(decodedBytes);
     }
 }
