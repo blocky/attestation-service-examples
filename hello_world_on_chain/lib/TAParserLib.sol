@@ -4,20 +4,21 @@ pragma solidity ^0.8.10;
 import {JsmnSolLib} from "./JsmnSolLib.sol";
 import {Base64} from "base64-sol/base64.sol";
 import {BytesLib} from "solidity-bytes-utils/contracts/BytesLib.sol";
+import {console} from "hardhat/console.sol";
 
 library TAParserLib {
 
     struct TA {
-        string Data;
-        string Sig;
+        bytes Data;
+        bytes Sig;
     }
 
     struct FnCallClaims {
-        string HashOfCode;
-        string Function;
-        string HashOfInput;
-        string HashOfSecrets;
-        string Output;
+        bytes HashOfCode;
+        bytes Function;
+        bytes HashOfInput;
+        bytes HashOfSecrets;
+        bytes Output;
     }
 
     function publicKeyToAddress(
@@ -36,11 +37,11 @@ library TAParserLib {
 
     function verifyTransitivelyAttestedFnCall(
         address applicationPublicKey,
-        string calldata transitiveAttestation
+        bytes calldata transitiveAttestation
     )
         internal pure returns (FnCallClaims memory)
     {
-        string memory verifiedTAData = verifyTA(
+        bytes memory verifiedTAData = verifyTA(
             applicationPublicKey,
             transitiveAttestation
         );
@@ -52,18 +53,20 @@ library TAParserLib {
 
     function verifyTA(
         address publicKeyAddress,
-        string calldata transitiveAttestation
+        bytes calldata transitiveAttestation
     )
-        private pure returns (string memory)
+        private pure returns (bytes memory)
     {
         TA memory ta = decodeTA(transitiveAttestation);
 
-        bytes memory sigAsBytes = Base64.decode(ta.Sig);
+        // bytes memory sigAsBytes = Base64.decode(ta.Sig);
+        bytes memory sigAsBytes = ta.Sig;
         bytes32 r = BytesLib.toBytes32(sigAsBytes, 0);
         bytes32 s = BytesLib.toBytes32(sigAsBytes, 32);
         uint8 v = 27 + uint8(sigAsBytes[64]);
 
-        bytes memory dataAsBytes = Base64.decode(ta.Data);
+        // bytes memory dataAsBytes = Base64.decode(ta.Data);
+        bytes memory dataAsBytes = ta.Data;
         bytes32 dataHash = keccak256(dataAsBytes);
         address recovered = ecrecover(dataHash, v, r, s);
 
@@ -72,51 +75,44 @@ library TAParserLib {
         return ta.Data;
     }
 
+
+     function decodeInput(bytes calldata input) external pure returns (bytes memory, bytes memory) {
+            bytes[] memory decoded = abi.decode(input, (bytes[]));
+            return (decoded[0], decoded[1]);
+        }
+
+
     function decodeTA(
-        string calldata taData
+        bytes calldata taData
     )
         private pure returns (TA memory)
     {
         TA memory ta;
 
-        JsmnSolLib.Token[] memory tokens;
-        uint number;
-        uint success;
-        (success, tokens, number) = JsmnSolLib.parse(taData, 3);
+        bytes[] memory decodedTA = abi.decode(taData, (bytes[]));
+        require(decodedTA.length == 2, "Expected 2 elements");
 
-        // The flat rep of a TA is an array of 2 byte arrays.
-        // As such, we expect to have 3 tokens.
-        // Item 0 is the array of byte arrays with 1 and 2 as the content.
-        require(number == 3, "Wrong number of tokens");
-        ta.Data = JsmnSolLib.getBytes(taData, tokens[1].start, tokens[1].end);
-        ta.Sig = JsmnSolLib.getBytes(taData, tokens[2].start, tokens[2].end);
+        ta.Data = decodedTA[0];
+        ta.Sig = decodedTA[1];
 
         return ta;
     }
 
     function decodeFnCallClaims(
-        string memory data
+        bytes memory data
     )
         private pure returns (FnCallClaims memory)
     {
         FnCallClaims memory claims;
 
-        string memory b64 = base64d(data);
+        bytes[] memory decodedData = abi.decode(data, (bytes[]));
+        require(decodedData.length == 5, "Expected 5 elements");
 
-        JsmnSolLib.Token[] memory tokens;
-        uint number;
-        uint success;
-        (success, tokens, number) = JsmnSolLib.parse(b64, 6);
-
-        // The flat rep of fn call claims is an array of 5 byte arrays.
-        // As such, we expect to have 6 tokens.
-        // Item 0 is the array of byte arrays with 1..5 as the content.
-        require(number == 6, "Wrong number of tokens");
-        claims.HashOfCode = base64d(JsmnSolLib.getBytes(b64, tokens[1].start, tokens[1].end));
-        claims.Function = base64d(JsmnSolLib.getBytes(b64, tokens[2].start, tokens[2].end));
-        claims.HashOfInput = base64d(JsmnSolLib.getBytes(b64, tokens[3].start, tokens[3].end));
-        claims.Output = base64d(JsmnSolLib.getBytes(b64, tokens[4].start, tokens[4].end));
-        claims.HashOfSecrets = base64d(JsmnSolLib.getBytes(b64, tokens[5].start, tokens[5].end));
+        claims.HashOfCode = decodedData[0];
+        claims.Function = decodedData[1];
+        claims.HashOfInput = decodedData[2];
+        claims.Output = decodedData[3];
+        claims.HashOfSecrets = decodedData[4];
 
         return claims;
     }
