@@ -28,15 +28,10 @@ contract User {
             applicationPublicKey
         );
 
-        uint256 startGas = gasleft();
-
         claims = TAParserLib.verifyTransitivelyAttestedFnCall(
             applicationPublicKeyAsAddress,
             transitiveAttestation
         );
-
-        uint256 endGas = gasleft();
-        console.log("Gas used: %s", startGas-endGas);
 
         console.log("Verified attest-fn-call claims:");
         labeledLog("Function", claims.Function);
