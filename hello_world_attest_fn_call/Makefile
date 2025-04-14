@@ -105,7 +105,7 @@ tmp5/x.wasm: $(SRCS) $(DEPS) | tmp check
 tmp/x.wasm: $(SRCS) $(DEPS) | tmp check
 	@echo "Building WASM **module..."
 	-@docker rm -f $(CONTAINER_NAME) > /dev/null 2>&1 || true
-	-@docker run --init --mount type=tmpfs,destination=${PWD}/tmp -di --name $(CONTAINER_NAME) \
+	-@docker run -di --name $(CONTAINER_NAME) \
 		-v .:/src \
 		-v ${HOME}/.cache/bky-as/tinygo-dot-cache:/home/tinygo/.cache \
 		-v ${HOME}/.cache/bky-as/tinygo-go-path:/home/tinygo/go \
@@ -115,7 +115,7 @@ tmp/x.wasm: $(SRCS) $(DEPS) | tmp check
  		chown -R 1000:1000 /home/tinygo/.cache
 	-@docker exec -u root $(CONTAINER_NAME) \
  		chown -R 1000:1000 /home/tinygo/go
-	-@docker exec -w /src  -u tinygo $(CONTAINER_NAME) \
+	-@docker exec -w /src -u tinygo $(CONTAINER_NAME) \
  		tinygo build $(TINYGO_FLAGS) -o tmp/x.wasm -target=wasi ./...
 	-@docker stop $(CONTAINER_NAME) > /dev/null 2>&1 && docker rm $(CONTAINER_NAME) > /dev/null 2>&1 &
 
