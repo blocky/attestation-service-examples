@@ -25,12 +25,12 @@ function loadEVMLinkData(jsonPath: string): EVMLinkData {
         const pubKeyBytes: Uint8Array = ethers.decodeBase64(k)
         const publicKeyHex: string = Buffer.from(pubKeyBytes).toString('hex');
 
-        const taBytes: Uint8Array = ethers.decodeBase64(
+        const j: any =
             data.transitive_attested_function_call.transitive_attestation
-        )
-        const ta: string = Buffer.from(taBytes).toString('utf-8');
+        const taBytes: Uint8Array = ethers.decodeBase64(j)
+        const ta: string = Buffer.from(taBytes).toString('hex');
 
-        return {publicKey: `0x${publicKeyHex}`, transitiveAttestation: ta};
+        return {publicKey: `0x${publicKeyHex}`, transitiveAttestation: `0x${ta}`};
     } catch (e) {
         throw new Error(`Error loading EVM link data: ` + e);
     }
