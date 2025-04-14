@@ -76,3 +76,16 @@ run-all: \
 	run-time \
 	run-params-and-secrets
 	@echo "All tests passed!"
+
+run-not-all: \
+	run-hello-world-attest-fn-call \
+	run-error-handling-attest-fn-call \
+	run-coin-prices-from-coingecko \
+	run-esports-data-from-rimble \
+	run-sports-data-from-sportradar \
+	run-shipment_tracking_with_dhl \
+	run-twap-fn-call  \
+	run-random \
+	run-time \
+	run-params-and-secrets
+	@echo "All tests passed!"
