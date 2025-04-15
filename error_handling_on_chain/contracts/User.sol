@@ -20,6 +20,7 @@ contract User {
     function processTransitivelyAttestedResult(
         bytes calldata applicationPublicKey,
         bytes calldata transitiveAttestation
+    )
     public
     {
         TAParserLib.FnCallClaims memory claims;
@@ -27,8 +28,6 @@ contract User {
         address applicationPublicKeyAsAddress = TAParserLib.publicKeyToAddress(
             applicationPublicKey
         );
-
-        console.log("1")
 
         claims = TAParserLib.verifyTransitivelyAttestedFnCall(
             applicationPublicKeyAsAddress,

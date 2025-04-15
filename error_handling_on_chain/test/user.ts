@@ -98,19 +98,19 @@ describe("Local Test", function (): void {
         ).withArgs("{\"number\":42}")
     })
 
-    // it("Verify TA and parse Result w/error", async (): Promise<void> => {
-    //     // given
-    //     const evmLinkData: EVMLinkData = loadEVMLinkData("../inputs/out-error.json");
-    //     const {userContract} = await loadFixture(deployUser) as UserContract;
-    //
-    //     // when/then
-    //     await expect(
-    //         userContract.processTransitivelyAttestedResult(
-    //             evmLinkData.publicKey,
-    //             evmLinkData.transitiveAttestation
-    //         )
-    //     ).to.be.revertedWith("expected error")
-    // })
+    it("Verify TA and parse Result w/error", async (): Promise<void> => {
+        // given
+        const evmLinkData: EVMLinkData = loadEVMLinkData("../inputs/out-error.json");
+        const {userContract} = await loadFixture(deployUser) as UserContract;
+
+        // when/then
+        await expect(
+            userContract.processTransitivelyAttestedResult(
+                evmLinkData.publicKey,
+                evmLinkData.transitiveAttestation
+            )
+        ).to.be.revertedWith("expected error")
+    })
 });
 
 describe("Base Sepolia Tests", function (): void {

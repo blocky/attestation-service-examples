@@ -26,21 +26,21 @@ build: tmp/x.wasm
 .PHONY: run-success
 run-success: check build
 	@echo "Running WASM module..."
-	@cat successFunc.json | bky-as attest-fn-call >tmp/successout.json
+	@cat successFunc.json | bky-as attest-fn-call >tmp/out-success.json
 	@echo "Output:"
-	@jq -r '.transitive_attested_function_call.claims.output | @base64d | fromjson' tmp/successout.json
+	@jq -r '.transitive_attested_function_call.claims.output | @base64d | fromjson' tmp/out-success.json
 
 .PHONY: run-error
 run-error: check build
 	@echo "Running WASM module..."
-	@cat errorFunc.json | bky-as attest-fn-call >tmp/errorout.json
+	@cat errorFunc.json | bky-as attest-fn-call >tmp/out-error.json
 	@echo "Output:"
-	@jq -r '.transitive_attested_function_call.claims.output | @base64d | fromjson' tmp/errorout.json
+	@jq -r '.transitive_attested_function_call.claims.output | @base64d | fromjson' tmp/out-error.json
 
 .PHONY: run-panic
 run-panic: check build
 	@echo "Running WASM module..."
-	@cat panicFunc.json | bky-as attest-fn-call >tmp/panicout.json
+	@cat panicFunc.json | bky-as attest-fn-call >tmp/out-panic.json
 
 .PHONY: clean
 clean:

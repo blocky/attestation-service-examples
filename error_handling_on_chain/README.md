@@ -131,10 +131,10 @@ To test the smart contract locally, we use the
 We define the `"Local Test"` in [`test/user.ts`](test/user.ts) which contains
 two subtests: one for a successful result and one that errored. The tests load
 the appropriate attested function call output from `inputs`, call the
-`setTASigningKeyAddress` and `verifyAttestedFnCallClaims` functions on the
-[`User`](contracts/User.sol) contract, and check that the contract either emitted the 
-`ResultValue` event with `"{\"number\":42}"` or revoked the transaction with
-the error message `"expected error"`. You will see the test output:
+`processTransitivelyAttestedResult` function on the [`User`](contracts/User.sol)
+contract, and check that the contract either emitted the `ResultValue` event
+with `"{\"number\":42}"` or revoked the transaction with the error message
+`"expected error"`. You will see the test output:
 
 ```
   Local Test
