@@ -36,7 +36,7 @@ build: tmp/x.wasm
 .PHONY: prev
 prev: check
 	$(eval prev_ea := $(shell jq '.enclave_attested_application_public_key.enclave_attestation' tmp/prev.json | sed 's/\//\\\//g' ))
-	$(eval prev_ta := $(shell jq '.transitive_attested_function_call.transitive_attestation' tmp/prev.json ))
+	$(eval prev_ta := $(shell jq '.transitive_attested_function_call.transitive_attestation' tmp/prev.json | sed 's/\//\\\//g' ))
 
 .PHONY: init
 init: check build
@@ -46,6 +46,8 @@ init: check build
 
 .PHONY: iteration
 iteration: check prev build
+	@echo ${prev_ea}
+	@echo ${prev_ta}
 	@sed \
 		-e 's/VAR_TATTEST/"tAttest": ${prev_ta},/' \
 		-e 's/VAR_EATTEST/${prev_ea}/' \
