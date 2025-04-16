@@ -14,7 +14,7 @@ CONTAINER_NAME=tinygo-builder
 TINYGO_FLAGS=-no-debug -opt=z -scheduler=none
 
 tmp/x.wasm: $(SRCS) $(DEPS) | tmp check
-	@echo "Building WASM **module..."
+	@echo "Building WASM module..."
 	@docker rm -f $(CONTAINER_NAME) > /dev/null 2>&1 || true
 	@docker run  -dit --name $(CONTAINER_NAME) \
 		-v .:/src \
