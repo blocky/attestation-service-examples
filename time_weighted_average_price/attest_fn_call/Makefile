@@ -14,7 +14,7 @@ CONTAINER_NAME=tinygo-builder
 TINYGO_FLAGS=-no-debug -opt=z -scheduler=none
 
 tmp/x.wasm: $(SRCS) $(DEPS) | tmp check
-	@echo "Building WASM **module..."
+	@echo "Building WASM module..."
 	@docker rm -f $(CONTAINER_NAME) > /dev/null 2>&1 || true
 	@docker run  -dit --name $(CONTAINER_NAME) \
 		-v .:/src \
@@ -36,7 +36,7 @@ build: tmp/x.wasm
 .PHONY: prev
 prev: check
 	$(eval prev_ea := $(shell jq '.enclave_attested_application_public_key.enclave_attestation' tmp/prev.json | sed 's/\//\\\//g' ))
-	$(eval prev_ta := $(shell jq '.transitive_attested_function_call.transitive_attestation' tmp/prev.json ))
+	$(eval prev_ta := $(shell jq '.transitive_attested_function_call.transitive_attestation' tmp/prev.json | sed 's/\//\\\//g' ))
 
 .PHONY: init
 init: check build

@@ -6,7 +6,7 @@ import (
 	"net/http"
 
 	"github.com/blocky/as-demo/sportradar"
-	"github.com/blocky/basm-go-sdk"
+	"github.com/blocky/basm-go-sdk/basm"
 )
 
 func getNBAGameSummary(gameID string, apiKey string) (sportradar.NBAGameSummary, error) {

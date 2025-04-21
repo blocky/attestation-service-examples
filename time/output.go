@@ -5,7 +5,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/blocky/basm-go-sdk"
+	"github.com/blocky/basm-go-sdk/basm"
 )
 
 type Result struct {

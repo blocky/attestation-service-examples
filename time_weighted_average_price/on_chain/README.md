@@ -53,41 +53,53 @@ review the [Error Handling - Attested Function Calls](../../error_handling_attes
 In [`contracts/User.sol`](contracts/User.sol), we define a `parseTWAP` function:
 
 ```solidity
-function parseTWAP(
-    TAParserLib.FnCallClaims memory claims
+    function parseTWAP(
+    string memory resultString
 ) public
 {
     JsmnSolLib.Token[] memory tokens;
     uint number;
     uint success;
-    (success, tokens, number) = JsmnSolLib.parse(claims.Output, 50);
+    (success, tokens, number) = JsmnSolLib.parse(resultString, 50);
 
-    uint successIdx = 2;
-    bool resultSuccess = JsmnSolLib.parseBool(
-        JsmnSolLib.getBytes(
-            claims.Output,
-            tokens[successIdx].start,
-            tokens[successIdx].end
-        )
-    );
+    bool resultSuccess;
+    string memory resultError;
+    string memory valueString;
 
-    uint errorIdx = 4;
-    string memory resultError = JsmnSolLib.getBytes(
-        claims.Output,
-        tokens[errorIdx].start,
-        tokens[errorIdx].end
-    );
+    for (uint i = 0; i < number; i++) {
+        if (tokens[i].jsmnType == JsmnSolLib.JsmnType.STRING) {
+            string memory key = JsmnSolLib.getBytes(
+                resultString,
+                tokens[i].start,
+                tokens[i].end
+            );
+
+            if (keccak256(bytes(key)) == keccak256("Success")) {
+                resultSuccess = JsmnSolLib.parseBool(
+                    JsmnSolLib.getBytes(
+                        resultString,
+                        tokens[i + 1].start,
+                        tokens[i + 1].end
+                    )
+                );
+            } else if (keccak256(bytes(key)) == keccak256("Error")) {
+                resultError = JsmnSolLib.getBytes(
+                    resultString,
+                    tokens[i + 1].start,
+                    tokens[i + 1].end
+                );
+            } else if (keccak256(bytes(key)) == keccak256("Value")) {
+                valueString = JsmnSolLib.getBytes(
+                    resultString,
+                    tokens[i + 1].start,
+                    tokens[i + 1].end
+                );
+            }
+        }
+    }
 
     require(resultSuccess, resultError);
-
-    uint twapIdx = 6;
-    string memory resultTWAP = JsmnSolLib.getBytes(
-        claims.Output,
-        tokens[twapIdx].start,
-        tokens[twapIdx].end
-    );
-
-    emit TWAP(resultTWAP);
+    emit TWAP(valueString);
 }
 ```
 

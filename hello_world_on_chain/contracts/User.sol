@@ -7,9 +7,18 @@ import {console} from "hardhat/console.sol";
 contract User {
     event AttestedFunctionCallOutput(string output);
 
+    function labeledLog(
+        string memory label,
+        bytes memory data
+    )
+    public pure
+    {
+        console.log("\t%s: %s", label, string(data));
+    }
+
     function processTransitivelyAttestedHelloWorldOutput(
         bytes calldata applicationPublicKey,
-        string calldata transitiveAttestation
+        bytes calldata transitiveAttestation
     )
     public
     {
@@ -20,17 +29,17 @@ contract User {
         );
 
         claims = TAParserLib.verifyTransitivelyAttestedFnCall(
-                applicationPublicKeyAsAddress,
-                transitiveAttestation
-            );
+            applicationPublicKeyAsAddress,
+            transitiveAttestation
+        );
 
         console.log("Verified attest-fn-call claims:");
-        console.log("\tFunction: %s", claims.Function);
-        console.log("\tHash of code: %s", claims.HashOfCode);
-        console.log("\tHash of input: %s", claims.HashOfInput);
-        console.log("\tHash of secrets: %s", claims.HashOfSecrets);
-        console.log("\tOutput: %s", claims.Output);
+        labeledLog("Function", claims.Function);
+        labeledLog("Hash of code",claims.HashOfCode);
+        labeledLog("Hash of input", claims.HashOfInput);
+        labeledLog("Hash of secrets", claims.HashOfSecrets);
+        labeledLog("Output,", claims.Output);
 
-        emit AttestedFunctionCallOutput(claims.Output);
+        emit AttestedFunctionCallOutput(string(claims.Output));
     }
 }

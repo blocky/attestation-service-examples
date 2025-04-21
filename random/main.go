@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"math/rand"
 
-	"github.com/blocky/basm-go-sdk"
+	"github.com/blocky/basm-go-sdk/basm"
 )
 
 type Args struct {

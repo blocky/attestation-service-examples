@@ -3,36 +3,38 @@ pragma solidity ^0.8.10;
 
 import {JsmnSolLib} from "../lib/JsmnSolLib.sol";
 import {TAParserLib} from "../lib/TAParserLib.sol";
-import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {console} from "hardhat/console.sol";
 
-contract User is Ownable {
+contract User {
     event ResultValue(string output);
 
-    address private taSigningKeyAddress;
-
-    constructor() Ownable(msg.sender) {
-    }
-
-    function setTASigningKeyAddress(
-        bytes calldata taSigningKey
+    function labeledLog(
+        string memory label,
+        bytes memory data
     )
-    public onlyOwner
+    public pure
     {
-        taSigningKeyAddress = TAParserLib.publicKeyToAddress(taSigningKey);
+        console.log("\t%s: %s", label, string(data));
     }
 
-    function verifyAttestedFnCallClaims(
-        string calldata taData
+    function processTransitivelyAttestedResult(
+        bytes calldata applicationPublicKey,
+        bytes calldata transitiveAttestation
     )
     public
     {
-        TAParserLib.FnCallClaims memory claims = TAParserLib.parseTA(
-            taData,
-            taSigningKeyAddress
+        TAParserLib.FnCallClaims memory claims;
+
+        address applicationPublicKeyAsAddress = TAParserLib.publicKeyToAddress(
+            applicationPublicKey
         );
 
-        parseResult(claims.Output);
+        claims = TAParserLib.verifyTransitivelyAttestedFnCall(
+            applicationPublicKeyAsAddress,
+            transitiveAttestation
+        );
+
+        parseResult(string(claims.Output));
     }
 
     function parseResult(
