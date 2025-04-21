@@ -3,85 +3,78 @@ pragma solidity ^0.8.10;
 
 import {JsmnSolLib} from "../lib/JsmnSolLib.sol";
 import {TAParserLib} from "../lib/TAParserLib.sol";
-import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {console} from "hardhat/console.sol";
 
-contract User is Ownable {
+contract User {
     event TWAP(string output);
 
-    address public _verifierAddress;
-    address public taSigningKeyAddress;
-
-    constructor() Ownable(msg.sender) {
-    }
-
-    function setTASigningKeyAddress(
-        bytes calldata taSigningKey
+    function processTransitivelyAttestedResult(
+        bytes calldata applicationPublicKey,
+        bytes calldata transitiveAttestation
     )
-    public onlyOwner
+    public
     {
-        taSigningKeyAddress = TAParserLib.publicKeyToAddress(taSigningKey);
-    }
+        TAParserLib.FnCallClaims memory claims;
 
-    function verifyAttestedFnCallClaims(
-        string calldata taData
-    )
-    private view returns (TAParserLib.FnCallClaims memory)
-    {
-        TAParserLib.FnCallClaims memory claims = TAParserLib.parseTA(
-            taData,
-            taSigningKeyAddress
+        address applicationPublicKeyAsAddress = TAParserLib.publicKeyToAddress(
+            applicationPublicKey
         );
 
-        return claims;
+        claims = TAParserLib.verifyTransitivelyAttestedFnCall(
+            applicationPublicKeyAsAddress,
+            transitiveAttestation
+        );
+
+        parseTWAP(string(claims.Output));
     }
 
     function parseTWAP(
-        TAParserLib.FnCallClaims memory claims
+        string memory resultString
     ) public
     {
         JsmnSolLib.Token[] memory tokens;
         uint number;
         uint success;
-        (success, tokens, number) = JsmnSolLib.parse(claims.Output, 50);
+        (success, tokens, number) = JsmnSolLib.parse(resultString, 50);
 
-        uint successIdx = 2;
-        bool resultSuccess = JsmnSolLib.parseBool(
-            JsmnSolLib.getBytes(
-                claims.Output,
-                tokens[successIdx].start,
-                tokens[successIdx].end
-            )
-        );
+        bool resultSuccess;
+        string memory resultError;
+        string memory valueString;
 
-        uint errorIdx = 4;
-        string memory resultError = JsmnSolLib.getBytes(
-            claims.Output,
-            tokens[errorIdx].start,
-            tokens[errorIdx].end
-        );
+        for (uint i = 0; i < number; i++) {
+            if (tokens[i].jsmnType == JsmnSolLib.JsmnType.STRING) {
+                string memory key = JsmnSolLib.getBytes(
+                    resultString,
+                    tokens[i].start,
+                    tokens[i].end
+                );
+
+                if (keccak256(bytes(key)) == keccak256("Success")) {
+                    resultSuccess = JsmnSolLib.parseBool(
+                        JsmnSolLib.getBytes(
+                            resultString,
+                            tokens[i + 1].start,
+                            tokens[i + 1].end
+                        )
+                    );
+                } else if (keccak256(bytes(key)) == keccak256("Error")) {
+                    resultError = JsmnSolLib.getBytes(
+                        resultString,
+                        tokens[i + 1].start,
+                        tokens[i + 1].end
+                    );
+                } else if (keccak256(bytes(key)) == keccak256("Value")) {
+                    valueString = JsmnSolLib.getBytes(
+                        resultString,
+                        tokens[i + 1].start,
+                        tokens[i + 1].end
+                    );
+                }
+            }
+        }
 
         require(resultSuccess, resultError);
-
-        uint twapIdx = 6;
-        string memory resultTWAP = JsmnSolLib.getBytes(
-            claims.Output,
-            tokens[twapIdx].start,
-            tokens[twapIdx].end
-        );
-
-        emit TWAP(resultTWAP);
-    }
-
-    function processAttestedFnCallClaims(
-        string calldata taData
-    ) public {
-        TAParserLib.FnCallClaims memory claims = TAParserLib.parseTA(
-            taData,
-            taSigningKeyAddress
-        );
-
-        parseTWAP(claims);
+        emit TWAP(valueString);
     }
 }
 

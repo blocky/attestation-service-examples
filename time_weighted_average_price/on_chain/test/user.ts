@@ -1,57 +1,72 @@
+// noinspection DuplicatedCode
+
 import hre from "hardhat";
 import {loadFixture} from "@nomicfoundation/hardhat-toolbox/network-helpers";
 import {expect} from "chai";
 import {ethers} from "ethers";
+import fs from "fs";
+import path from "path";
+import {User} from "../typechain-types";
 
-const fs = require("fs")
-const path = require("path")
+type EVMLinkData = {
+    publicKey: string;
+    transitiveAttestation: string;
+};
 
-function loadEVMLinkData(jsonPath: string) {
+function loadEVMLinkData(jsonPath: string): EVMLinkData {
     try {
-        const dir = path.resolve( __dirname, jsonPath);
-        const file = fs.readFileSync(dir);
+        const dir: string = path.resolve(__dirname, jsonPath);
+        const file: string = fs.readFileSync(dir, "utf8");
 
-        const data = JSON.parse(file);
+        const data: any = JSON.parse(file);
 
-        const k = data.enclave_attested_application_public_key.claims.public_key.data
-        const pubKeyBytes = ethers.decodeBase64(k)
-        const publicKeyHex = Buffer.from(pubKeyBytes).toString('hex');
+        const k: any =
+            data.enclave_attested_application_public_key.claims.public_key.data
+        const pubKeyBytes: Uint8Array = ethers.decodeBase64(k)
+        const publicKeyHex: string = Buffer.from(pubKeyBytes).toString('hex');
 
-        const taBytes = ethers.decodeBase64(data.transitive_attested_function_call.transitive_attestation)
-        const ta = Buffer.from(taBytes).toString('utf-8');
+        const j: any =
+            data.transitive_attested_function_call.transitive_attestation
+        const taBytes: Uint8Array = ethers.decodeBase64(j)
+        const ta: string = Buffer.from(taBytes).toString('hex');
 
         return {
             publicKey: `0x${publicKeyHex}`,
-            transitiveAttestation: ta
+            transitiveAttestation: `0x${ta}`
         };
     } catch (e) {
-        console.log(`e`, e)
+        throw new Error(`Error loading EVM link data: ` + e);
     }
 }
 
+interface UserContract extends ethers.Contract {
+    // @ts-ignore
+    processTransitivelyAttestedResult(publicKey: string, ta: string): Promise<ethers.ContractTransactionResponse>;
+}
+
 describe("Local Tests", function () {
-    async function deployUser() {
-        const contract = await hre.ethers.deployContract("User");
+    async function deployUser(): Promise<{ userContract: User }> {
+        const contract: User = await hre.ethers.deployContract("User");
         return {userContract: contract};
     }
 
     it("Verify attested TWAP in User contract", async () => {
         // given
-        const evmLinkData = loadEVMLinkData("../inputs/twap.json");
-        const publicKey = evmLinkData.publicKey;
-
-        const {userContract} = await loadFixture(deployUser);
-        await userContract.setTASigningKeyAddress(publicKey as any);
+        const evmLinkData: EVMLinkData = loadEVMLinkData("../inputs/twap.json");
+        const {userContract} = await loadFixture(deployUser) as UserContract;
 
         // when
-        const ta = evmLinkData.transitiveAttestation;
-        const tx = await userContract.processAttestedFnCallClaims(ta as any)
+        const tx: ethers.ContractTransactionResponse =
+            await userContract.processTransitivelyAttestedResult(
+                evmLinkData.publicKey,
+                evmLinkData.transitiveAttestation,
+            )
 
         // then
         await expect(tx).to.emit(
             userContract,
             'TWAP'
-        )
+        ).withArgs("1636.6828176996771")
     })
 });
 
