@@ -165,11 +165,11 @@ We define the iterative step in the `iteration` function, in
 
 ```go
 type ArgsIterate struct {
-	CoinID     string                    `json:"coin_id"`
-	NumSamples int                       `json:"num_samples"`
-	EAttest    json.RawMessage           `json:"eAttest"`
-	TAttest    json.RawMessage           `json:"tAttest"`
-	Whitelist  []basm.EnclaveMeasurement `json:"whitelist"`
+	CoinID     string                     `json:"coin_id"`
+	NumSamples int                        `json:"num_samples"`
+	EAttest    basm.EnclaveAttestation    `json:"eAttest"`
+	TAttest    basm.TransitiveAttestation `json:"tAttest"`
+	Whitelist  []basm.EnclaveMeasurement  `json:"whitelist"`
 }
 
 type SecretArgs struct {
@@ -194,11 +194,7 @@ func iteration(inputPtr uint64, secretPtr uint64) uint64 {
 		return WriteError(outErr)
 	}
 
-	priceSamples, err := extractPriceSamples(
-		basm.EnclaveAttestation(args.EAttest),
-		basm.TransitiveAttestation(args.TAttest),
-		args.Whitelist,
-	)
+	priceSamples, err := extractPriceSamples(args.EAttest, args.TAttest, args.Whitelist)
 	if err != nil {
 		outErr := fmt.Errorf("extracting priceSamples: %w", err)
 		return WriteError(outErr)
@@ -245,7 +241,7 @@ func extractPriceSamples(
 	error,
 ) {
 	// bootstrap with empty samples if we don't have a transitive attestation
-	if tAttest == nil {
+	if tAttest == "" {
 		return []price.Price{}, nil
 	}
 
@@ -396,9 +392,9 @@ To compute the TWAP, we define the `twap` function in
 
 ```go
 type ArgsTWAP struct {
-	EAttest   json.RawMessage           `json:"eAttest"`
-	TAttest   json.RawMessage           `json:"tAttest"`
-	Whitelist []basm.EnclaveMeasurement `json:"whitelist"`
+	EAttest   basm.EnclaveAttestation    `json:"eAttest"`
+	TAttest   basm.TransitiveAttestation `json:"tAttest"`
+	Whitelist []basm.EnclaveMeasurement  `json:"whitelist"`
 }
 
 //export twap
@@ -411,11 +407,7 @@ func twap(inputPtr uint64, secretPtr uint64) uint64 {
 		return WriteError(outErr)
 	}
 
-	priceSamples, err := extractPriceSamples(
-		basm.EnclaveAttestation(args.EAttest),
-		basm.TransitiveAttestation(args.TAttest),
-		args.Whitelist,
-	)
+	priceSamples, err := extractPriceSamples(args.EAttest, args.TAttest, args.Whitelist)
 	if err != nil {
 		outErr := fmt.Errorf("extracting samples: %w", err)
 		return WriteError(outErr)
