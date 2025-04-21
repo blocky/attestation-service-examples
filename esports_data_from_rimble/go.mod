@@ -3,7 +3,7 @@ module github.com/blocky/attestation-service-examples/esports-data-from-rimble
 go 1.22.6
 
 require (
-	github.com/blocky/basm-go-sdk v0.1.0-beta.6
+	github.com/blocky/basm-go-sdk v0.1.0-beta.8
 	github.com/samber/lo v1.49.1
 	github.com/stretchr/testify v1.10.0
 )

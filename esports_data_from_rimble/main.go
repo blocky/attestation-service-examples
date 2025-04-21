@@ -6,7 +6,7 @@ import (
 	"net/http"
 
 	"github.com/blocky/attestation-service-examples/esports-data-from-rimble/rimble"
-	"github.com/blocky/basm-go-sdk"
+	"github.com/blocky/basm-go-sdk/basm"
 )
 
 func getMatchDataFromRimble(
