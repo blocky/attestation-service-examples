@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/blocky/basm-go-sdk"
+	"github.com/blocky/basm-go-sdk/basm"
 )
 
 type CoinGeckoResponse struct {
