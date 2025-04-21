@@ -46,8 +46,6 @@ init: check build
 
 .PHONY: iteration
 iteration: check prev build
-	@echo ${prev_ea}
-	@echo ${prev_ta}
 	@sed \
 		-e 's/VAR_TATTEST/"tAttest": ${prev_ta},/' \
 		-e 's/VAR_EATTEST/${prev_ea}/' \
