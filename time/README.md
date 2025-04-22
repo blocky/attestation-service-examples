@@ -21,7 +21,7 @@ on a hardcoded start date.*
 ## Setup
 
 - Install the Blocky AS CLI by following the
-  [setup instructions](https://blocky-docs.redocly.app/attestation-service/{{AS_VERSION}}/setup)
+  [setup instructions](https://blocky-docs.redocly.app/attestation-service/v0.1.0-beta.8/setup)
   in the Blocky AS documentation.
 - Make sure you also have
   [Docker](https://www.docker.com/) and [jq](https://jqlang.org/) installed on

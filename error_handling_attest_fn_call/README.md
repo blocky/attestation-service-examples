@@ -18,7 +18,7 @@ functions
 ## Setup
 
 - Install the Blocky AS CLI by following the
-  [setup instructions](https://blocky-docs.redocly.app/attestation-service/{{AS_VERSION}}/setup)
+  [setup instructions](https://blocky-docs.redocly.app/attestation-service/v0.1.0-beta.8/setup)
   in the Blocky AS documentation.
 - Make sure you also have
   [Docker](https://www.docker.com/) and [jq](https://jqlang.org/) installed on
@@ -110,7 +110,7 @@ structs in the client code.
 
 To return a `Result` to user, we need to serialize to bytes and send them to the
 `basm`
-[Blocky Attestation Service WASM Go SDK](https://github.com/blocky/basm-go-sdk/tree/{{AS_VERSION}})
+[Blocky Attestation Service WASM Go SDK](https://github.com/blocky/basm-go-sdk/tree/v0.1.0-beta.8)
 `basm.WriteToHost` function. Let's say that we want to use JSON to serialize the
 `Result` struct.
 
