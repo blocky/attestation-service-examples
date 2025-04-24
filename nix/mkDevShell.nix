@@ -14,7 +14,7 @@ let
     pname = "bky-as";
     version = version;
     src = builtins.fetchurl {
-      url = "https://github.com/blocky/attestation-service-demo/releases/download/${version}/bky-as_${goos}_${goarch}";
+      url = "https://github.com/blocky/attestation-service-cli/releases/download/${version}/bky-as_${goos}_${goarch}";
     };
     unpackPhase = ":";
     installPhase = ''
