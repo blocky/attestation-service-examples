@@ -50,16 +50,19 @@ Output:
 
 ### Step 1: Create a function for getting the current time
 
-Normally, the Blocky AS runtime does not provide sandboxed functions access to
-the system clock. Instead, they are given a hardcoded time that monotonically 
-increases by "1ns" for every subsequent call. Starting with 0.1.0-beta.6, the
-Blocky AS runtime fetches the current time from a remote time-server and
-provides these values to functions in the sandboxed environment via standard
-system calls.
+Before version 0.1.0.beta-9, the Blocky AS runtime does not provide sandboxed
+functions access to the system clock. Instead, they are given a hardcoded
+time that monotonically increases by "1ns" for every subsequent call.
 
-This means that your Blocky AS functions can fetch time using standard library
-calls same as if they were executing in a non-TEE environment. We define a 
-simple function in [`main.go`](./main.go) that calls `time.Now()`.
+Starting with 0.1.0-beta.9, guest functions have access
+to time from [`PTP`](https://en.wikipedia.org/wiki/Precision_Time_Protocol).
+Each time a guest function calls a standard library time function,
+like `time.Now()`,  the resulting time system call triggers
+the Blocky AS runtime to fetch current time from the `/dev/ptp0` device.
+Read more about this design in the
+[article](https://evervault.com/blog/how-we-built-enclaves-resolving-clock-drift-in-nitro-enclaves).
+
+We define a simple function in [`main.go`](./main.go) that calls `time.Now()`.
 
 ```go
 //export timeNow
