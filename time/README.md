@@ -52,31 +52,14 @@ Output:
 
 Normally, the Blocky AS runtime does not provide sandboxed functions access to
 the system clock. Instead, they are given a hardcoded time that monotonically 
-increases by "1ns" for every subsequent call. 
+increases by "1ns" for every subsequent call.
 
-Starting with 0.1.0-beta.6, the Blocky AS runtime fetches the current time
-from a remote time-server and provides these values to functions in the
-sandboxed environment via standard system calls.
-
-Starting with 0.1.0-beta.9, the Blocky AS runtime fetches the current time
-directly from AWS Nitro Enclave's Hypervisor via the
-[`PTP`](https://en.wikipedia.org/wiki/Precision_Time_Protocol) device
-(`/dev/ptp0`) and provides these values to functions in the sandboxed
-environment via standard system calls. 
-
-Getting the time from `/dev/ptp0` device means asking a dedicated clock
-provided by the AWS Nitro Hypervisor for the current timestamp.
-Instead of using a standard system clock, it gives you direct access to
-a precise and reliable time source maintained by the AWS cloud infrastructure.
-Each time you request the current time, the Blocky AS runtime
-talks to the Nitro hypervisor through the `/dev/ptp0` device and returns
-an accurate timestamp.
-You can read more about time in AWS Nitro Enclaves in this
+Starting with 0.1.0-beta.9, guest functions have access
+to time from [`PTP`](https://en.wikipedia.org/wiki/Precision_Time_Protocol).
+Each time a standard library function, like `time.Now()` is invoked the system
+call results in Blocky AS runtime fetching time from `/dev/ptp0` device.
+Read more about this design in the
 [article](https://evervault.com/blog/how-we-built-enclaves-resolving-clock-drift-in-nitro-enclaves).
-
-This means that your Blocky AS functions can fetch time using standard library
-calls, like `time.Now()`, same as if they were executing
-in a non-TEE environment.
 
 We define a simple function in [`main.go`](./main.go) that calls `time.Now()`.
 
