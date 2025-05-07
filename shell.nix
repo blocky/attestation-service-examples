@@ -12,7 +12,7 @@
   #   `nix-shell --argstr version latest`
   # or use the default value by omitting the argument, e.g.
   #   `nix-shell`
-  version ? "latest",
+  version ? "v0.1.0-beta.9",
 }:
 let
   nixpkgs = fetchTarball "https://github.com/NixOS/nixpkgs/tarball/nixos-24.11";
