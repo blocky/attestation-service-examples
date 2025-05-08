@@ -3,8 +3,8 @@
     "enclave_attestation": "eyJQbGF0Zm9ybSI6InBsYWluIiwiUGxBdHRlc3RzIjpbImV5SkVZWFJoSWpvaVpYbEthbVJZU2pKYVZqa3daVmhDYkVscWIybGpSRWt4VG0xemVFbHBkMmxhUjBZd1dWTkpOa2xyU1QwaUxDSk5aV0Z6ZFhKbGJXVnVkQ0k2ZXlKUWJHRjBabTl5YlNJNkluQnNZV2x1SWl3aVEyOWtaU0k2SW5Cc1lXbHVJbjE5IiwiZXlKRVlYUmhJam9pVTI1d01rNHlZek5hUlVaRlltdFNjbU5JY0ZGak1EVkZWR3BuY2xwWE1XMWlNVXBhVkVWd1JsbFZaejBpTENKTlpXRnpkWEpsYldWdWRDSTZleUpRYkdGMFptOXliU0k2SW5Cc1lXbHVJaXdpUTI5a1pTSTZJbkJzWVdsdUluMTkiLCJleUpFWVhSaElqb2lWa1JDTm1SWE1XeE9NMk14WVVSck1XRkRjekpsVlVadlRVVXhkR1I2VGtwalJXOHdZVk00ZVdKSE5EMGlMQ0pOWldGemRYSmxiV1Z1ZENJNmV5SlFiR0YwWm05eWJTSTZJbkJzWVdsdUlpd2lRMjlrWlNJNkluQnNZV2x1SW4xOSIsImV5SkVZWFJoSWpvaVVURldXV1Z1Ykd4YWJGSk1UVmQ0VFZGck9VUmlWbEoyVkRGd2MxSlVNR2xtVVQwOUlpd2lUV1ZoYzNWeVpXMWxiblFpT25zaVVHeGhkR1p2Y20waU9pSndiR0ZwYmlJc0lrTnZaR1VpT2lKd2JHRnBiaUo5ZlE9PSIsImV5SkVZWFJoSWpvaU4xRXJPV29yVTFkc05qaDJOVlppUlUxdWIwRkdlbEphT0VOSFJYTXZSU3R3VVZwVWF6SXhNbEJsWnowaUxDSk5aV0Z6ZFhKbGJXVnVkQ0k2ZXlKUWJHRjBabTl5YlNJNkluQnNZV2x1SWl3aVEyOWtaU0k2SW5Cc1lXbHVJbjE5Il19",
     "claims": {
       "enclave_measurement": {
-        "Platform": "plain",
-        "Code": "plain"
+        "platform": "plain",
+        "code": "plain"
       },
       "public_key": {
         "curve_type": "p256k1",
