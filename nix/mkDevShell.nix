@@ -25,6 +25,7 @@ let
   stableShell = pkgs.mkShellNoCC {
     packages = devDependencies ++ [ bky-as-stable ];
     shellHook = ''
+      set -e
       export AS_VERSION=${version}
       render-md() {
         for file in $(find . -type f -name '*.md'); do
@@ -56,6 +57,7 @@ let
         pkgs.jq
       ];
     shellHook = ''
+      set -e
       bin=$(pwd)/tmp/bin
       fetch-bky-as.sh $bin ${version} ${goos} ${goarch}
       export PATH=$bin:$PATH
