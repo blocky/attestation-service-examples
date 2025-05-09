@@ -9,9 +9,9 @@ import (
 )
 
 type Result struct {
-	Success bool
-	Error   string
-	Value   any
+	Success bool   `json:"success"`
+	Error   string `json:"error,omitempty"`
+	Value   any    `json:"value,omitempty"`
 }
 
 func (r Result) JSONMarshalWithError(err error) []byte {
