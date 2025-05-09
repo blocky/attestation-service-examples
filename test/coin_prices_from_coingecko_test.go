@@ -14,7 +14,7 @@ func TestCoinPricesFromCoingecko(t *testing.T) {
 	work := newTestSetup(t, exampleDir).
 		RunMake("build").
 		CopyFile("config.toml", "config.toml").
-		RenderFile("fn-call.json", []string{"YOUR_COINGECKO_API_KEY"}).
+		RenderFile("fn-call.json", []string{"YOUR_COINGECKO_API_KEY"}, true).
 		CopyFile("tmp/x.wasm", "tmp/x.wasm")
 
 	testscript.Run(t, testscript.Params{
