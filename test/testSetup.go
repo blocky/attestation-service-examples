@@ -64,7 +64,7 @@ func (ts *testSetup) CopyFile(srcRelPath, dstRelPath string) *testSetup {
 	return ts
 }
 
-func (ts *testSetup) RenderFile(relPath string, envKeys []string) *testSetup {
+func (ts *testSetup) RenderFile(relPath string, envKeys []string, cleanup bool) *testSetup {
 	ts.setupFuncs = append(ts.setupFuncs, func(t *testing.T, workDir string) {
 		src := filepath.Join(ts.srcDir, relPath)
 		dst := filepath.Join(workDir, filepath.Base(relPath))
@@ -88,6 +88,14 @@ func (ts *testSetup) RenderFile(relPath string, envKeys []string) *testSetup {
 		// Write the rendered result to destination
 		if err := os.WriteFile(dst, []byte(rendered), 0644); err != nil {
 			t.Fatalf("failed to write rendered file %s: %v", dst, err)
+		}
+
+		if cleanup {
+			t.Cleanup(func() {
+				if err := os.Remove(dst); err != nil {
+					t.Logf("cleanup: failed to remove %s: %v", dst, err)
+				}
+			})
 		}
 	})
 	return ts
