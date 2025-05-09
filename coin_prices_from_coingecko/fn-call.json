@@ -6,6 +6,6 @@
     "coin_id": "bitcoin"
   },
   "secret": {
-    "api_key": "{{YOUR_COINGECKO_API_KEY}}"
+    "api_key": "{{ .YOUR_COINGECKO_API_KEY }}"
   }
 }
