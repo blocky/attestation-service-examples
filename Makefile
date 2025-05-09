@@ -1,6 +1,6 @@
 run-hello-world-attest-fn-call:
 	@echo "Running run-hello-world-attest-fn-call..."
-	@cd hello_world_attest_fn_call && make run 2> /dev/null
+	@cd hello_world_attest_fn_call && make run
 
 run-hello-world-on-chain:
 	@echo "Running run-hello-world-on-chain..."
