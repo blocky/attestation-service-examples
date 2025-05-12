@@ -57,13 +57,35 @@ func (e *projectTest) CopyFile(srcRelPath string) *projectTest {
 	return e
 }
 
-func (e *projectTest) RenderTemplateFromEnvWithCleanup(
+func (e *projectTest) RenderTemplateFileFromEnvWithCleanup(
 	srcRelPath string,
 	envKeys []string,
 ) *projectTest {
+	src := filepath.Join(e.projectDir, srcRelPath)
+	tmpl := template.Must(template.ParseFiles(src))
+	dstRelPath := srcRelPath
+	return e.RenderTemplateFromEnvWithCleanup(tmpl, dstRelPath, envKeys)
+}
+
+func (e *projectTest) RenderTemplateStringFromEnvWithCleanup(
+	templateString string,
+	dstRelPath string,
+	envKeys []string,
+) *projectTest {
+	tmpl := template.Must(
+		template.New(filepath.Base(dstRelPath)).
+			Parse(templateString),
+	)
+	return e.RenderTemplateFromEnvWithCleanup(tmpl, dstRelPath, envKeys)
+}
+
+func (e *projectTest) RenderTemplateFromEnvWithCleanup(
+	tmpl *template.Template,
+	dstRelPath string,
+	envKeys []string,
+) *projectTest {
 	setupFunc := func(env *testscript.Env) error {
-		src := filepath.Join(e.projectDir, srcRelPath)
-		dst := filepath.Join(env.WorkDir, srcRelPath)
+		dst := filepath.Join(env.WorkDir, dstRelPath)
 
 		dstDir := filepath.Dir(dst)
 		if err := os.MkdirAll(dstDir, 0755); err != nil {
@@ -80,22 +102,15 @@ func (e *projectTest) RenderTemplateFromEnvWithCleanup(
 			envMap[key] = val
 		}
 
-		tmpl, err := template.
-			New(filepath.Base(src)).
-			Option("missingkey=error").
-			ParseFiles(src)
-		if err != nil {
-			return fmt.Errorf("failed to parse template %s: %v", src, err)
-		}
-
 		dstFile, err := os.Create(dst)
 		if err != nil {
 			return fmt.Errorf("failed to create destination file %s: %w", dst, err)
 		}
 		defer dstFile.Close()
 
+		tmpl.Option("missingkey=error")
 		if err := tmpl.Execute(dstFile, envMap); err != nil {
-			return fmt.Errorf("failed to execute template %s: %v", src, err)
+			return fmt.Errorf("failed to execute template %s: %v", tmpl.Name(), err)
 		}
 
 		// rendered files may contain secrets, register a cleanup func for removal
