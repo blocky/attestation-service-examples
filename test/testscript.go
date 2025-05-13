@@ -11,28 +11,28 @@ import (
 	"github.com/rogpeppe/go-internal/testscript"
 )
 
-type projectTest struct {
+type ProjectTest struct {
 	t          *testing.T
 	params     testscript.Params
 	setupFuncs []func(*testscript.Env) error
 	projectDir string
 }
 
-func newProjectTest(t *testing.T, projectDir string) *projectTest {
+func NewProjectTest(t *testing.T, projectDir string) *ProjectTest {
 	params := testscript.Params{
 		Files:               []string{},
 		Setup:               nil,
 		RequireExplicitExec: true,
 		RequireUniqueNames:  true,
 	}
-	return &projectTest{
+	return &ProjectTest{
 		t:          t,
 		params:     params,
 		projectDir: projectDir,
 	}
 }
 
-func (e *projectTest) CopyFile(srcRelPath string) *projectTest {
+func (e *ProjectTest) CopyFile(srcRelPath string) *ProjectTest {
 	setupFunc := func(env *testscript.Env) error {
 		src := filepath.Join(e.projectDir, srcRelPath)
 		dst := filepath.Join(env.WorkDir, srcRelPath)
@@ -57,21 +57,21 @@ func (e *projectTest) CopyFile(srcRelPath string) *projectTest {
 	return e
 }
 
-func (e *projectTest) RenderTemplateFileFromEnvWithCleanup(
+func (e *ProjectTest) RenderTemplateFileFromEnvWithCleanup(
 	srcRelPath string,
 	envKeys []string,
-) *projectTest {
+) *ProjectTest {
 	src := filepath.Join(e.projectDir, srcRelPath)
 	tmpl := template.Must(template.ParseFiles(src))
 	dstRelPath := srcRelPath
 	return e.RenderTemplateFromEnvWithCleanup(tmpl, dstRelPath, envKeys)
 }
 
-func (e *projectTest) RenderTemplateStringFromEnvWithCleanup(
+func (e *ProjectTest) RenderTemplateStringFromEnvWithCleanup(
 	templateString string,
 	dstRelPath string,
 	envKeys []string,
-) *projectTest {
+) *ProjectTest {
 	tmpl := template.Must(
 		template.New(filepath.Base(dstRelPath)).
 			Parse(templateString),
@@ -79,11 +79,11 @@ func (e *projectTest) RenderTemplateStringFromEnvWithCleanup(
 	return e.RenderTemplateFromEnvWithCleanup(tmpl, dstRelPath, envKeys)
 }
 
-func (e *projectTest) RenderTemplateFromEnvWithCleanup(
+func (e *ProjectTest) RenderTemplateFromEnvWithCleanup(
 	tmpl *template.Template,
 	dstRelPath string,
 	envKeys []string,
-) *projectTest {
+) *ProjectTest {
 	setupFunc := func(env *testscript.Env) error {
 		dst := filepath.Join(env.WorkDir, dstRelPath)
 
@@ -125,14 +125,14 @@ func (e *projectTest) RenderTemplateFromEnvWithCleanup(
 	return e
 }
 
-func (e *projectTest) ExecuteMakeTarget(target string) *projectTest {
+func (e *ProjectTest) ExecuteMakeTarget(target string) *ProjectTest {
 	setupFunc := func(env *testscript.Env) error {
 		cmd := exec.Command("make", target)
 		cmd.Dir = e.projectDir
 		cmd.Stdout = os.Stdout
 		cmd.Stderr = os.Stderr
 		if err := cmd.Run(); err != nil {
-			return fmt.Errorf("failed to run make %s: %v", target, err)
+			return fmt.Errorf("failed to run 'make %s': %v", target, err)
 		}
 		return nil
 	}
@@ -140,7 +140,7 @@ func (e *projectTest) ExecuteMakeTarget(target string) *projectTest {
 	return e
 }
 
-func (e *projectTest) RunScript(scriptFile string) {
+func (e *ProjectTest) RunScript(scriptFile string) {
 	e.params.Setup = func(env *testscript.Env) error {
 		for _, setupFunc := range e.setupFuncs {
 			if err := setupFunc(env); err != nil {
