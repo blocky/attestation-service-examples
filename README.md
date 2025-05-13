@@ -60,7 +60,6 @@ following order:
 To learn more about Blocky AS, check out our
 [documentation](https://blocky-docs.redocly.app/).
 
-
 ## Development
 
 ### Testing
