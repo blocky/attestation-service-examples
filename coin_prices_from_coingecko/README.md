@@ -86,7 +86,7 @@ using the `bky-as` CLI by passing in the
     "coin_id": "bitcoin"
   },
   "secret": {
-    "api_key": "CoinGecko API key"
+    "api_key": "{{.YOUR_COINGECKO_API_KEY}}"
   }
 }
 ```
@@ -250,20 +250,19 @@ You'll see output similar to the following:
 
 ```json
 {
-  "Success": true,
-  "Error": "",
-  "Value": {
+  "success": true,
+  "value": {
     "market": "Binance",
     "coin_id": "BTC",
     "currency": "USD",
-    "price": 83799,
-    "timestamp": "2025-03-04T03:20:35Z"
+    "price": 104273,
+    "timestamp": "2025-05-13T21:25:01Z"
   }
 }
 ```
 
-where `"Success": true,` tells you that the function call was successful and 
-the `Value` field gives you a JSON-serialized `Price` struct.
+where `"success": true,` tells you that the function call was successful and
+the `value` field gives you a JSON-serialized `Price` struct.
 
 ## Next steps
 
