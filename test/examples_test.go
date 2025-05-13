@@ -11,13 +11,15 @@ const scriptDir = "scripts"
 func TestCoinPricesFromCoingecko(t *testing.T) {
 	projectName := "coin_prices_from_coingecko"
 	projectDir := filepath.Join(examplesDir, projectName)
+	requiredEnvVars := []string{
+		"YOUR_COINGECKO_API_KEY",
+	}
+
 	NewProjectTest(t, projectDir).
 		ExecuteMakeTarget("build").
 		CopyFile("tmp/x.wasm").
 		CopyFile("config.toml").
-		RenderTemplateFileFromEnvWithCleanup(
-			"fn-call.json",
-			[]string{"YOUR_COINGECKO_API_KEY"}).
+		RenderTemplateFileFromEnvWithCleanup("fn-call.json", requiredEnvVars).
 		RunScript(filepath.Join(scriptDir, projectName+".txtar"))
 }
 
