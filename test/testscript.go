@@ -131,6 +131,7 @@ func (e *ProjectTest) ExecuteMakeTarget(target string) *ProjectTest {
 		cmd.Dir = e.projectDir
 		cmd.Stdout = os.Stdout
 		cmd.Stderr = os.Stderr
+		e.t.Logf("Running command: '%s'", cmd.String())
 		if err := cmd.Run(); err != nil {
 			return fmt.Errorf("failed to run 'make %s': %v", target, err)
 		}
