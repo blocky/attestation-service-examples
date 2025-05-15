@@ -10,17 +10,10 @@ arch=$4
 mkdir -p $bin
 
 echo -n "Getting commit of current bky-as..."
-if [[ -x "$bin/bky-as" ]]; then
-    tmp_out=$(mktemp)
-    trap 'rm -f "$tmp_out"' EXIT
-    if "$bin/bky-as" inspect >"$tmp_out"; then
-        current_version_commit=$(jq -r .Build.Commit < "$tmp_out")
-        echo "'$current_version_commit'"
-    else
-        echo "Failed to inspect bky-as binary" >&2
-        cat "$tmp_out" >&2
-        exit 1
-    fi
+current_version_commit=""
+if [[ -e $bin/bky-as ]]; then
+    current_version_commit=$($bin/bky-as inspect | jq -r .Build.Commit)
+    echo "'$current_version_commit'"
 else
     echo "no current version"
 fi
