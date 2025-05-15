@@ -94,8 +94,11 @@ using the `bky-as` CLI by passing in the
 Notice the `input` section, which contains the parameters for `priceFunc`,
 specifically the `market` field set to "Binance" and the `coin_id` field set to
 "bitcoin". The `secret` section contains the `api_key` field, which you should
-set to your CoinGecko API key. Of course, you can change these values to get
-the price of other coins or from other markets.
+set to your CoinGecko API key. The `{{. }}` notation is a placeholder used
+for automating testing of this example. You should remove this notation when
+setting your api key so the final value is your key enclosed in double quotes.
+Of course, you can change these values to get the price of other coins or
+from other markets.
 
 Next, we define the `priceFunc` function in [`main.go`](./main.go):
 
