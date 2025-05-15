@@ -86,7 +86,7 @@ using the `bky-as` CLI by passing in the
     "coin_id": "bitcoin"
   },
   "secret": {
-    "api_key": "CoinGecko API key"
+    "api_key": "{{.YOUR_COINGECKO_API_KEY}}"
   }
 }
 ```
@@ -94,8 +94,11 @@ using the `bky-as` CLI by passing in the
 Notice the `input` section, which contains the parameters for `priceFunc`,
 specifically the `market` field set to "Binance" and the `coin_id` field set to
 "bitcoin". The `secret` section contains the `api_key` field, which you should
-set to your CoinGecko API key. Of course, you can change these values to get
-the price of other coins or from other markets.
+set to your CoinGecko API key. The `{{. }}` notation is a placeholder used
+for automating testing of this example. You should remove this notation when
+setting your api key so the final value is your key enclosed in double quotes.
+Of course, you can change these values to get the price of other coins or
+from other markets.
 
 Next, we define the `priceFunc` function in [`main.go`](./main.go):
 
@@ -250,20 +253,19 @@ You'll see output similar to the following:
 
 ```json
 {
-  "Success": true,
-  "Error": "",
-  "Value": {
+  "success": true,
+  "value": {
     "market": "Binance",
     "coin_id": "BTC",
     "currency": "USD",
-    "price": 83799,
-    "timestamp": "2025-03-04T03:20:35Z"
+    "price": 104273,
+    "timestamp": "2025-05-13T21:25:01Z"
   }
 }
 ```
 
-where `"Success": true,` tells you that the function call was successful and 
-the `Value` field gives you a JSON-serialized `Price` struct.
+where `"success": true,` tells you that the function call was successful and
+the `value` field gives you a JSON-serialized `Price` struct.
 
 ## Next steps
 

@@ -59,3 +59,52 @@ following order:
 
 To learn more about Blocky AS, check out our
 [documentation](https://blocky-docs.redocly.app/).
+
+## Development
+
+### Testing
+
+Examples are tested using the `testscript` library and scripts in
+`/test/scripts`. See
+[here](https://pkg.go.dev/github.com/rogpeppe/go-internal/testscript) for an
+overview of the library.
+
+Many examples rely on secrets or configuration to run. For testing, these
+are provided as environment variables. The tests will notify you if any
+required environment variables are missing. Review the `_test.go` files in
+`/test` for the required variables and provide them in your shell when
+running tests.
+
+For example:
+
+```bash
+LIVE_TEST_PLATFORM=nitro \
+LIVE_TEST_CODE=${MEASURE} \
+LIVE_TEST_AUTH_TOKEN=${TYK_API_DEV_KEY} \
+LIVE_TEST_HOST="https://api.bky.sh/staging/delphi" \
+YOUR_COINGECKO_API_KEY=${COINGECKO_API_DEV_KEY} \
+make test-live
+```
+
+### Environment Management
+
+We use nix to manage our development and CI environment.
+
+- Use `--argstr bkyAsVersion` to specify the version of the `bky-as` CLI.
+- Use `--pure` to run the shell in pure mode to prevent environment variables
+  from leaking into the nix shell.
+  - Pass env variables to the shell using the `--run` flag, or export them once
+    inside the shell.
+  - To preserve env variables from your current shell, do not use the `--pure`
+    flag.
+
+For example, using nix-shell to run tests in pure mode:
+
+```bash
+nix-shell \
+  --pure \
+  --argstr bkyAsVersion "latest" \
+  --run "\
+    YOUR_COINGECKO_API_KEY=${COINGECKO_API_DEV_KEY} \
+    make test"
+```
