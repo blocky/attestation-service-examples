@@ -106,5 +106,9 @@ nix-shell \
   --argstr bkyAsVersion "latest" \
   --run "\
     YOUR_COINGECKO_API_KEY=${COINGECKO_API_DEV_KEY} \
+    YOUR_PANDASCORE_API_KEY=${PANDASCORE_API_DEV_KEY} \
+    YOUR_RIMBLE_API_KEY=${RIMBLE_API_DEV_KEY} \
+    YOUR_DHL_API_KEY=${DHL_API_DEV_KEY} \
+    YOUR_SPORTRADAR_API_KEY=${SPORTRADAR_API_DEV_KEY} \
     make test"
 ```
