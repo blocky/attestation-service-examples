@@ -136,3 +136,14 @@ func TestSportsDataFromSportRadar(t *testing.T) {
 		RenderTemplateFileFromEnvWithCleanup("fn-call.json", requiredEnvVars).
 		RunScript(filepath.Join(scriptDir, projectName+".txtar"))
 }
+
+func TestTime(t *testing.T) {
+	projectName := "time"
+	projectDir := filepath.Join(examplesDir, projectName)
+	NewProjectTest(t, projectDir).
+		ExecuteMakeTarget("build").
+		CopyFile("tmp/x.wasm").
+		CopyFile("config.toml").
+		CopyFile("fn-call.json").
+		RunScript(filepath.Join(scriptDir, projectName+".txtar"))
+}
