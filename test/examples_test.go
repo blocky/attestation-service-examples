@@ -106,3 +106,18 @@ func TestRandom(t *testing.T) {
 		CopyFile("fn-call.json").
 		RunScript(filepath.Join(scriptDir, projectName+".txtar"))
 }
+
+func TestShipmentTrackingWithDHL(t *testing.T) {
+	projectName := "shipment_tracking_with_dhl"
+	projectDir := filepath.Join(examplesDir, projectName)
+	requiredEnvVars := []string{
+		"YOUR_DHL_API_KEY",
+	}
+
+	NewProjectTest(t, projectDir).
+		ExecuteMakeTarget("build").
+		CopyFile("tmp/x.wasm").
+		CopyFile("config.toml").
+		RenderTemplateFileFromEnvWithCleanup("fn-call.json", requiredEnvVars).
+		RunScript(filepath.Join(scriptDir, projectName+".txtar"))
+}
