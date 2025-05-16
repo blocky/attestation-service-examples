@@ -1,8 +1,8 @@
-# [execute] function call that is successful
+# [execute] attest fn call to PandaScore match API
 stdin fn-call.json
 exec bky-as attest-fn-call
 cp stdout result.json
 
-# [check] assert stdout contains success output
+# [check] assert stdout contains correct match information
 exec jq -c -r '.transitive_attested_function_call.claims.output | @base64d | fromjson' result.json
 stdout '{"Success":true,"Error":"","Value":{"league":"starcraft-2-pl-invitational","serie":"starcraft-2-pl-invitational-2025","tournament":"starcraft-2-pl-invitational-2025-playoffs","match":"solar-vs-cure-2025-02-09","match_id":1121861,"winner":"Cure","loser":"Solar","score":"3 - 1","end_at":"2025-02-09T08:24:49Z"}}'

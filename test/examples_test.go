@@ -51,6 +51,28 @@ func TestESportsDataFromPandaScore(t *testing.T) {
 		RunScript(filepath.Join(scriptDir, projectName+".txtar"))
 }
 
+func TestESportsDataFromRimble(t *testing.T) {
+	projectName := "esports_data_from_rimble"
+	projectDir := filepath.Join(examplesDir, projectName)
+	requiredEnvVars := []string{
+		"YOUR_RIMBLE_API_KEY",
+	}
+
+	NewProjectTest(t, projectDir).
+		ExecuteMakeTarget("build").
+		CopyFile("tmp/x.wasm").
+		CopyFile("config.toml").
+		RenderTemplateFileFromEnvWithCleanup(
+			"fn-call-match-winner.json",
+			requiredEnvVars,
+		).
+		RenderTemplateFileFromEnvWithCleanup(
+			"fn-call-team-kill.json",
+			requiredEnvVars,
+		).
+		RunScript(filepath.Join(scriptDir, projectName+".txtar"))
+}
+
 func TestHelloWorldAttestFnCall(t *testing.T) {
 	projectName := "hello_world_attest_fn_call"
 	projectDir := filepath.Join(examplesDir, projectName)
