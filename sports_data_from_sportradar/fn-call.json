@@ -9,6 +9,6 @@
     ]
   },
   "secret": {
-    "api_key": "SportRadar API Key"
+    "api_key": "{{ .YOUR_SPORTRADAR_API_KEY }}"
   }
 }
