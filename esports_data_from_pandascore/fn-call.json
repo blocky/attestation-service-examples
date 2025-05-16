@@ -2,7 +2,6 @@
   "code_file": "tmp/x.wasm",
   "function": "scoreFunc",
   "input": {
-    "matches_api_endpoint": "https://api.pandascore.co/matches",
     "match_id": "1121861"
   },
   "secret": {
