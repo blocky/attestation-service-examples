@@ -95,3 +95,14 @@ func TestParamsAndSecrets(t *testing.T) {
 		CopyFile("fn-call-error.json").
 		RunScript(filepath.Join(scriptDir, projectName+".txtar"))
 }
+
+func TestRandom(t *testing.T) {
+	projectName := "random"
+	projectDir := filepath.Join(examplesDir, projectName)
+	NewProjectTest(t, projectDir).
+		ExecuteMakeTarget("build").
+		CopyFile("tmp/x.wasm").
+		CopyFile("config.toml").
+		CopyFile("fn-call.json").
+		RunScript(filepath.Join(scriptDir, projectName+".txtar"))
+}
