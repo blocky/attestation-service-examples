@@ -83,3 +83,15 @@ func TestHelloWorldAttestFnCall(t *testing.T) {
 		CopyFile("fn-call.json").
 		RunScript(filepath.Join(scriptDir, projectName+".txtar"))
 }
+
+func TestParamsAndSecrets(t *testing.T) {
+	projectName := "params_and_secrets"
+	projectDir := filepath.Join(examplesDir, projectName)
+	NewProjectTest(t, projectDir).
+		ExecuteMakeTarget("build").
+		CopyFile("tmp/x.wasm").
+		CopyFile("config.toml").
+		CopyFile("fn-call.json").
+		CopyFile("fn-call-error.json").
+		RunScript(filepath.Join(scriptDir, projectName+".txtar"))
+}
