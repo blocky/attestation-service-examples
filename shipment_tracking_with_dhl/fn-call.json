@@ -5,6 +5,6 @@
     "tracking_number": "00340434292135100186"
   },
   "secret": {
-    "api_key": "demo-key"
+    "api_key": "{{ .YOUR_DHL_API_KEY }}"
   }
 }
