@@ -9,6 +9,7 @@
   "license": "MIT",
   "dependencies": {
     "@nomicfoundation/hardhat-toolbox": "^5.0.0",
+    "base-x": "^3.0.11",
     "base64-sol": "github:brechtpd/base64",
     "dotenv": "^16.4.7",
     "hardhat": "^2.22.19",

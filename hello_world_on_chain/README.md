@@ -202,11 +202,11 @@ Notice the output of the command similar to:
 
 ```
 Successfully verified contract User on the block explorer.
-https://sepolia.basescan.org/address/0x2b86E71C075A8D9e06C9feD887C865a7e91ad7cd#code
+https://sepolia.basescan.org/address/0x618Bb1F8e0995b25d713AB834b2c5E68b341f9A1#code
 ```
 
 which includes a link to the 
-[deployed `User` contract on Basescan](https://sepolia.basescan.org/address/0x2b86E71C075A8D9e06C9feD887C865a7e91ad7cd).
+[deployed `User` contract on Basescan](https://sepolia.basescan.org/address/0x618Bb1F8e0995b25d713AB834b2c5E68b341f9A1).
 
 ### Step 5: Test the `User` contract on Base Sepolia
 
@@ -227,7 +227,7 @@ You will see the test output similar to:
 which show that the [`User`](contracts/User.sol) contract was able to
 verify the TA in just over 2 seconds.
 If you go to Basescan to see 
-[contract transaction logs](https://sepolia.basescan.org/tx/0xc772e294541b5a572e06b9a7ce96073f734cc1424e56ba69620124d4dc669d44#eventlog)
+[contract transaction logs](https://sepolia.basescan.org/tx/0x38f4dd37e285f5407b9f97325de665730b6763d6e52644cd4d999cb91eb61ca5#eventlog
 you can see that the `processTransitivelyAttestedHelloWorldOutput` emitted the
 `AttestedFunctionCallOutput` event containing the expected `"Hello, World!"` 
 WASM function output.
