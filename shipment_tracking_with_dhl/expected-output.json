@@ -1,0 +1,15 @@
+{
+  "Success": true,
+  "Error": "",
+  "Value": {
+    "tracking_number": "00340434292135100186",
+    "address": {
+      "countryCode": "US",
+      "postalCode": "89014",
+      "addressLocality": "Henderson, NV, US"
+    },
+    "status": "DELIVERED",
+    "description": "DELIVERED - PARCEL LOCKER",
+    "timestamp": "2023-05-08T10:37:00"
+  }
+}
