@@ -1,0 +1,8 @@
+# [execute] attest fn call to SportRadar API
+stdin fn-call.json
+exec bky-as attest-fn-call
+cp stdout result.json
+
+# [check] assert stdout contains correct game information
+exec jq -c -r '.transitive_attested_function_call.claims.output | @base64d | fromjson' result.json
+stdout '{"Success":true,"Error":"","Value":{"points_per_minute":'
