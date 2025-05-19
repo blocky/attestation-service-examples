@@ -49,6 +49,7 @@ type MatchResult struct {
 }
 
 func getMatchResultFromPandaScore(
+	matchesAPIEndpoint string,
 	matchID string,
 	apiKey string,
 ) (
@@ -57,7 +58,7 @@ func getMatchResultFromPandaScore(
 ) {
 	req := basm.HTTPRequestInput{
 		Method: "GET",
-		URL:    fmt.Sprintf("https://api.pandascore.co/matches/%s", matchID),
+		URL:    fmt.Sprintf("%s/%s", matchesAPIEndpoint, matchID),
 		Headers: map[string][]string{
 			"Accept":        {"application/json"},
 			"Authorization": {"Bearer " + apiKey},
@@ -111,6 +112,7 @@ func getMatchResultFromPandaScore(
 }
 
 type Args struct {
+	MatchesAPIEndpoint string `json:"matches_api_endpoint"`
 	MatchID            string `json:"match_id"`
 }
 
@@ -137,6 +139,7 @@ func scoreFunc(inputPtr uint64, secretPtr uint64) uint64 {
 	}
 
 	matchResult, err := getMatchResultFromPandaScore(
+		input.MatchesAPIEndpoint,
 		input.MatchID,
 		secret.PandaScoreAPIKey,
 	)

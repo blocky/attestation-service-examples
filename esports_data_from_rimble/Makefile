@@ -38,14 +38,14 @@ build: tmp/x.wasm
 .PHONY: match-winner
 match-winner: check build
 	@echo "Running WASM module..."
-	@cat fn-call-match-winner.json | bky-as attest-fn-call >tmp/out.json
+	@cat match-winner.json | bky-as attest-fn-call >tmp/out.json
 	@echo "Output:"
 	@jq -r '.transitive_attested_function_call.claims.output | @base64d | fromjson' tmp/out.json
 
 .PHONY: team-kill-diff
 team-kill-diff: check build
 	@echo "Running WASM module..."
-	@cat fn-call-team-kill.json | bky-as attest-fn-call >tmp/out.json
+	@cat team-kill-diff.json | bky-as attest-fn-call >tmp/out.json
 	@echo "Output:"
 	@jq -r '.transitive_attested_function_call.claims.output | @base64d | fromjson' tmp/out.json
 

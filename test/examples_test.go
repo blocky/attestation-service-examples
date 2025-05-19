@@ -30,9 +30,9 @@ func TestErrorHandlingAttestFnCall(t *testing.T) {
 		ExecuteMakeTarget("build").
 		CopyFile("tmp/x.wasm").
 		CopyFile("config.toml").
-		CopyFile("fn-call.json").
-		CopyFile("fn-call-error.json").
-		CopyFile("fn-call-panic.json").
+		CopyFile("successFunc.json").
+		CopyFile("errorFunc.json").
+		CopyFile("panicFunc.json").
 		RunScript(filepath.Join(scriptDir, projectName+".txtar"))
 }
 
@@ -40,6 +40,7 @@ func TestESportsDataFromPandaScore(t *testing.T) {
 	projectName := "esports_data_from_pandascore"
 	projectDir := filepath.Join(examplesDir, projectName)
 	requiredEnvVars := []string{
+		"YOUR_PANDASCORE_API_ENDPOINT",
 		"YOUR_PANDASCORE_API_KEY",
 	}
 
@@ -63,11 +64,11 @@ func TestESportsDataFromRimble(t *testing.T) {
 		CopyFile("tmp/x.wasm").
 		CopyFile("config.toml").
 		RenderTemplateFileFromEnvWithCleanup(
-			"fn-call-match-winner.json",
+			"match-winner.json",
 			requiredEnvVars,
 		).
 		RenderTemplateFileFromEnvWithCleanup(
-			"fn-call-team-kill.json",
+			"team-kill-diff.json",
 			requiredEnvVars,
 		).
 		RunScript(filepath.Join(scriptDir, projectName+".txtar"))

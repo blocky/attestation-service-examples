@@ -2,6 +2,7 @@
   "code_file": "tmp/x.wasm",
   "function": "scoreFunc",
   "input": {
+    "matches_api_endpoint": "{{ .YOUR_PANDASCORE_API_ENDPOINT }}",
     "match_id": "1121861"
   },
   "secret": {

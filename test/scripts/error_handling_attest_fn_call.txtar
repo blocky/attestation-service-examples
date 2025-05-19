@@ -1,5 +1,5 @@
 # [execute] function call that is successful
-stdin fn-call.json
+stdin successFunc.json
 exec bky-as attest-fn-call
 cp stdout result.json
 
@@ -8,7 +8,7 @@ exec jq -c -r '.transitive_attested_function_call.claims.output | @base64d | fro
 stdout '{"Success":true,"Error":"","Value":{"number":42}}'
 
 # [execute] function call that errors
-stdin fn-call-error.json
+stdin errorFunc.json
 exec bky-as attest-fn-call
 cp stdout result-error.json
 
@@ -17,7 +17,7 @@ exec jq -c -r '.transitive_attested_function_call.claims.output | @base64d | fro
 stdout '{"Success":false,"Error":"expected error","Value":null}'
 
 # [execute] function call that panics
-stdin fn-call-panic.json
+stdin panicFunc.json
 ! exec bky-as attest-fn-call
 
 # [check] assert stderr contains panic output

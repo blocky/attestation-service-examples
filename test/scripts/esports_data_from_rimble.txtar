@@ -1,5 +1,5 @@
 # [execute] attest fn call to Rimble API for match information
-stdin fn-call-match-winner.json
+stdin match-winner.json
 exec bky-as attest-fn-call
 cp stdout result-match-winner.json
 
@@ -8,13 +8,13 @@ exec jq -r '.transitive_attested_function_call.claims.output | @base64d | fromjs
 cmp stdout expected-output-match-winner.json
 
 # [execute] attest fn call to Rimble API for team kill information
-stdin fn-call-team-kill.json
+stdin team-kill-diff.json
 exec bky-as attest-fn-call
-cp stdout result-team-kill.json
+cp stdout result-team-kill-diff.json
 
 # [check] assert stdout contains correct team kill information
-exec jq -r '.transitive_attested_function_call.claims.output | @base64d | fromjson' result-team-kill.json
-cmp stdout expected-output-team-kill.json
+exec jq -r '.transitive_attested_function_call.claims.output | @base64d | fromjson' result-team-kill-diff.json
+cmp stdout expected-output-team-kill-diff.json
 
 -- expected-output-match-winner.json --
 {
@@ -26,7 +26,7 @@ cmp stdout expected-output-team-kill.json
     "Winner": "MOUZ"
   }
 }
--- expected-output-team-kill.json --
+-- expected-output-team-kill-diff.json --
 {
   "Success": true,
   "Error": "",
