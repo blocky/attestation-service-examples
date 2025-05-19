@@ -15,3 +15,27 @@ cp stdout result-team-kill.json
 # [check] assert stdout contains correct team kill information
 exec jq -r '.transitive_attested_function_call.claims.output | @base64d | fromjson' result-team-kill.json
 cmp stdout expected-output-team-kill.json
+
+-- expected-output-match-winner.json --
+{
+  "Success": true,
+  "Error": "",
+  "Value": {
+    "MatchID": "2379357",
+    "Date": "2025-02-18",
+    "Winner": "MOUZ"
+  }
+}
+-- expected-output-team-kill.json --
+{
+  "Success": true,
+  "Error": "",
+  "Value": {
+    "MatchID": "2379357",
+    "Date": "2025-02-18",
+    "MapName": "Mirage",
+    "Team1": "MOUZ",
+    "Team2": "Virtus.pro",
+    "KillDiff": 34
+  }
+}

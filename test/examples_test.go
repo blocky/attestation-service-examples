@@ -47,7 +47,6 @@ func TestESportsDataFromPandaScore(t *testing.T) {
 		ExecuteMakeTarget("build").
 		CopyFile("tmp/x.wasm").
 		CopyFile("config.toml").
-		CopyFile("expected-output.json").
 		RenderTemplateFileFromEnvWithCleanup("fn-call.json", requiredEnvVars).
 		RunScript(filepath.Join(scriptDir, projectName+".txtar"))
 }
@@ -63,8 +62,6 @@ func TestESportsDataFromRimble(t *testing.T) {
 		ExecuteMakeTarget("build").
 		CopyFile("tmp/x.wasm").
 		CopyFile("config.toml").
-		CopyFile("expected-output-match-winner.json").
-		CopyFile("expected-output-team-kill.json").
 		RenderTemplateFileFromEnvWithCleanup(
 			"fn-call-match-winner.json",
 			requiredEnvVars,
@@ -121,7 +118,6 @@ func TestShipmentTrackingWithDHL(t *testing.T) {
 		ExecuteMakeTarget("build").
 		CopyFile("tmp/x.wasm").
 		CopyFile("config.toml").
-		CopyFile("expected-output.json").
 		RenderTemplateFileFromEnvWithCleanup("fn-call.json", requiredEnvVars).
 		RunScript(filepath.Join(scriptDir, projectName+".txtar"))
 }
