@@ -32,27 +32,70 @@ func NewProjectTest(t *testing.T, projectDir string) *ProjectTest {
 	}
 }
 
+func copyFile(srcPath string, dstPath string, mode os.FileMode) error {
+	srcContent, err := os.ReadFile(srcPath)
+	if err != nil {
+		return fmt.Errorf("reading source file %s: %w", srcPath, err)
+	}
+
+	if err := os.WriteFile(dstPath, srcContent, mode); err != nil {
+		return fmt.Errorf("writing destination file %s: %w", dstPath, err)
+	}
+	return nil
+}
+
+func makeDir(dirPath string, mode os.FileMode) error {
+	if err := os.MkdirAll(dirPath, mode); err != nil {
+		return fmt.Errorf("creating directory %s: %w", dirPath, err)
+	}
+	return nil
+}
+
 func (e *ProjectTest) CopyFile(srcRelPath string) *ProjectTest {
 	setupFunc := func(env *testscript.Env) error {
 		src := filepath.Join(e.projectDir, srcRelPath)
 		dst := filepath.Join(env.WorkDir, srcRelPath)
 		dstDir := filepath.Dir(dst)
-		if err := os.MkdirAll(dstDir, 0755); err != nil {
-			msg := "failed to create destination directory %s: %w"
-			return fmt.Errorf(msg, dstDir, err)
+
+		if err := makeDir(dstDir, 0755); err != nil {
+			return err
+		}
+		return copyFile(src, dst, 0644)
+	}
+	e.setupFuncs = append(e.setupFuncs, setupFunc)
+	return e
+}
+
+func (e *ProjectTest) CopyDir(srcRelPath string) *ProjectTest {
+	setupFunc := func(env *testscript.Env) error {
+		srcDir := filepath.Join(e.projectDir, srcRelPath)
+		dstDir := filepath.Join(env.WorkDir, srcRelPath)
+
+		walkFunc := func(srcPath string, info os.FileInfo, err error) error {
+			if err != nil {
+				return fmt.Errorf("walking '%s': %w", srcPath, err)
+			}
+
+			relPath, err := filepath.Rel(srcDir, srcPath)
+			if err != nil {
+				return fmt.Errorf("creating relative path: %w", err)
+			}
+			dstPath := filepath.Join(dstDir, relPath)
+
+			if info.IsDir() {
+				return makeDir(dstPath, info.Mode())
+			} else {
+				return copyFile(srcPath, dstPath, info.Mode())
+			}
 		}
 
-		srcContent, err := os.ReadFile(src)
+		err := filepath.Walk(srcDir, walkFunc)
 		if err != nil {
-			return fmt.Errorf("failed to read source file %s: %w", src, err)
-		}
-
-		if err := os.WriteFile(dst, srcContent, 0644); err != nil {
-			msg := "failed to write destination file %s: %w"
-			return fmt.Errorf(msg, dst, err)
+			return fmt.Errorf("copying directory %s: %w", srcDir, err)
 		}
 		return nil
 	}
+
 	e.setupFuncs = append(e.setupFuncs, setupFunc)
 	return e
 }
@@ -135,6 +178,39 @@ func (e *ProjectTest) ExecuteMakeTarget(target string) *ProjectTest {
 		if err := cmd.Run(); err != nil {
 			return fmt.Errorf("failed to run 'make %s': %v", target, err)
 		}
+		return nil
+	}
+	e.setupFuncs = append(e.setupFuncs, setupFunc)
+	return e
+}
+
+func (e *ProjectTest) NPMInstallDeps() *ProjectTest {
+	setupFunc := func(env *testscript.Env) error {
+		// Configure both npm and npx to only create and write files to the
+		// current working directory instead of the default $HOME directory
+		env.Setenv("NPM_CONFIG_CACHE", env.WorkDir+"/.npm")
+		env.Setenv("NPM_CONFIG_PREFIX", env.WorkDir+"/.npm-global")
+		env.Setenv("XDG_CACHE_HOME", env.WorkDir+"/.npx")
+		env.Setenv("XDG_CONFIG_HOME", env.WorkDir+"/.npx")
+		env.Setenv("XDG_DATA_HOME", env.WorkDir+"/.npx")
+
+		cmd := exec.Command("npm", "install")
+		cmd.Dir = env.WorkDir
+		cmd.Stdout = os.Stdout
+		cmd.Stderr = os.Stderr
+		e.t.Logf("Running command: '%s'", cmd.String())
+		if err := cmd.Run(); err != nil {
+			return fmt.Errorf("failed to install npm deps: %v", err)
+		}
+		return nil
+	}
+	e.setupFuncs = append(e.setupFuncs, setupFunc)
+	return e
+}
+
+func (e *ProjectTest) SetEnv(key string, value string) *ProjectTest {
+	setupFunc := func(env *testscript.Env) error {
+		env.Setenv(key, value)
 		return nil
 	}
 	e.setupFuncs = append(e.setupFuncs, setupFunc)
