@@ -33,6 +33,11 @@ let
           mo "$file" > "$file.tmp" && mv "$file.tmp" "$file"
         done
       }
+
+      upgrade-basm() {
+        find . -type f -name go.mod -execdir bash -c 'go get -u github.com/blocky/basm-go-sdk && go mod tidy' \;
+      }
+
       echo "Stable bky-as version: $AS_VERSION"
       set +e
     '';
