@@ -34,6 +34,7 @@ let
         done
       }
       echo "Stable bky-as version: $AS_VERSION"
+      set +e
     '';
   };
 
@@ -66,6 +67,7 @@ let
       export AS_VERSION=${version};
 
       echo "Unstable bky-as version: $AS_VERSION"
+      set +e
     '';
   };
 in
