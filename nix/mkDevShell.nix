@@ -29,8 +29,9 @@ let
       export AS_VERSION=${version}
 
       render-md() {
-        for file in $(find . -type f -name '*.md'); do
-          mo "$file" > "$file.tmp" && mv "$file.tmp" "$file"
+        for file in $(git ls-files '*.md'); do
+          echo "Processing $file"
+          mo --open="{{{"  --close="}}}" "$file" > "$file.tmp" && mv "$file.tmp" "$file"
         done
       }
 
