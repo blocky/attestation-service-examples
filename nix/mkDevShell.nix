@@ -36,7 +36,7 @@ let
       }
 
       upgrade-basm() {
-        find . -type f -name go.mod -execdir bash -c 'go get -u github.com/blocky/basm-go-sdk && go mod tidy' \;
+        find . -type f -name go.mod -execdir bash -c 'pwd && go get -u github.com/blocky/basm-go-sdk && go mod tidy' \;
       }
 
       echo "Stable bky-as version: $AS_VERSION"
