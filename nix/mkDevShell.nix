@@ -27,6 +27,7 @@ let
     shellHook = ''
       set -e
       export AS_VERSION=${version}
+
       render-md() {
         for file in $(find . -type f -name '*.md'); do
           mo "$file" > "$file.tmp" && mv "$file.tmp" "$file"
@@ -58,10 +59,12 @@ let
       ];
     shellHook = ''
       set -e
+
       bin=$(pwd)/tmp/bin
       fetch-bky-as.sh $bin ${version} ${goos} ${goarch}
       export PATH=$bin:$PATH
       export AS_VERSION=${version};
+
       echo "Unstable bky-as version: $AS_VERSION"
     '';
   };
