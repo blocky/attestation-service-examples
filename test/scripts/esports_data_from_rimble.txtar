@@ -1,0 +1,41 @@
+# [execute] attest fn call to Rimble API for match information
+stdin match-winner.json.template
+exec bky-as attest-fn-call
+cp stdout result-match-winner.json
+
+# [check] assert stdout contains correct match information
+exec jq -r '.transitive_attested_function_call.claims.output | @base64d | fromjson' result-match-winner.json
+cmp stdout expected-output-match-winner.json
+
+# [execute] attest fn call to Rimble API for team kill information
+stdin team-kill-diff.json.template
+exec bky-as attest-fn-call
+cp stdout result-team-kill-diff.json
+
+# [check] assert stdout contains correct team kill information
+exec jq -r '.transitive_attested_function_call.claims.output | @base64d | fromjson' result-team-kill-diff.json
+cmp stdout expected-output-team-kill-diff.json
+
+-- expected-output-match-winner.json --
+{
+  "Success": true,
+  "Error": "",
+  "Value": {
+    "MatchID": "2379357",
+    "Date": "2025-02-18",
+    "Winner": "MOUZ"
+  }
+}
+-- expected-output-team-kill-diff.json --
+{
+  "Success": true,
+  "Error": "",
+  "Value": {
+    "MatchID": "2379357",
+    "Date": "2025-02-18",
+    "MapName": "Mirage",
+    "Team1": "MOUZ",
+    "Team2": "Virtus.pro",
+    "KillDiff": 34
+  }
+}

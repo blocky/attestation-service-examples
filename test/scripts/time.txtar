@@ -1,0 +1,9 @@
+# [execute] attest fn call
+stdin fn-call.json
+exec bky-as attest-fn-call
+cp stdout result.json
+
+# [check] assert stdout contains correct output but
+# do not check the actual value as it is changes
+exec jq -c -r '.transitive_attested_function_call.claims.output | @base64d | fromjson' result.json
+stdout '{"Success":true,"Error":"","Value":"[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}\.[0-9]{1,9}Z"}'
