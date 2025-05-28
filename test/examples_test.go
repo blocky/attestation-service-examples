@@ -38,7 +38,6 @@ func TestHelloWorldOnChain(t *testing.T) {
 		CopyFile("package.json").
 		CopyFile("package-lock.json").
 		CopyFile("tsconfig.json").
-		SetEnv("TEST_CASE", "Local").
 		NPMInstallDeps().
 		RunScript(filepath.Join(scriptDir, projectName+".txtar"))
 }

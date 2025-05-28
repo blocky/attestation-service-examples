@@ -1,5 +1,5 @@
 # [execute]
-exec npx hardhat test --grep $TEST_CASE
+exec npx hardhat test --grep Local
 
 # [check]
 stdout 'Hello, World!'
