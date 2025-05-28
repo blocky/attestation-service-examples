@@ -62,11 +62,11 @@ file contents:
   "code_file": "tmp/x.wasm",
   "function": "scoreFunc",
   "input": {
-    "matches_api_endpoint": "PandaScore API matches endpoint",
+    "matches_api_endpoint": "{{ .YOUR_PANDASCORE_API_ENDPOINT }}",
     "match_id": "1121861"
   },
   "secret": {
-    "api_key": "PandaScore API Key"
+    "api_key": "{{ .YOUR_PANDASCORE_API_KEY }}"
   }
 }
 ```

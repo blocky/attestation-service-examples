@@ -38,7 +38,7 @@ build: tmp/x.wasm
 .PHONY: match-winner
 match-winner: check build
 	@echo "Running WASM module..."
-	@sed -e 's/Rimble API key/$(RIMBLE_API_KEY)/' ./match-winner.json.template > ./tmp/match-winner.json
+	@sed -e 's/{{ .YOUR_RIMBLE_API_KEY }}/$(RIMBLE_API_KEY)/' ./match-winner.json.template > ./tmp/match-winner.json
 	@cat ./tmp/match-winner.json | bky-as attest-fn-call >tmp/out.json
 	@echo "Output:"
 	@jq -r '.transitive_attested_function_call.claims.output | @base64d | fromjson' tmp/out.json
@@ -46,7 +46,7 @@ match-winner: check build
 .PHONY: team-kill-diff
 team-kill-diff: check build
 	@echo "Running WASM module..."
-	@sed -e 's/Rimble API key/$(RIMBLE_API_KEY)/' ./team-kill-diff.json.template > ./tmp/team-kill-diff.json
+	@sed -e 's/{{ .YOUR_RIMBLE_API_KEY }}/$(RIMBLE_API_KEY)/' ./team-kill-diff.json.template > ./tmp/team-kill-diff.json
 	@cat ./tmp/team-kill-diff.json | bky-as attest-fn-call >tmp/out.json
 	@echo "Output:"
 	@jq -r '.transitive_attested_function_call.claims.output | @base64d | fromjson' tmp/out.json

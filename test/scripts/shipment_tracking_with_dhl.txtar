@@ -1,0 +1,25 @@
+# [execute] attest fn call to DHL API
+stdin fn-call.json
+exec bky-as attest-fn-call
+cp stdout result.json
+
+# [check] assert stdout contains correct shipping information
+exec jq -r '.transitive_attested_function_call.claims.output | @base64d | fromjson' result.json
+cmp stdout expected-output.json
+
+-- expected-output.json --
+{
+  "Success": true,
+  "Error": "",
+  "Value": {
+    "tracking_number": "00340434292135100186",
+    "address": {
+      "countryCode": "US",
+      "postalCode": "89014",
+      "addressLocality": "Henderson, NV, US"
+    },
+    "status": "DELIVERED",
+    "description": "DELIVERED - PARCEL LOCKER",
+    "timestamp": "2023-05-08T10:37:00"
+  }
+}

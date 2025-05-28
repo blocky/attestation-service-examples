@@ -6,6 +6,6 @@
     "match_id": "2379357"
   },
   "secret": {
-    "api_key": "Rimble API key"
+    "api_key": "{{ .YOUR_RIMBLE_API_KEY }}"
   }
 }
