@@ -208,15 +208,6 @@ func (e *ProjectTest) NPMInstallDeps() *ProjectTest {
 	return e
 }
 
-func (e *ProjectTest) SetEnv(key string, value string) *ProjectTest {
-	setupFunc := func(env *testscript.Env) error {
-		env.Setenv(key, value)
-		return nil
-	}
-	e.setupFuncs = append(e.setupFuncs, setupFunc)
-	return e
-}
-
 func (e *ProjectTest) RunScript(scriptFile string) {
 	e.params.Setup = func(env *testscript.Env) error {
 		for _, setupFunc := range e.setupFuncs {
