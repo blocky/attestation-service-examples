@@ -1,5 +1,5 @@
 # [execute] attest fn call to Rimble API for match information
-stdin match-winner.json
+stdin match-winner.json.template
 exec bky-as attest-fn-call
 cp stdout result-match-winner.json
 
@@ -8,7 +8,7 @@ exec jq -r '.transitive_attested_function_call.claims.output | @base64d | fromjs
 cmp stdout expected-output-match-winner.json
 
 # [execute] attest fn call to Rimble API for team kill information
-stdin team-kill-diff.json
+stdin team-kill-diff.json.template
 exec bky-as attest-fn-call
 cp stdout result-team-kill-diff.json
 

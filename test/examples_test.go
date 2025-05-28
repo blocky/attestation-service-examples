@@ -64,11 +64,11 @@ func TestESportsDataFromRimble(t *testing.T) {
 		CopyFile("tmp/x.wasm").
 		CopyFile("config.toml").
 		RenderTemplateFileFromEnvWithCleanup(
-			"match-winner.json",
+			"match-winner.json.template",
 			requiredEnvVars,
 		).
 		RenderTemplateFileFromEnvWithCleanup(
-			"team-kill-diff.json",
+			"team-kill-diff.json.template",
 			requiredEnvVars,
 		).
 		RunScript(filepath.Join(scriptDir, projectName+".txtar"))
