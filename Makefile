@@ -10,7 +10,8 @@ run-error-handling-attest-fn-call:
 	@echo "Running run-error-handling-attest-fn-call..."
 	@cd error_handling_attest_fn_call && make run-success 2> /dev/null
 	@cd error_handling_attest_fn_call && make run-error 2> /dev/null
-	@cd error_handling_attest_fn_call && make run-panic 2> /dev/null
+	@cd error_handling_attest_fn_call && make run-panic 2> /dev/null \
+		|| if [[ $$? != 2 ]]; then exit 1; fi
 
 run-error-handling-on-chain:
 	@echo "Running run-error-handling-on-chain..."
