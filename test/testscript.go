@@ -184,16 +184,8 @@ func (e *ProjectTest) ExecuteMakeTarget(target string) *ProjectTest {
 	return e
 }
 
-func (e *ProjectTest) NPMInstallDeps() *ProjectTest {
+func (e *ProjectTest) NPMInstall() *ProjectTest {
 	setupFunc := func(env *testscript.Env) error {
-		// Configure both npm and npx to only create and write files to the
-		// current working directory instead of the default $HOME directory
-		env.Setenv("NPM_CONFIG_CACHE", env.WorkDir+"/.npm")
-		env.Setenv("NPM_CONFIG_PREFIX", env.WorkDir+"/.npm-global")
-		env.Setenv("XDG_CACHE_HOME", env.WorkDir+"/.npx")
-		env.Setenv("XDG_CONFIG_HOME", env.WorkDir+"/.npx")
-		env.Setenv("XDG_DATA_HOME", env.WorkDir+"/.npx")
-
 		cmd := exec.Command("npm", "install")
 		cmd.Dir = env.WorkDir
 		cmd.Stdout = os.Stdout
@@ -202,6 +194,22 @@ func (e *ProjectTest) NPMInstallDeps() *ProjectTest {
 		if err := cmd.Run(); err != nil {
 			return fmt.Errorf("failed to install npm deps: %v", err)
 		}
+		return nil
+	}
+	e.setupFuncs = append(e.setupFuncs, setupFunc)
+	return e
+}
+
+func (e *ProjectTest) SetEnvWithLazyValue(
+	key string,
+	getValue func(env *testscript.Env) (string, error),
+) *ProjectTest {
+	setupFunc := func(env *testscript.Env) error {
+		value, err := getValue(env)
+		if err != nil {
+			return err
+		}
+		env.Setenv(key, value)
 		return nil
 	}
 	e.setupFuncs = append(e.setupFuncs, setupFunc)

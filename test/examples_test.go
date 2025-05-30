@@ -3,6 +3,8 @@ package test
 import (
 	"path/filepath"
 	"testing"
+
+	"github.com/rogpeppe/go-internal/testscript"
 )
 
 const examplesDir = ".."
@@ -26,6 +28,12 @@ func TestCoinPricesFromCoingecko(t *testing.T) {
 func TestHelloWorldOnChain(t *testing.T) {
 	projectName := "hello_world_on_chain"
 	projectDir := filepath.Join(examplesDir, projectName)
+	npmDir := func(env *testscript.Env) (string, error) {
+		return env.WorkDir+"/.npm", nil
+	}
+	npxDir := func(env *testscript.Env) (string, error) {
+		return env.WorkDir+"/.npx", nil
+	}
 	NewProjectTest(t, projectDir).
 		CopyDir("contracts/").
 		CopyDir("deployments/").
@@ -38,7 +46,12 @@ func TestHelloWorldOnChain(t *testing.T) {
 		CopyFile("package.json").
 		CopyFile("package-lock.json").
 		CopyFile("tsconfig.json").
-		NPMInstallDeps().
+		SetEnvWithLazyValue("NPM_CONFIG_CACHE", npmDir).
+		SetEnvWithLazyValue("NPM_CONFIG_PREFIX", npmDir).
+		SetEnvWithLazyValue("XDG_CACHE_HOME", npxDir).
+		SetEnvWithLazyValue("XDG_CONFIG_HOME", npxDir).
+		SetEnvWithLazyValue("XDG_DATA_HOME", npxDir).
+		NPMInstall().
 		RunScript(filepath.Join(scriptDir, projectName+".txtar"))
 }
 
