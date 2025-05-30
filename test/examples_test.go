@@ -43,6 +43,7 @@ func TestHelloWorldOnChain(t *testing.T) {
 		CopyDir("test/").
 		CopyFile(".env").
 		CopyFile("hardhat.config.ts").
+		CopyFile("Makefile").
 		CopyFile("package.json").
 		CopyFile("package-lock.json").
 		CopyFile("tsconfig.json").

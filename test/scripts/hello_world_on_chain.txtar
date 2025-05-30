@@ -1,5 +1,5 @@
 # [execute]
-exec npx hardhat test --grep Local
+exec make test-local
 
 # [check]
 stdout 'Hello, World!'
