@@ -54,13 +54,24 @@ func makeDir(dirPath string, mode os.FileMode) error {
 func (e *ProjectTest) CopyFile(srcRelPath string) *ProjectTest {
 	setupFunc := func(env *testscript.Env) error {
 		src := filepath.Join(e.projectDir, srcRelPath)
+		srcDir := filepath.Dir(src)
 		dst := filepath.Join(env.WorkDir, srcRelPath)
 		dstDir := filepath.Dir(dst)
 
-		if err := makeDir(dstDir, 0755); err != nil {
+		dirInfo, err := os.Stat(srcDir)
+		if err != nil {
+			return fmt.Errorf("getting dir info %s: %w", srcDir, err)
+		}
+
+		if err := makeDir(dstDir, dirInfo.Mode()); err != nil {
 			return err
 		}
-		return copyFile(src, dst, 0644)
+
+		fileInfo, err := os.Stat(src)
+		if err != nil {
+			return fmt.Errorf("getting file info %s: %w", src, err)
+		}
+		return copyFile(src, dst, fileInfo.Mode())
 	}
 	e.setupFuncs = append(e.setupFuncs, setupFunc)
 	return e
