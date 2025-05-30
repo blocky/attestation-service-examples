@@ -3,6 +3,8 @@ package test
 import (
 	"path/filepath"
 	"testing"
+
+	"github.com/rogpeppe/go-internal/testscript"
 )
 
 const examplesDir = ".."
@@ -20,6 +22,37 @@ func TestCoinPricesFromCoingecko(t *testing.T) {
 		CopyFile("tmp/x.wasm").
 		CopyFile("config.toml").
 		RenderTemplateFileFromEnvWithCleanup("fn-call.json", requiredEnvVars).
+		RunScript(filepath.Join(scriptDir, projectName+".txtar"))
+}
+
+func TestHelloWorldOnChain(t *testing.T) {
+	projectName := "hello_world_on_chain"
+	projectDir := filepath.Join(examplesDir, projectName)
+	npmDir := func(env *testscript.Env) (string, error) {
+		return env.WorkDir+"/.npm", nil
+	}
+	npxDir := func(env *testscript.Env) (string, error) {
+		return env.WorkDir+"/.npx", nil
+	}
+	NewProjectTest(t, projectDir).
+		CopyDir("contracts/").
+		CopyDir("deployments/").
+		CopyDir("inputs/").
+		CopyDir("lib/").
+		CopyDir("scripts/").
+		CopyDir("test/").
+		CopyFile(".env").
+		CopyFile("hardhat.config.ts").
+		CopyFile("Makefile").
+		CopyFile("package.json").
+		CopyFile("package-lock.json").
+		CopyFile("tsconfig.json").
+		SetEnvWithLazyValue("NPM_CONFIG_CACHE", npmDir).
+		SetEnvWithLazyValue("NPM_CONFIG_PREFIX", npmDir).
+		SetEnvWithLazyValue("XDG_CACHE_HOME", npxDir).
+		SetEnvWithLazyValue("XDG_CONFIG_HOME", npxDir).
+		SetEnvWithLazyValue("XDG_DATA_HOME", npxDir).
+		NPMInstall().
 		RunScript(filepath.Join(scriptDir, projectName+".txtar"))
 }
 

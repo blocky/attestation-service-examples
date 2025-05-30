@@ -1,0 +1,5 @@
+# [execute]
+exec make test-local
+
+# [check]
+stdout 'Hello, World!'
