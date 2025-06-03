@@ -27,12 +27,20 @@ let
     shellHook = ''
       set -e
       export AS_VERSION=${version}
+
       render-md() {
-        for file in $(find . -type f -name '*.md'); do
-          mo "$file" > "$file.tmp" && mv "$file.tmp" "$file"
+        for file in $(git ls-files '*.md'); do
+          echo "Processing $file"
+          mo --open="{{{"  --close="}}}" "$file" > "$file.tmp" && mv "$file.tmp" "$file"
         done
       }
+
+      upgrade-basm() {
+        find . -type f -name go.mod -execdir bash -c 'pwd && go get -u github.com/blocky/basm-go-sdk && go mod tidy' \;
+      }
+
       echo "Stable bky-as version: $AS_VERSION"
+      set +e
     '';
   };
 
@@ -58,11 +66,14 @@ let
       ];
     shellHook = ''
       set -e
+
       bin=$(pwd)/tmp/bin
       fetch-bky-as.sh $bin ${version} ${goos} ${goarch}
       export PATH=$bin:$PATH
       export AS_VERSION=${version};
+
       echo "Unstable bky-as version: $AS_VERSION"
+      set +e
     '';
   };
 in
