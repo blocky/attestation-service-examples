@@ -15,7 +15,7 @@ func TestCoinPricesFromCoingecko(t *testing.T) {
 		"YOUR_COINGECKO_API_KEY",
 	}
 
-	NewProjectTest(t, projectDir).
+	NewTestscriptTest(t, projectDir).
 		ExecuteMakeTarget("build").
 		CopyFile("tmp/x.wasm").
 		CopyFile("config.toml").
@@ -26,7 +26,7 @@ func TestCoinPricesFromCoingecko(t *testing.T) {
 func TestErrorHandlingAttestFnCall(t *testing.T) {
 	projectName := "error_handling_attest_fn_call"
 	projectDir := filepath.Join(examplesDir, projectName)
-	NewProjectTest(t, projectDir).
+	NewTestscriptTest(t, projectDir).
 		ExecuteMakeTarget("build").
 		CopyFile("tmp/x.wasm").
 		CopyFile("config.toml").
@@ -44,7 +44,7 @@ func TestESportsDataFromPandaScore(t *testing.T) {
 		"YOUR_PANDASCORE_API_KEY",
 	}
 
-	NewProjectTest(t, projectDir).
+	NewTestscriptTest(t, projectDir).
 		ExecuteMakeTarget("build").
 		CopyFile("tmp/x.wasm").
 		CopyFile("config.toml").
@@ -59,7 +59,7 @@ func TestESportsDataFromRimble(t *testing.T) {
 		"YOUR_RIMBLE_API_KEY",
 	}
 
-	NewProjectTest(t, projectDir).
+	NewTestscriptTest(t, projectDir).
 		ExecuteMakeTarget("build").
 		CopyFile("tmp/x.wasm").
 		CopyFile("config.toml").
@@ -77,7 +77,7 @@ func TestESportsDataFromRimble(t *testing.T) {
 func TestHelloWorldAttestFnCall(t *testing.T) {
 	projectName := "hello_world_attest_fn_call"
 	projectDir := filepath.Join(examplesDir, projectName)
-	NewProjectTest(t, projectDir).
+	NewTestscriptTest(t, projectDir).
 		ExecuteMakeTarget("build").
 		CopyFile("tmp/x.wasm").
 		CopyFile("config.toml").
@@ -88,7 +88,7 @@ func TestHelloWorldAttestFnCall(t *testing.T) {
 func TestParamsAndSecrets(t *testing.T) {
 	projectName := "params_and_secrets"
 	projectDir := filepath.Join(examplesDir, projectName)
-	NewProjectTest(t, projectDir).
+	NewTestscriptTest(t, projectDir).
 		ExecuteMakeTarget("build").
 		CopyFile("tmp/x.wasm").
 		CopyFile("config.toml").
@@ -100,7 +100,7 @@ func TestParamsAndSecrets(t *testing.T) {
 func TestRandom(t *testing.T) {
 	projectName := "random"
 	projectDir := filepath.Join(examplesDir, projectName)
-	NewProjectTest(t, projectDir).
+	NewTestscriptTest(t, projectDir).
 		ExecuteMakeTarget("build").
 		CopyFile("tmp/x.wasm").
 		CopyFile("config.toml").
@@ -115,7 +115,7 @@ func TestShipmentTrackingWithDHL(t *testing.T) {
 		"YOUR_DHL_API_KEY",
 	}
 
-	NewProjectTest(t, projectDir).
+	NewTestscriptTest(t, projectDir).
 		ExecuteMakeTarget("build").
 		CopyFile("tmp/x.wasm").
 		CopyFile("config.toml").
@@ -130,7 +130,7 @@ func TestSportsDataFromSportRadar(t *testing.T) {
 		"YOUR_SPORTRADAR_API_KEY",
 	}
 
-	NewProjectTest(t, projectDir).
+	NewTestscriptTest(t, projectDir).
 		ExecuteMakeTarget("build").
 		CopyFile("tmp/x.wasm").
 		CopyFile("config.toml").
@@ -141,7 +141,7 @@ func TestSportsDataFromSportRadar(t *testing.T) {
 func TestTime(t *testing.T) {
 	projectName := "time"
 	projectDir := filepath.Join(examplesDir, projectName)
-	NewProjectTest(t, projectDir).
+	NewTestscriptTest(t, projectDir).
 		ExecuteMakeTarget("build").
 		CopyFile("tmp/x.wasm").
 		CopyFile("config.toml").
