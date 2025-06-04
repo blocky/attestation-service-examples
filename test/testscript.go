@@ -141,7 +141,7 @@ func (e *TestscriptTest) ExecuteMakeTarget(target string) *TestscriptTest {
 	return e
 }
 
-func (e *TestscriptTest) RunScript(scriptFile string) {
+func (e *TestscriptTest) Run(scriptFile string) {
 	e.params.Setup = func(env *testscript.Env) error {
 		for _, setupFunc := range e.setupFuncs {
 			if err := setupFunc(env); err != nil {

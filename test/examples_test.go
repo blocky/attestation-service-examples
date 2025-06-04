@@ -20,7 +20,7 @@ func TestCoinPricesFromCoingecko(t *testing.T) {
 		CopyFile("tmp/x.wasm").
 		CopyFile("config.toml").
 		RenderTemplateFileFromEnvWithCleanup("fn-call.json", requiredEnvVars).
-		RunScript(filepath.Join(scriptDir, projectName+".txtar"))
+		Run(filepath.Join(scriptDir, projectName+".txtar"))
 }
 
 func TestErrorHandlingAttestFnCall(t *testing.T) {
@@ -33,7 +33,7 @@ func TestErrorHandlingAttestFnCall(t *testing.T) {
 		CopyFile("successFunc.json").
 		CopyFile("errorFunc.json").
 		CopyFile("panicFunc.json").
-		RunScript(filepath.Join(scriptDir, projectName+".txtar"))
+		Run(filepath.Join(scriptDir, projectName+".txtar"))
 }
 
 func TestESportsDataFromPandaScore(t *testing.T) {
@@ -49,7 +49,7 @@ func TestESportsDataFromPandaScore(t *testing.T) {
 		CopyFile("tmp/x.wasm").
 		CopyFile("config.toml").
 		RenderTemplateFileFromEnvWithCleanup("fn-call.json", requiredEnvVars).
-		RunScript(filepath.Join(scriptDir, projectName+".txtar"))
+		Run(filepath.Join(scriptDir, projectName+".txtar"))
 }
 
 func TestESportsDataFromRimble(t *testing.T) {
@@ -71,7 +71,7 @@ func TestESportsDataFromRimble(t *testing.T) {
 			"team-kill-diff.json.template",
 			requiredEnvVars,
 		).
-		RunScript(filepath.Join(scriptDir, projectName+".txtar"))
+		Run(filepath.Join(scriptDir, projectName+".txtar"))
 }
 
 func TestHelloWorldAttestFnCall(t *testing.T) {
@@ -82,7 +82,18 @@ func TestHelloWorldAttestFnCall(t *testing.T) {
 		CopyFile("tmp/x.wasm").
 		CopyFile("config.toml").
 		CopyFile("fn-call.json").
-		RunScript(filepath.Join(scriptDir, projectName+".txtar"))
+		Run(filepath.Join(scriptDir, projectName+".txtar"))
+}
+
+func TestHelloWorldOnChain(t *testing.T) {
+	projectName := "hello_world_on_chain"
+	projectDir := filepath.Join(examplesDir, projectName)
+	NewHardhatTest(t, projectDir).
+		NPMInstall().
+		NoError().
+		OutputContains("Verified attest-fn-call claims").
+		OutputContains("Hello, World!").
+		Run("--grep", "Local")
 }
 
 func TestParamsAndSecrets(t *testing.T) {
@@ -94,7 +105,7 @@ func TestParamsAndSecrets(t *testing.T) {
 		CopyFile("config.toml").
 		CopyFile("fn-call.json").
 		CopyFile("fn-call-error.json").
-		RunScript(filepath.Join(scriptDir, projectName+".txtar"))
+		Run(filepath.Join(scriptDir, projectName+".txtar"))
 }
 
 func TestRandom(t *testing.T) {
@@ -105,7 +116,7 @@ func TestRandom(t *testing.T) {
 		CopyFile("tmp/x.wasm").
 		CopyFile("config.toml").
 		CopyFile("fn-call.json").
-		RunScript(filepath.Join(scriptDir, projectName+".txtar"))
+		Run(filepath.Join(scriptDir, projectName+".txtar"))
 }
 
 func TestShipmentTrackingWithDHL(t *testing.T) {
@@ -120,7 +131,7 @@ func TestShipmentTrackingWithDHL(t *testing.T) {
 		CopyFile("tmp/x.wasm").
 		CopyFile("config.toml").
 		RenderTemplateFileFromEnvWithCleanup("fn-call.json", requiredEnvVars).
-		RunScript(filepath.Join(scriptDir, projectName+".txtar"))
+		Run(filepath.Join(scriptDir, projectName+".txtar"))
 }
 
 func TestSportsDataFromSportRadar(t *testing.T) {
@@ -135,7 +146,7 @@ func TestSportsDataFromSportRadar(t *testing.T) {
 		CopyFile("tmp/x.wasm").
 		CopyFile("config.toml").
 		RenderTemplateFileFromEnvWithCleanup("fn-call.json", requiredEnvVars).
-		RunScript(filepath.Join(scriptDir, projectName+".txtar"))
+		Run(filepath.Join(scriptDir, projectName+".txtar"))
 }
 
 func TestTime(t *testing.T) {
@@ -146,5 +157,5 @@ func TestTime(t *testing.T) {
 		CopyFile("tmp/x.wasm").
 		CopyFile("config.toml").
 		CopyFile("fn-call.json").
-		RunScript(filepath.Join(scriptDir, projectName+".txtar"))
+		Run(filepath.Join(scriptDir, projectName+".txtar"))
 }
