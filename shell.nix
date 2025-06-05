@@ -36,7 +36,7 @@ mkDevShell {
     pkgs.gotools # for tools like goimports
     pkgs.jq # for processing data in examples
     pkgs.nixfmt-rfc-style # for formatting nix files
-    pkgs.nodejs_18 # for on chain examples
+    pkgs.nodejs_22 # for on chain examples
     pkgs.docker # for building wasm
     pkgs.mo # for stamping version
   ];
