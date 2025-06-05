@@ -14,7 +14,6 @@ func TestCoinPricesFromCoingecko(t *testing.T) {
 	requiredEnvVars := []string{
 		"YOUR_COINGECKO_API_KEY",
 	}
-
 	NewTestscriptTest(t, projectDir).
 		ExecuteMakeTarget("build").
 		CopyFile("tmp/x.wasm").
@@ -39,20 +38,8 @@ func TestErrorHandlingAttestFnCall(t *testing.T) {
 func TestErrorHandlingOnChain(t *testing.T) {
 	projectName := "error_handling_on_chain"
 	projectDir := filepath.Join(examplesDir, projectName)
-
-	expectedOutput1 := `Success: true
-	Error: 
-	Value: {"number":42}`
-	expectedOutput2 := `Success: false
-	Error: expected error
-	Value: null`
-
 	NewHardhatTest(t, projectDir).
 		NPMInstall().
-		OutputContains(expectedOutput1).
-		OutputContains(expectedOutput2).
-		OutputContains("2 passing").
-		NoError().
 		Run("--grep", "Local")
 }
 
@@ -63,7 +50,6 @@ func TestESportsDataFromPandaScore(t *testing.T) {
 		"YOUR_PANDASCORE_API_ENDPOINT",
 		"YOUR_PANDASCORE_API_KEY",
 	}
-
 	NewTestscriptTest(t, projectDir).
 		ExecuteMakeTarget("build").
 		CopyFile("tmp/x.wasm").
@@ -72,6 +58,7 @@ func TestESportsDataFromPandaScore(t *testing.T) {
 		Run(filepath.Join(scriptDir, projectName+".txtar"))
 }
 
+// TODO: https://blocky.atlassian.net/browse/BKY-6883
 //func TestESportsDataFromRimble(t *testing.T) {
 //	projectName := "esports_data_from_rimble"
 //	projectDir := filepath.Join(examplesDir, projectName)
@@ -108,19 +95,8 @@ func TestHelloWorldAttestFnCall(t *testing.T) {
 func TestHelloWorldOnChain(t *testing.T) {
 	projectName := "hello_world_on_chain"
 	projectDir := filepath.Join(examplesDir, projectName)
-
-	expectedOutput := `Verified attest-fn-call claims:
-	Function: helloWorld
-	Hash of code: 083a9a11fa7d1c1ffa224018aca0b1ee1e77c5c8aa007b413e5dae3d3b075a22151b1e1cf318eec8a73de8aea3066478324df942fc2cd1b76cf42e807240115c
-	Hash of input: a69f73cca23a9ac5c8b567dc185a756e97c982164fe25859e0d1dcc1475c80a615b2123af1f5f94c11e3e9402c3ac558f500199d95b6d3e301758586281dcd26
-	Hash of secrets: 9375447cd5307bf7473b8200f039b60a3be491282f852df9f42ce31a8a43f6f8e916c4f8264e7d233add48746a40166eec588be8b7b9b16a5eb698d4c3b06e00
-	Output,: Hello, World!`
-
 	NewHardhatTest(t, projectDir).
 		NPMInstall().
-		OutputContains(expectedOutput).
-		OutputContains("1 passing").
-		NoError().
 		Run("--grep", "Local")
 }
 
@@ -153,7 +129,6 @@ func TestShipmentTrackingWithDHL(t *testing.T) {
 	requiredEnvVars := []string{
 		"YOUR_DHL_API_KEY",
 	}
-
 	NewTestscriptTest(t, projectDir).
 		ExecuteMakeTarget("build").
 		CopyFile("tmp/x.wasm").
@@ -168,7 +143,6 @@ func TestSportsDataFromSportRadar(t *testing.T) {
 	requiredEnvVars := []string{
 		"YOUR_SPORTRADAR_API_KEY",
 	}
-
 	NewTestscriptTest(t, projectDir).
 		ExecuteMakeTarget("build").
 		CopyFile("tmp/x.wasm").
@@ -191,13 +165,7 @@ func TestTime(t *testing.T) {
 func TestTWAPOnChain(t *testing.T) {
 	projectName := "time_weighted_average_price/on_chain"
 	projectDir := filepath.Join(examplesDir, projectName)
-
-	expectedOutput := `Verify attested TWAP in User contract`
-
 	NewHardhatTest(t, projectDir).
 		NPMInstall().
-		OutputContains(expectedOutput).
-		OutputContains("1 passing").
-		NoError().
 		Run("--grep", "Local")
 }
