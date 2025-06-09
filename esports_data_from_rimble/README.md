@@ -176,9 +176,9 @@ to get the output:
   "Success": true,
   "Error": "",
   "Value": {
-    "MatchID": "2379357",
-    "Date": "2025-02-18",
-    "Winner": "MOUZ"
+    "MatchID": "2382907",
+    "Date": "2025-06-03",
+    "Winner": "EYEBALLERS"
   }
 }
 ```
@@ -317,12 +317,12 @@ to get the output:
   "Success": true,
   "Error": "",
   "Value": {
-    "MatchID": "2379357",
-    "Date": "2025-02-18",
+    "MatchID": "2382907",
+    "Date": "2025-06-03",
     "MapName": "Mirage",
-    "Team1": "MOUZ",
-    "Team2": "Virtus.pro",
-    "KillDiff": 34
+    "Team1": "Volt",
+    "Team2": "EYEBALLERS",
+    "KillDiff": 2
   }
 }
 ```
