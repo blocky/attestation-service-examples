@@ -47,7 +47,7 @@ func TestMatchData_Winner(t *testing.T) {
 
 		// then
 		require.NoError(t, err)
-		assert.Equal(t, "MOUZ", winner.Name)
+		assert.Equal(t, "EYEBALLERS", winner.Name)
 	})
 
 	t.Run("no winner", func(t *testing.T) {
@@ -88,7 +88,7 @@ func TestMatchData_GamesOnMap(t *testing.T) {
 
 		// then
 		require.NoError(t, err)
-		assert.Equal(t, []rimble.Game{{GameNumber: 3, MapName: "Mirage"}}, games)
+		assert.Equal(t, []rimble.Game{{GameNumber: 1, MapName: "Mirage"}}, games)
 	})
 
 	t.Run("map not found", func(t *testing.T) {
@@ -111,19 +111,19 @@ func TestMatchData_PlayerKillsInGames(t *testing.T) {
 
 	t.Run("happy path", func(t *testing.T) {
 		// given
-		playerUsername := "Brollan"
+		playerUsername := "dex"
 
 		// when
 		kills, err := match.PlayerKillsInGames(games, playerUsername)
 
 		// then
 		require.NoError(t, err)
-		assert.Equal(t, 10, kills)
+		assert.Equal(t, 12, kills)
 	})
 
 	t.Run("nil games", func(t *testing.T) {
 		// given
-		playerUsername := "Brollan"
+		playerUsername := "dex"
 
 		// when
 		_, err := match.PlayerKillsInGames(nil, playerUsername)
@@ -134,7 +134,7 @@ func TestMatchData_PlayerKillsInGames(t *testing.T) {
 
 	t.Run("empty games", func(t *testing.T) {
 		// given
-		playerUsername := "Brollan"
+		playerUsername := "dex"
 
 		// when
 		_, err := match.PlayerKillsInGames([]rimble.Game{}, playerUsername)
@@ -157,7 +157,7 @@ func TestMatchData_PlayerKillsInGames(t *testing.T) {
 
 	t.Run("player on multiple teams", func(t *testing.T) {
 		// given
-		playerUsername := "Brollan"
+		playerUsername := "dex"
 		match, err := rimble.MakeMatchDataFromMatchesJSON(matchDataJSON)
 		require.NoError(t, err)
 		match.Teams = append(match.Teams, rimble.Team{
@@ -175,7 +175,7 @@ func TestMatchData_PlayerKillsInGames(t *testing.T) {
 
 	t.Run("no results for games", func(t *testing.T) {
 		// given
-		playerUsername := "Brollan"
+		playerUsername := "dex"
 		match, err := rimble.MakeMatchDataFromMatchesJSON(matchDataJSON)
 		require.NoError(t, err)
 		match.Teams[0].Players[0].Results = []rimble.PlayerResult{}
@@ -196,19 +196,19 @@ func TestMatchData_TeamKillsInGames(t *testing.T) {
 
 	t.Run("happy path", func(t *testing.T) {
 		// given
-		team := "MOUZ"
+		team := "EYEBALLERS"
 
 		// when
 		kills, err := match.TeamKillsInGames(games, team)
 
 		// then
 		require.NoError(t, err)
-		assert.Equal(t, 68, kills)
+		assert.Equal(t, 83, kills)
 	})
 
 	t.Run("nil games", func(t *testing.T) {
 		// given
-		team := "MOUZ"
+		team := "EYEBALLERS"
 
 		// when
 		_, err := match.TeamKillsInGames(nil, team)
@@ -219,7 +219,7 @@ func TestMatchData_TeamKillsInGames(t *testing.T) {
 
 	t.Run("empty games", func(t *testing.T) {
 		// given
-		team := "MOUZ"
+		team := "EYEBALLERS"
 
 		// when
 		_, err := match.TeamKillsInGames([]rimble.Game{}, team)
@@ -242,7 +242,7 @@ func TestMatchData_TeamKillsInGames(t *testing.T) {
 
 	t.Run("team found multiple times", func(t *testing.T) {
 		// given
-		team := "MOUZ"
+		team := "EYEBALLERS"
 		match, err := rimble.MakeMatchDataFromMatchesJSON(matchDataJSON)
 		require.NoError(t, err)
 		match.Teams = append(match.Teams, rimble.Team{
@@ -258,7 +258,7 @@ func TestMatchData_TeamKillsInGames(t *testing.T) {
 
 	t.Run("getting kills for player", func(t *testing.T) {
 		// given
-		team := "MOUZ"
+		team := "EYEBALLERS"
 		match, err := rimble.MakeMatchDataFromMatchesJSON(matchDataJSON)
 		require.NoError(t, err)
 		match.Teams[0].Players[0].Results = []rimble.PlayerResult{}
@@ -283,7 +283,7 @@ func TestMatchData_TeamKillDifferenceInGames(t *testing.T) {
 
 		// then
 		require.NoError(t, err)
-		assert.Equal(t, 34, teamKillDiff)
+		assert.Equal(t, -2, teamKillDiff)
 	})
 
 	t.Run("happy path with swapped teams", func(t *testing.T) {
@@ -296,7 +296,7 @@ func TestMatchData_TeamKillDifferenceInGames(t *testing.T) {
 
 		// then
 		require.NoError(t, err)
-		assert.Equal(t, -34, teamKillDiff)
+		assert.Equal(t, 2, teamKillDiff)
 	})
 
 	t.Run("nil games", func(t *testing.T) {

@@ -57,9 +57,9 @@ clean:
 
 .PHONY: update-rimble-test-data
 update-rimble-test-data:
-	@curl -s "https://rimbleanalytics.com/raw/csgo/match-status/?matchid=2379357&date=2025-02-18" \
+	@curl -s "https://rimbleanalytics.com/raw/csgo/match-status/?matchid=2382907&date=2025-06-03" \
 		-H "x-api-key: $(RIMBLE_API_KEY)" \
-		> rimble/testdata/match_data.json
+		| jq . > rimble/testdata/match_data.json
 
 .PHONY: test-rimble
 test-rimble:

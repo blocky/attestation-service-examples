@@ -42,8 +42,8 @@ match teams on a specific map.
 
 You can use
 [Rimble API](https://documenter.getpostman.com/view/16449503/Tzm8FvFw#682e4cd5-97b3-455d-aa52-51b57a819473)
-to get CS:GO matches. Let's say you're interested in match with the ID `2379357`
-that took place on 2025-02-18.
+to get CS:GO matches. Let's say you're interested in match with the ID `2382907`
+that took place on 2025-06-03.
 
 ### Step 2: Create a parameterized function to attest match winner
 
@@ -183,8 +183,8 @@ to get the output:
 }
 ```
 
-which tells you that the team `MOUZ` won the match with ID `2379357` played on
-2025-02-18.
+which tells you that the team `EYEBALLERS` won the match with ID `2382907`
+played on 2025-06-03.
 
 
 ### Step 4: Create a parameterized oracle function to attest team kill difference
@@ -327,8 +327,8 @@ to get the output:
 }
 ```
 
-which tells you that the team `MOUZ` scored 34 more kills than team `Virtus.pro`
-on the map `Mirage` during the match with ID `2379357` played on 2025-02-18.
+which tells you that the team `Volt` scored 2 more kills than team `EYEBALLERS`
+on the map `Mirage` during the match with ID `2382907` played on 2025-06-03.
 
 
 ### Step 6: Work with Rimble data
