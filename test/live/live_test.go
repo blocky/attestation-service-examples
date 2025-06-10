@@ -29,7 +29,7 @@ func TestLiveCoinPricesFromCoingecko(t *testing.T) {
 		"YOUR_COINGECKO_API_KEY",
 	}
 
-	test.NewProjectTest(t, projectDir).
+	test.NewTestscriptTest(t, projectDir).
 		ExecuteMakeTarget("build").
 		CopyFile("tmp/x.wasm").
 		RenderTemplateFileFromEnvWithCleanup("fn-call.json", requiredEnvVars).
@@ -37,5 +37,5 @@ func TestLiveCoinPricesFromCoingecko(t *testing.T) {
 			liveTestConfigTemplate,
 			"config.toml",
 			requiredEnvVars).
-		RunScript(filepath.Join(scriptDir, projectName+".txtar"))
+		Run(filepath.Join(scriptDir, projectName+".txtar"))
 }
