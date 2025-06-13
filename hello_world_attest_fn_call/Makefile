@@ -39,8 +39,6 @@ build: tmp/x.wasm
 run: check build
 	@echo "Running WASM module..."
 	@cat fn-call.json | bky-as attest-fn-call >tmp/out.json
-	@echo "Log:"
-	@jq -r '.transitive_attested_function_call.logs | @base64d' tmp/out.json
 	@echo "Output:"
 	@jq -r '.transitive_attested_function_call.claims.output | @base64d ' tmp/out.json
 
