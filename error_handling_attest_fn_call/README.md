@@ -4,7 +4,7 @@ This example shows you a useful pattern for reporting errors during the
 execution of functions in the Blocky Attestation Service (Blocky AS).
 
 Before starting this example, make sure you are familiar with the
-[Hello World - Attesting a Function Call](../hello_world_attest_fn_call/README.md)
+[Hello World - Attesting a Function Call](../attest_fn_call/README.md)
 example.
 
 In this example, you'll learn how to:

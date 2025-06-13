@@ -4,7 +4,7 @@ This example shows you how to use the Blocky Attestation Service (Blocky AS) to
 attest simple function call that gets the current wall clock time.
 
 Before starting this example, make sure you are familiar with the
-[Hello World - Attesting a Function Call](../hello_world_attest_fn_call/README.md),
+[Hello World - Attesting a Function Call](../attest_fn_call/README.md),
 [Passing Input Parameters and Secrets](../params_and_secrets/README.md),
 and the
 [Error Handling - Attested Function Calls](../error_handling_attest_fn_call/README.md)
