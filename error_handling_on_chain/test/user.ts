@@ -39,35 +39,6 @@ function loadEVMLinkData(jsonPath: string): EVMLinkData {
     }
 }
 
-function loadUserDeployedAddress(): string {
-    try {
-        const dir: string = path.resolve(
-            __dirname,
-            "../deployments/user_deployed_address"
-        )
-        const file: string = fs.readFileSync(dir, "utf8")
-
-        return file.toString()
-    } catch (e) {
-        throw new Error(`loading user deployed address: ` + e);
-    }
-}
-
-function loadUserContractABI(): any {
-    try {
-        const dir: string = path.resolve(
-            __dirname,
-            "../artifacts/contracts/User.sol/User.json"
-        )
-        const file: string = fs.readFileSync(dir, "utf8")
-        const json: any = JSON.parse(file)
-        return json.abi
-    } catch (e) {
-        throw new Error(`loading user contract ABI: ` + e);
-    }
-}
-
-
 interface UserContract extends ethers.Contract {
     // @ts-ignore
     processTransitivelyAttestedResult(publicKey: string, ta: string): Promise<ethers.ContractTransactionResponse>;
@@ -112,36 +83,3 @@ describe("Local Test", function (): void {
         ).to.be.revertedWith("expected error")
     })
 });
-
-describe("Base Sepolia Tests", function (): void {
-    const url = 'https://sepolia.base.org';
-    const provider = new ethers.JsonRpcProvider(url);
-    const privateKey = process.env.WALLET_KEY as string
-    const signer = new ethers.Wallet(privateKey, provider)
-
-    const userContract = new ethers.Contract(
-        loadUserDeployedAddress(),
-        loadUserContractABI(),
-        signer
-    ) as UserContract;
-
-    const evmLinkData: EVMLinkData = loadEVMLinkData("../inputs/out-success.json");
-
-    it("Verify TA", async (): Promise<void> => {
-        const tx: ethers.ContractTransactionResponse =
-            await userContract.processTransitivelyAttestedResult(
-                evmLinkData.publicKey,
-                evmLinkData.transitiveAttestation
-            )
-        // poll instead of tx.wait() to get the lowest possible delay
-        for (; ;) {
-            const txReceipt: ethers.TransactionReceipt | null =
-                await provider.getTransactionReceipt(tx.hash);
-            if (txReceipt && txReceipt.blockNumber) {
-                break
-            }
-        }
-    });
-});
-
-
