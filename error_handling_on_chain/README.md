@@ -157,4 +157,4 @@ struct from the `valueString` variable. Note that `Output` is defined by the
 attest function call example, but may differ between functions (e.g., 
 the `priceFunc` from the [Coin Prices](../coin_prices_from_coingecko) example
 defines a `Price` struct as its "output"). Check out other examples in this
-repository, to learn what else you can do with Blocky AS.
+repository to learn what else you can do with Blocky AS.

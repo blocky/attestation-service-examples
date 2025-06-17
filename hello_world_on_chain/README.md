@@ -168,75 +168,8 @@ Verified attest-fn-call claims:
     ✔ Verify TA (760ms)
 ```
 
-### Step 4: Deploy the smart contract to Base Sepolia
-
-You can also deploy the [`User`](contracts/User.sol) contract to Base
-Sepolia testnet. To do so, we need to do a bit more setup:
-
-- Create a wallet and fund it with Base Sepolia ETH.
-  - If you'd like to user Metamask as your wallet, you can follow this
-    [guide](https://getblock.io/blog/add-base-sepolia-testnet-metamask/)
-    to configure it with Base Sepolia.
-  - To fund your wallet, you can tap on of the Base Sepolia faucets listed in
-      [Base Sepolia documentation](https://docs.base.org/chain/network-faucets).
-- Set your wallet's private key in the [`.env`](.env) file under `WALLET_KEY`.
-- Get a
-  [Basescan API key](https://docs.basescan.org/getting-started/viewing-api-usage-statistics#creating-an-api-key)
-- Set your Basescan API key in the [`.env`](.env) file under `BASESCAN_KEY`.
-
-> Now you are ready to deploy and test the [ `User.sol`](contracts/User.sol) 
-> contract on Base Sepolia. However, you can skip this step and go directly to
-> [Step 5](#step-5-test-the-user-contract-on-base-sepolia) to test the
-> [`User`](contracts/User.sol) contract on Base Sepolia using
-> deployed contract address in the
-> [`deploymnets/user_deployed_address`](deployments/user_deployed_address)
-> file.
-
-To deploy the smart contract, call:
-
-```bash
-make deploy-base-sepolia
-```
-
-Notice the output of the command similar to: 
-
-```
-Successfully verified contract User on the block explorer.
-https://sepolia.basescan.org/address/0x618Bb1F8e0995b25d713AB834b2c5E68b341f9A1#code
-```
-
-which includes a link to the 
-[deployed `User` contract on Basescan](https://sepolia.basescan.org/address/0x618Bb1F8e0995b25d713AB834b2c5E68b341f9A1).
-
-### Step 5: Test the `User` contract on Base Sepolia
-
-To test the [`User`](contracts/User.sol) contract on Base Sepolia, call:
-
-```bash
-make test-base-sepolia
-```
-
-which will invoke the `"Base Sepolia Tests"` in [`test/user.ts`](test/user.ts).
-You will see the test output similar to:
-
-```
-  Base Sepolia Tests
-    ✔ Verify TA (2358ms)
-```
-
-which show that the [`User`](contracts/User.sol) contract was able to
-verify the TA in just over 2 seconds.
-If you go to Basescan to see 
-[contract transaction logs](https://sepolia.basescan.org/tx/0x38f4dd37e285f5407b9f97325de665730b6763d6e52644cd4d999cb91eb61ca5#eventlog
-you can see that the `processTransitivelyAttestedHelloWorldOutput` emitted the
-`AttestedFunctionCallOutput` event containing the expected `"Hello, World!"` 
-WASM function output.
-
-![Transaction Logs](images/transaction_logs.png)
-
-
 ## Next steps
 
 Now that you have successfully run the example, you can start modifying it to
-fit your own needs. Check out other examples in this repository, to learn what
+fit your own needs. Check out other examples in this repository to learn what
 else you can do with Blocky AS.
