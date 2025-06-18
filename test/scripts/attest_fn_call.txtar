@@ -1,8 +1,8 @@
 # [execute] call the bky-as CLI to attest a function call
 stdin fn-call.json
 exec bky-as attest-fn-call
-cp stdout result.json
+cp stdout out.json
 
 # [check] assert stderr and stdout expected values
-exec jq -r '.transitive_attested_function_call.claims.output | @base64d' result.json
+exec jq -r '.transitive_attested_function_call.claims.output | @base64d' out.json
 stdout 'Hello, World!'

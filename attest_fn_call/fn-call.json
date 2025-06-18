@@ -1,4 +1,4 @@
 {
-  "code_file": "fn.wasm",
+  "code_file": "main.wasm",
   "function": "helloWorld"
 }

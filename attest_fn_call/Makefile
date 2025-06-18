@@ -12,7 +12,7 @@ TINYGO_IMAGE=tinygo/tinygo:0.34.0
 CONTAINER_NAME=tinygo-builder
 TINYGO_FLAGS=-no-debug -opt=z -scheduler=none
 
-fn.wasm: $(SRCS) $(DEPS) | check
+main.wasm: $(SRCS) $(DEPS) | check
 	@echo "Building WASM module..."
 	@docker rm -f $(CONTAINER_NAME) > /dev/null 2>&1 || true
 	@docker run  -dit --name $(CONTAINER_NAME) \
@@ -26,19 +26,16 @@ fn.wasm: $(SRCS) $(DEPS) | check
 	@docker exec -u root $(CONTAINER_NAME) \
  		chown -R 1000:1000 /home/tinygo/go
 	@docker exec -w /src -u tinygo $(CONTAINER_NAME) \
- 		tinygo build $(TINYGO_FLAGS) -o fn.wasm -target=wasi ./...
+ 		tinygo build $(TINYGO_FLAGS) -o main.wasm -target=wasi ./...
 	@docker stop $(CONTAINER_NAME) > /dev/null 2>&1 && docker rm $(CONTAINER_NAME) > /dev/null 2>&1 &
 
-
-.PHONY: run
-run: fn.wasm fn-call.json | check
-	@echo "Running WASM module..."
+out.json: main.wasm fn-call.json | check
 	@cat fn-call.json | bky-as attest-fn-call >out.json
 
-.PHONY: parse
-parse:
+.PHONY: run
+run: out.json
 	@jq -r '.transitive_attested_function_call.claims.output | @base64d ' out.json
 
 .PHONY: clean
 clean:
-	@rm -f fn.wasm out.json
+	@rm -f main.wasm out.json
