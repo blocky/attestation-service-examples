@@ -84,7 +84,7 @@ func TestAttestFnCall(t *testing.T) {
 	projectName := "attest_fn_call"
 	projectDir := filepath.Join(examplesDir, projectName)
 	NewTestscriptTest(t, projectDir).
-		ExecuteMakeTarget("build").
+		ExecuteMakeTarget("fn.wasm").
 		CopyFile("fn.wasm").
 		CopyFile("config.toml").
 		CopyFile("fn-call.json").
