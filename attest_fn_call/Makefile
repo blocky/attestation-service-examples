@@ -29,14 +29,14 @@ fn.wasm: $(SRCS) $(DEPS) | check
  		tinygo build $(TINYGO_FLAGS) -o fn.wasm -target=wasi ./...
 	@docker stop $(CONTAINER_NAME) > /dev/null 2>&1 && docker rm $(CONTAINER_NAME) > /dev/null 2>&1 &
 
-.PHONY: build
-build: fn.wasm
 
 .PHONY: run
-run: check build
+run: fn.wasm fn-call.json | check
 	@echo "Running WASM module..."
 	@cat fn-call.json | bky-as attest-fn-call >out.json
-	@echo "Output:"
+
+.PHONY: parse
+parse:
 	@jq -r '.transitive_attested_function_call.claims.output | @base64d ' out.json
 
 .PHONY: clean
