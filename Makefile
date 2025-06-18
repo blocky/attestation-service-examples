@@ -1,6 +1,6 @@
-run-hello-world-attest-fn-call:
-	@echo "Running run-hello-world-attest-fn-call..."
-	@cd hello_world_attest_fn_call && make run 2> /dev/null
+run-attest-fn-call:
+	@echo "Running run-attest-fn-call..."
+	@cd attest_fn_call && make run 2> /dev/null
 
 run-hello-world-on-chain:
 	@echo "Running run-hello-world-on-chain..."
@@ -61,7 +61,7 @@ run-params-and-secrets:
 	@cd params_and_secrets && make run-error 2> /dev/null
 
 run-all: \
-	run-hello-world-attest-fn-call \
+	run-attest-fn-call \
 	run-hello-world-on-chain \
 	run-error-handling-attest-fn-call \
 	run-error-handling-on-chain \
