@@ -2,7 +2,7 @@
 
 This example shows you how to bring a Blocky AS function call attestation
 on chain. It builds on the 
-[Hello World - Attesting a Function Call](../attest_fn_call)
+[Attesting a Function Call](../attest_fn_call)
 example, which shows you how to attest a WASM function.
 
 In this example, you'll learn how to:
@@ -48,13 +48,13 @@ Verified attest-fn-call claims:
 
 ### Step 1: Attest a function call
 
-In the [Hello World - Attesting a Function Call](../attest_fn_call)
+In the [Attesting a Function Call](../attest_fn_call)
 example we walked through a process of attesting a WASM function call.
 The result of that process was an `out.json` file containing the enclave
 attested application public key and a transitive attestation of the function
 call. The contents of `out.json` have been verified by the Blocky AS CLI. To
 learn more about that process, revisit the
-[Hello World - Attesting a Function Call](../attest_fn_call)
+[Attesting a Function Call](../attest_fn_call)
 example, or read about
 [Attestations in the Blocky Attestation Service](https://blocky-docs.redocly.app/attestation-service/{{{AS_VERSION}}}/concepts#attestations-in-the-blocky-attestation-service)
 in our documentation.
@@ -119,7 +119,7 @@ contract User {
 
 The goal of the [`User`](contracts/User.sol) contract is to verify that a
 transitive attestation of the `helloWorld` function (defined in
-[`../hello_world_attest_fn_call/main.go`](../attest_fn_call/main.go))
+[`../attest_fn_call/main.go`](../attest_fn_call/main.go))
 has been signed by the enclave attested application public key of the Blocky AS
 server and parse out the attested function output.
 The contract uses the Blocky-provided

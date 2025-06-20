@@ -4,7 +4,7 @@ This example shows you how to pass input parameters and secrets to
 functions executed in the Blocky Attestation Service (Blocky AS).
 
 Before starting this example, make sure you are familiar with the
-[Hello World - Attesting a Function Call](../attest_fn_call/README.md)
+[Attesting a Function Call](../attest_fn_call/README.md)
 and the
 [Error Handling](../error_handling/README.md)
 examples.

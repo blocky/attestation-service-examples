@@ -5,7 +5,7 @@ attest simple function call that generates random numbers to simulate a die
 roll.
 
 Before starting this example, make sure you are familiar with the
-[Hello World - Attesting a Function Call](../attest_fn_call/README.md),
+[Attesting a Function Call](../attest_fn_call/README.md),
 [Passing Input Parameters and Secrets](../params_and_secrets/README.md),
 and the
 [Error Handling - Attested Function Calls](../error_handling_attest_fn_call/README.md)
