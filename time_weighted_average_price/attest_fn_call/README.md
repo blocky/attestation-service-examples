@@ -4,7 +4,7 @@ This examples shows how to use the Blocky Attestation Service (Blocky AS) to
 compute a time-weighted average price (TWAP) of a token. 
 
 Before starting this example, make sure you are familiar with the
-[Hello World - Attesting a Function Call](../../hello_world_attest_fn_call/README.md),
+[Attesting a Function Call](../../attest_fn_call/README.md),
 [Passing Input Parameters and Secrets](../../params_and_secrets/README.md),
 [Error Handling - Attested Function Calls](../../error_handling_attest_fn_call/README.md), and
 [Getting Coin Prices From CoinGecko](../../coin_prices_from_coingecko/README.md)
