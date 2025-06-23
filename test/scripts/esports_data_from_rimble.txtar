@@ -21,9 +21,9 @@ cmp stdout expected-output-team-kill-diff.json
   "Success": true,
   "Error": "",
   "Value": {
-    "MatchID": "2382907",
-    "Date": "2025-06-03",
-    "Winner": "EYEBALLERS"
+    "MatchID": "2382613",
+    "Date": "2025-06-20",
+    "Winner": "paiN"
   }
 }
 -- expected-output-team-kill-diff.json --
@@ -31,11 +31,11 @@ cmp stdout expected-output-team-kill-diff.json
   "Success": true,
   "Error": "",
   "Value": {
-    "MatchID": "2382907",
-    "Date": "2025-06-03",
-    "MapName": "Mirage",
-    "Team1": "Volt",
-    "Team2": "EYEBALLERS",
-    "KillDiff": 2
+    "MatchID": "2382613",
+    "Date": "2025-06-20",
+    "MapName": "Inferno",
+    "Team1": "paiN",
+    "Team2": "FURIA",
+    "KillDiff": 12
   }
 }
