@@ -53,7 +53,7 @@ jobs:
           export AWS_ACCESS_KEY_ID=${{ steps.aws-creds.outputs.aws-access-key-id }}
           export AWS_SECRET_ACCESS_KEY=${{ steps.aws-creds.outputs.aws-secret-access-key }}
           export AWS_SESSION_TOKEN=${{ steps.aws-creds.outputs.aws-session-token }}
-          sudo nix-shell \
+          sudo -E nix-shell \
             --pure \
             --argstr bkyAsVersion "latest" \
             --keep AWS_ACCESS_KEY_ID \
