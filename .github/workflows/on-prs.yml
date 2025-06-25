@@ -25,8 +25,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-#      - name: Configure GitHub Authentication
-#        run: echo "${{ secrets.GH_ACCESS_TOKEN }}" | gh auth login --with-token
+      - name: Configure GitHub Authentication
+        run: echo "${{ secrets.GH_ACCESS_TOKEN }}" | gh auth login --with-token
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4.1.0
