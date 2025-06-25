@@ -31,7 +31,7 @@ fi
 
 if [[ $current_version_commit != "$commit" ]]; then
     echo "Versions differ ...updating"
-    aws s3 cp "s3://blocky-internal-release/delphi/cli/${commit}/${os}_${arch}" "${bin}/bky-as" --region us-west-2
+    aws s3 cp "s3://blocky-internal-release/delphi/cli/${commit}/${os}_${arch}" "${bin}/bky-as" --region us-west-2 --debug
     chmod +x "$bin/bky-as"
 else
     echo "Version up to date"
