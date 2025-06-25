@@ -55,6 +55,8 @@ jobs:
           export AWS_SESSION_TOKEN=${{ steps.aws-creds.outputs.aws-session-token }}
           export AWS_REGION=us-west-2
           export AWS_DEFAULT_REGION=us-west-2
+          export YOUR_RIMBLE_API_KEY=${{ secrets.RIMBLE_API_KEY }}
+          export YOUR_DHL_API_KEY=${{ secrets.DHL_API_KEY }}
           nix-shell \
             --pure \
             --argstr bkyAsVersion "latest" \
@@ -63,9 +65,9 @@ jobs:
             --keep AWS_SESSION_TOKEN \
             --keep AWS_REGION \
             --keep AWS_DEFAULT_REGION \
+            --keep YOUR_RIMBLE_API_KEY \
+            --keep YOUR_DHL_API_KEY \
             --run "\
-            YOUR_RIMBLE_API_KEY=${{ secrets.RIMBLE_API_KEY }} \
-            YOUR_DHL_API_KEY=${{ secrets.DHL_API_KEY }} \
             go test -C test . -count=1 -v -run=TestErrorHandlingAttestFnCall && \
             go test -C test . -count=1 -v -run=TestErrorHandlingOnChain && \
             go test -C test . -count=1 -v -run=TestESportsDataFromRimble && \
