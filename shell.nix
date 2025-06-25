@@ -39,6 +39,6 @@ mkDevShell {
     pkgs.nodejs_22 # for on chain examples
     pkgs.docker # for building wasm
     pkgs.mo # for stamping version
-    pkgs.ca-certificates # for npm install
+    pkgs.cacert # for npm install
   ];
 }
