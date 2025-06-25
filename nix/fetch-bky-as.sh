@@ -19,9 +19,9 @@ else
 fi
 
 if [[ $commit == "latest" ]]; then
-  echo -n "Getting the latest commit..."
-  commit=$(gh api repos/blocky/delphi/commits --jq '.[0].sha')
-  echo "'$commit'"
+    echo -n "Getting the latest commit..."
+    commit=$(gh api repos/blocky/delphi/commits --jq '.[0].sha')
+    echo "'$commit'"
 fi
 
 if [[ $current_version_commit != "$commit" ]]; then
