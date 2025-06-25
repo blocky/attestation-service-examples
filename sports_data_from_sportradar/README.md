@@ -5,7 +5,7 @@ attest a function call that fetches NBA game results from the SportRadar API
 and compares the points per minute of two players.
 
 Before starting this example, make sure you are familiar with the
-[Hello World - Attesting a Function Call](../hello_world_attest_fn_call/README.md),
+[Attesting a Function Call](../attest_fn_call/README.md),
 [Passing Input Parameters and Secrets](../params_and_secrets/README.md),
 and
 [Error Handling - Attested Function Calls](../error_handling_attest_fn_call/README.md)

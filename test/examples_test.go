@@ -80,12 +80,12 @@ func TestESportsDataFromRimble(t *testing.T) {
 		Run(filepath.Join(scriptDir, projectName+".txtar"))
 }
 
-func TestHelloWorldAttestFnCall(t *testing.T) {
-	projectName := "hello_world_attest_fn_call"
+func TestAttestFnCall(t *testing.T) {
+	projectName := "attest_fn_call"
 	projectDir := filepath.Join(examplesDir, projectName)
 	NewTestscriptTest(t, projectDir).
-		ExecuteMakeTarget("build").
-		CopyFile("tmp/x.wasm").
+		ExecuteMakeTarget("main.wasm").
+		CopyFile("main.wasm").
 		CopyFile("config.toml").
 		CopyFile("fn-call.json").
 		Run(filepath.Join(scriptDir, projectName+".txtar"))

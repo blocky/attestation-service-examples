@@ -9,10 +9,9 @@ Here's a list of the examples in this repository.
 If you're new to Blocky AS, we recommend working though these examples in the
 following order:
 
-- [Hello World - Attesting a Function Call](./hello_world_attest_fn_call) shows
+- [Attesting a Function Call](attest_fn_call) shows
   you how to use Blocky AS to attest simple function calls: You'll learn how to:
    - Create a function that returns a `"Hello, World!"` message
-   - Log messages from the function
    - Invoke functions in the Blocky AS using its `bky-as` CLI
    - Extract function output from the Blocky AS attestation
 - [Hello World - Bringing A Blocky AS Function Call Attestation On Chain](./hello_world_on_chain)
