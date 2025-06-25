@@ -1,0 +1,80 @@
+name: Scheduled Tests
+
+on:
+  push:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 8 * * *'
+
+jobs:
+  test-with-live-bky-server:
+    name: Test Attestation Service Examples Against Live BKY-AS Server
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write # Required for OIDC
+      contents: read  # Required to clone repo
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4.1.0
+        with:
+          # Use the GH Actions role with limited permissions (i.e. read only access)
+          # defined here https://github.com/blocky/atlantis-aws/blob/main/aws_iam.tf
+          role-to-assume: arn:aws:iam::${{ vars.AWS_ACCOUNT_ID }}:role/BkyOidcGithubActionsBlocky
+          aws-region: us-west-2
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: './test/go.mod'
+
+      - name: Install Nix
+        uses: cachix/install-nix-action@v31
+        with:
+          nix_path: nixpkgs=channel:nixos-24.11
+
+      - name: Fetch Server Enclave Measurement
+        run: |
+          response=$(curl \
+            --fail \
+            -H "Authorization: ${{ secrets.TYK_GITHUB_WORKFLOW_API_TOKEN }}" \
+            https://api.bky.sh/staging/delphi/unsafe/inspect
+          )
+
+          server_code_measure=$(echo "$response" | jq -r '.enclave_measurement.code')
+          server_platform=$(echo "$response" | jq -r '.enclave_measurement.platform')
+
+          if [ -z "$server_code_measure" ] || [ -z "$server_platform" ]; then
+            echo "Error: One or more response values are empty."
+            echo "Response: $response"
+            exit 1
+          fi
+
+          echo "SERVER_CODE_MEASURE=${server_code_measure}" >> "$GITHUB_ENV"
+          echo "SERVER_PLATFORM=${server_platform}" >> "$GITHUB_ENV"
+
+      - name: Run Tests
+        env:
+          LIVE_TEST_AUTH_TOKEN: ${{ secrets.TYK_GITHUB_WORKFLOW_API_TOKEN }}
+          LIVE_TEST_CODE: ${{ env.SERVER_CODE_MEASURE }}
+          LIVE_TEST_HOST: https://api.bky.sh/staging/delphi
+          LIVE_TEST_PLATFORM: ${{ env.SERVER_PLATFORM }}
+          GH_TOKEN: ${{ secrets.GH_ACCESS_TOKEN }}
+          YOUR_COINGECKO_API_KEY: ${{ secrets.COINGECKO_API_KEY }}
+        run: |
+          nix-shell \
+            --pure \
+            --argstr bkyAsVersion "latest" \
+            --keep AWS_ACCESS_KEY_ID \
+            --keep AWS_SECRET_ACCESS_KEY \
+            --keep AWS_SESSION_TOKEN \
+            --keep AWS_REGION \
+            --keep LIVE_TEST_AUTH_TOKEN \
+            --keep LIVE_TEST_CODE \
+            --keep LIVE_TEST_HOST \
+            --keep LIVE_TEST_PLATFORM \
+            --keep GH_TOKEN \
+            --keep YOUR_COINGECKO_API_KEY \
+            --run "\
+            go test -C test ./live -count=1 -v -run=TestLiveCoinPricesFromCoingecko"

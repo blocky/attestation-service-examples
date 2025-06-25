@@ -19,6 +19,7 @@ jobs:
       - uses: hmarr/auto-approve-action@v3
 
   test-with-local-bky-server:
+    name: Test Attestation Service Examples Against Local BKY-AS Server
     runs-on: ubuntu-latest
     permissions:
       id-token: write # Required for OIDC
@@ -48,6 +49,7 @@ jobs:
       - name: Run Tests
         env:
           GH_TOKEN: ${{ secrets.GH_ACCESS_TOKEN }}
+          YOUR_COINGECKO_API_KEY: ${{ secrets.COINGECKO_API_KEY }}
           YOUR_DHL_API_KEY: ${{ secrets.DHL_API_KEY }}
           YOUR_RIMBLE_API_KEY: ${{ secrets.RIMBLE_API_KEY }}
         run: |
@@ -59,9 +61,11 @@ jobs:
             --keep AWS_SESSION_TOKEN \
             --keep AWS_REGION \
             --keep GH_TOKEN \
-            --keep YOUR_RIMBLE_API_KEY \
+            --keep YOUR_COINGECKO_API_KEY \
             --keep YOUR_DHL_API_KEY \
+            --keep YOUR_RIMBLE_API_KEY \
             --run "\
+            go test -C test . -count=1 -v -run=TestCoinPricesFromCoingecko && \
             go test -C test . -count=1 -v -run=TestErrorHandlingAttestFnCall && \
             go test -C test . -count=1 -v -run=TestErrorHandlingOnChain && \
             go test -C test . -count=1 -v -run=TestESportsDataFromRimble && \
