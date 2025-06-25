@@ -26,6 +26,7 @@ fi
 
 if [[ $current_version_commit != "$commit" ]]; then
     echo "Versions differ ...updating"
+    aws sts get-caller-identity
     aws s3 cp "s3://blocky-internal-release/delphi/cli/${commit}/${os}_${arch}" "${bin}/bky-as"
     chmod +x "$bin/bky-as"
 else

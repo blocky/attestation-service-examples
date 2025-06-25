@@ -52,6 +52,9 @@ jobs:
             --pure \
             --argstr bkyAsVersion "latest" \
             --run "\
+            AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID} \
+            AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY} \
+            AWS_SESSION_TOKEN=${AWS_SESSION_TOKEN} \
             go test -C test . -count=1 -v -run=TestErrorHandlingAttestFnCall && \
             go test -C test . -count=1 -v -run=TestErrorHandlingOnChain && \
             go test -C test . -count=1 -v -run=TestHelloWorldAttestFnCall && \
