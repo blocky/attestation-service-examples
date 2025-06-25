@@ -16,11 +16,13 @@ main.wasm: $(SRCS) $(DEPS) | check
 	@echo "Building WASM module..."
 	@docker rm -f $(CONTAINER_NAME) > /dev/null 2>&1 || true
 	@docker run  -dit --name $(CONTAINER_NAME) \
-		-v .:/src \
+		-v ${PWD}:/src \
 		-v ${HOME}/.cache/bky-as/tinygo-dot-cache:/home/tinygo/.cache \
 		-v ${HOME}/.cache/bky-as/tinygo-go-path:/home/tinygo/go \
 		-w /src \
 	    $(TINYGO_IMAGE) sleep infinity > /dev/null
+	@docker exec -u root $(CONTAINER_NAME) \
+		chown -R 1000:1000 /src
 	@docker exec -u root $(CONTAINER_NAME) \
  		chown -R 1000:1000 /home/tinygo/.cache
 	@docker exec -u root $(CONTAINER_NAME) \
