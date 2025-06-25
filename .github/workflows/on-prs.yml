@@ -58,13 +58,21 @@ jobs:
           nix-shell \
             --pure \
             --argstr bkyAsVersion "latest" \
+            --keep AWS_ACCESS_KEY_ID \
+            --keep AWS_SECRET_ACCESS_KEY \
+            --keep AWS_SESSION_TOKEN \
+            --keep AWS_REGION \
+            --keep AWS_DEFAULT_REGION \
             --run "\
-            go test -C test . -count=1 -v -run=TestAttestFnCall && \
+            YOUR_RIMBLE_API_KEY=${{ secrets.RIMBLE_API_KEY }} \
+            YOUR_DHL_API_KEY=${{ secrets.DHL_API_KEY }} \
             go test -C test . -count=1 -v -run=TestErrorHandlingAttestFnCall && \
             go test -C test . -count=1 -v -run=TestErrorHandlingOnChain && \
+            go test -C test . -count=1 -v -run=TestESportsDataFromRimble && \
+            go test -C test . -count=1 -v -run=TestAttestFnCall && \
             go test -C test . -count=1 -v -run=TestHelloWorldOnChain && \
             go test -C test . -count=1 -v -run=TestParamsAndSecrets && \
-            go test -C test . -count=1 -v -run=HelloWorldOnChain && \
             go test -C test . -count=1 -v -run=TestRandom && \
+            go test -C test . -count=1 -v -run=TestShipmentTrackingWithDHL && \
             go test -C test . -count=1 -v -run=TestTime && \
             go test -C test . -count=1 -v -run=TestTWAPOnChain"
