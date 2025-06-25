@@ -24,10 +24,10 @@ if [[ $commit == "latest" ]]; then
     echo "'$commit'"
 fi
 
-if [[ -z $AWS_ACCESS_KEY_ID || -z $AWS_SECRET_ACCESS_KEY || -z $AWS_SESSION_TOKEN ]]; then
-    echo "Error: AWS credentials are missing!"
-    exit 1
-fi
+# if [[ -z $AWS_ACCESS_KEY_ID || -z $AWS_SECRET_ACCESS_KEY || -z $AWS_SESSION_TOKEN ]]; then
+#     echo "Error: AWS credentials are missing!"
+#     exit 1
+# fi
 
 if [[ $current_version_commit != "$commit" ]]; then
     echo "Versions differ ...updating"
