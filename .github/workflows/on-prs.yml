@@ -2,6 +2,7 @@ name: On Prs
 
 on:
   push:
+    branches: [ 'main', 'release/*' ]
   pull_request:
 
 concurrency:
@@ -9,13 +10,13 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-#  approve:
-#    if: contains(github.event.pull_request.labels.*.name, 'auto-approve-me')
-#    runs-on: ubuntu-latest
-#    permissions:
-#      pull-requests: write
-#    steps:
-#      - uses: hmarr/auto-approve-action@v3
+  approve:
+    if: contains(github.event.pull_request.labels.*.name, 'auto-approve-me')
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+    steps:
+      - uses: hmarr/auto-approve-action@v3
 
   test-with-local-bky-server:
     runs-on: ubuntu-latest
