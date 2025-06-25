@@ -58,6 +58,7 @@ jobs:
             --keep AWS_SECRET_ACCESS_KEY \
             --keep AWS_SESSION_TOKEN \
             --keep AWS_REGION \
+            --keep GH_TOKEN \
             --keep YOUR_RIMBLE_API_KEY \
             --keep YOUR_DHL_API_KEY \
             --run "\
