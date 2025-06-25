@@ -26,9 +26,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Configure GitHub Authentication
-        run: echo "${{ secrets.GH_ACCESS_TOKEN }}" | gh auth login --with-token
-
       - name: Configure AWS credentials
         id: aws-creds
         uses: aws-actions/configure-aws-credentials@v4.1.0
@@ -37,7 +34,6 @@ jobs:
           # defined here https://github.com/blocky/atlantis-aws/blob/main/aws_iam.tf
           role-to-assume: arn:aws:iam::${{ vars.AWS_ACCOUNT_ID }}:role/BkyOidcGithubActionsBlocky
           aws-region: us-west-2
-          output-credentials: true
 
       - name: Setup Go
         uses: actions/setup-go@v5
@@ -50,14 +46,11 @@ jobs:
           nix_path: nixpkgs=channel:nixos-24.11
 
       - name: Run Tests
+        env:
+          GH_TOKEN: ${{ secrets.GH_ACCESS_TOKEN }}
+          YOUR_DHL_API_KEY: ${{ secrets.DHL_API_KEY }}
+          YOUR_RIMBLE_API_KEY: ${{ secrets.RIMBLE_API_KEY }}
         run: |
-          export AWS_ACCESS_KEY_ID=${{ steps.aws-creds.outputs.aws-access-key-id }}
-          export AWS_SECRET_ACCESS_KEY=${{ steps.aws-creds.outputs.aws-secret-access-key }}
-          export AWS_SESSION_TOKEN=${{ steps.aws-creds.outputs.aws-session-token }}
-          export AWS_REGION=us-west-2
-          export AWS_DEFAULT_REGION=us-west-2
-          export YOUR_RIMBLE_API_KEY=${{ secrets.RIMBLE_API_KEY }}
-          export YOUR_DHL_API_KEY=${{ secrets.DHL_API_KEY }}
           nix-shell \
             --pure \
             --argstr bkyAsVersion "latest" \
@@ -65,7 +58,6 @@ jobs:
             --keep AWS_SECRET_ACCESS_KEY \
             --keep AWS_SESSION_TOKEN \
             --keep AWS_REGION \
-            --keep AWS_DEFAULT_REGION \
             --keep YOUR_RIMBLE_API_KEY \
             --keep YOUR_DHL_API_KEY \
             --run "\
