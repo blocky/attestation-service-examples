@@ -58,11 +58,6 @@ jobs:
           nix-shell \
             --pure \
             --argstr bkyAsVersion "latest" \
-            --keep AWS_ACCESS_KEY_ID \
-            --keep AWS_SECRET_ACCESS_KEY \
-            --keep AWS_SESSION_TOKEN \
-            --keep AWS_REGION \
-            --keep AWS_DEFAULT_REGION \
             --run "\
             go test -C test . -count=1 -v -run=TestAttestFnCall && \
             go test -C test . -count=1 -v -run=TestErrorHandlingAttestFnCall && \
