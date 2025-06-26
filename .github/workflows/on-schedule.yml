@@ -19,7 +19,7 @@ jobs:
         uses: aws-actions/configure-aws-credentials@v4.1.0
         with:
           # Use the GH Actions role with limited permissions (i.e. read only access)
-          # defined here https://github.com/blocky/atlantis-aws/blob/main/aws_iam.tf
+          # defined here https://github.com/blocky/atlantis-aws/blob/main/aws_iam_role.tf
           role-to-assume: arn:aws:iam::${{ vars.AWS_ACCOUNT_ID }}:role/BkyOidcGithubActionsBlocky
           aws-region: us-west-2
 
