@@ -75,5 +75,4 @@ jobs:
             --keep LIVE_TEST_PLATFORM \
             --keep GH_TOKEN \
             --keep YOUR_COINGECKO_API_KEY \
-            --run "\
-            go test -C test ./live -count=1 -v -run=TestLiveCoinPricesFromCoingecko"
+            --run "make test-live"
