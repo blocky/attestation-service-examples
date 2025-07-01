@@ -1,10 +1,6 @@
 {
   "code_file": "tmp/x.wasm",
   "function": "matchWinnerFromRimble",
-  "input": {
-    "date": "2025-06-20",
-    "match_id": "2382613"
-  },
   "secret": {
     "api_key": "{{ .YOUR_RIMBLE_API_KEY }}"
   }
