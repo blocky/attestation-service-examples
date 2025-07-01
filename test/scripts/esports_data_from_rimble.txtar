@@ -5,7 +5,12 @@ cp stdout result-match-winner.json
 
 # [check] assert stdout contains correct match information
 exec jq -r '.transitive_attested_function_call.claims.output | @base64d | fromjson' result-match-winner.json
-cmp stdout expected-output-match-winner.json
+cp stdout output.json
+exec jq -e '.Success == true' output.json
+exec jq -e '.Error == ""' output.json
+exec jq -e '.Value.MatchID' output.json
+exec jq -e '.Value.Date' output.json
+exec jq -e '.Value.Winner' output.json
 
 # [execute] attest fn call to Rimble API for team kill information
 stdin team-kill-diff.json.template
@@ -14,28 +19,11 @@ cp stdout result-team-kill-diff.json
 
 # [check] assert stdout contains correct team kill information
 exec jq -r '.transitive_attested_function_call.claims.output | @base64d | fromjson' result-team-kill-diff.json
-cmp stdout expected-output-team-kill-diff.json
-
--- expected-output-match-winner.json --
-{
-  "Success": true,
-  "Error": "",
-  "Value": {
-    "MatchID": "2382613",
-    "Date": "2025-06-20",
-    "Winner": "paiN"
-  }
-}
--- expected-output-team-kill-diff.json --
-{
-  "Success": true,
-  "Error": "",
-  "Value": {
-    "MatchID": "2382613",
-    "Date": "2025-06-20",
-    "MapName": "Inferno",
-    "Team1": "paiN",
-    "Team2": "FURIA",
-    "KillDiff": 12
-  }
-}
+cp stdout output.json
+exec jq -e '.Success == true' output.json
+exec jq -e '.Error == ""' output.json
+exec jq -e '.Value.MatchID' output.json
+exec jq -e '.Value.Date' output.json
+exec jq -e '.Value.Team1' output.json
+exec jq -e '.Value.Team2' output.json
+exec jq -e '.Value.KillDiff' output.json

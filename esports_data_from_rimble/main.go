@@ -9,18 +9,11 @@ import (
 	"github.com/blocky/basm-go-sdk/basm"
 )
 
-func getMatchDataFromRimble(
-	date string,
-	matchID string,
-	apiKey string,
-) (
-	rimble.MatchData,
-	error,
-) {
-	rimbleURL := "https://rimbleanalytics.com/raw/csgo/match-status/"
+func getRecentMatchesFromRimble(apiKey string) ([]rimble.MatchData, error) {
+	rimbleURL := "https://rimbleanalytics.com/raw/csgo/completed-matches/"
 	req := basm.HTTPRequestInput{
 		Method: "GET",
-		URL:    fmt.Sprintf("%s?matchid=%s&date=%s", rimbleURL, matchID, date),
+		URL:    rimbleURL,
 		Headers: map[string][]string{
 			"Accept":    {"application/json"},
 			"x-api-key": {apiKey},
@@ -29,26 +22,23 @@ func getMatchDataFromRimble(
 	resp, err := basm.HTTPRequest(req)
 	switch {
 	case err != nil:
-		return rimble.MatchData{}, fmt.Errorf("making http request: %w", err)
+		return nil, fmt.Errorf("making http request: %w", err)
 	case resp.StatusCode != http.StatusOK:
-		return rimble.MatchData{}, fmt.Errorf(
+		return nil, fmt.Errorf(
 			"http request failed with status code %d",
 			resp.StatusCode,
 		)
 	}
 
-	match, err := rimble.MakeMatchDataFromMatchesJSON(resp.Body)
+	var matches []rimble.MatchData
+	err = json.Unmarshal(resp.Body, &matches)
 	if err != nil {
-		err = fmt.Errorf(
-			"making match given data '%s' and match ID '%s': %w",
-			date,
-			matchID,
-			err,
+		return nil, fmt.Errorf(
+			"unmarshaling  data: %w...%s", err,
+			resp.Body,
 		)
-		return rimble.MatchData{}, err
 	}
-
-	return match, nil
+	return matches, nil
 }
 
 type MatchWinner struct {
@@ -57,7 +47,7 @@ type MatchWinner struct {
 	Winner  string
 }
 
-func TeamWinner(match rimble.MatchData, date string) (MatchWinner, error) {
+func TeamWinner(match rimble.MatchData) (MatchWinner, error) {
 	team, err := match.Winner()
 	if err != nil {
 		return MatchWinner{}, fmt.Errorf("getting team winner: %w", err)
@@ -65,7 +55,7 @@ func TeamWinner(match rimble.MatchData, date string) (MatchWinner, error) {
 
 	return MatchWinner{
 		MatchID: match.MatchID,
-		Date:    date,
+		Date:    match.Date,
 		Winner:  team.Name,
 	}, nil
 }
@@ -74,42 +64,29 @@ type SecretArgs struct {
 	RimbleAPIKey string `json:"api_key"`
 }
 
-type MatchWinnerArgs struct {
-	Date    string `json:"date"`
-	MatchID string `json:"match_id"`
-}
-
 //export matchWinnerFromRimble
-func matchWinnerFromRimble(inputPtr uint64, secretPtr uint64) uint64 {
-	var input MatchWinnerArgs
-	inputData := basm.ReadFromHost(inputPtr)
-	err := json.Unmarshal(inputData, &input)
-	if err != nil {
-		outErr := fmt.Errorf("could not unmarshal input args: %w", err)
-		return WriteError(outErr)
-	}
-
+func matchWinnerFromRimble(_ uint64, secretPtr uint64) uint64 {
 	var secret SecretArgs
 	secretData := basm.ReadFromHost(secretPtr)
-	err = json.Unmarshal(secretData, &secret)
+	err := json.Unmarshal(secretData, &secret)
 	if err != nil {
 		outErr := fmt.Errorf("could not unmarshal secret args: %w", err)
 		return WriteError(outErr)
 	}
 
-	match, err := getMatchDataFromRimble(
-		input.Date,
-		input.MatchID,
-		secret.RimbleAPIKey,
-	)
-	if err != nil {
-		outErr := fmt.Errorf("getting match data: %w", err)
+	matches, err := getRecentMatchesFromRimble(secret.RimbleAPIKey)
+	switch {
+	case err != nil:
+		outErr := fmt.Errorf("getting recent matches: %w", err)
+		return WriteError(outErr)
+	case len(matches) == 0:
+		outErr := fmt.Errorf("no recent matches found")
 		return WriteError(outErr)
 	}
 
-	matchWinner, err := TeamWinner(match, input.Date)
+	matchWinner, err := TeamWinner(matches[0])
 	if err != nil {
-		outErr := fmt.Errorf("getting team kill difference: %w", err)
+		outErr := fmt.Errorf("getting match winner: %w", err)
 		return WriteError(outErr)
 	}
 
@@ -119,23 +96,13 @@ func matchWinnerFromRimble(inputPtr uint64, secretPtr uint64) uint64 {
 type TeamKillDiff struct {
 	MatchID  string
 	Date     string
-	MapName  string
 	Team1    string
 	Team2    string
 	KillDiff int
 }
 
-func TeamKillDifferenceOnMap(
-	match rimble.MatchData,
-	date string,
-	mapName string,
-) (TeamKillDiff, error) {
-	gamesOnMap, err := match.GamesOnMap(mapName)
-	if err != nil {
-		return TeamKillDiff{}, fmt.Errorf("getting games on map: %w", err)
-	}
-
-	killDiff, err := match.TeamKillDifferenceInGames(gamesOnMap)
+func TeamKillDifference(match rimble.MatchData) (TeamKillDiff, error) {
+	killDiff, err := match.TeamKillDifferenceInGames(match.Metadata.Games)
 	if err != nil {
 		return TeamKillDiff{}, fmt.Errorf("getting team kill difference: %w", err)
 	}
@@ -143,8 +110,7 @@ func TeamKillDifferenceOnMap(
 	if killDiff < 1 {
 		return TeamKillDiff{
 			MatchID:  match.MatchID,
-			Date:     date,
-			MapName:  mapName,
+			Date:     match.Date,
 			Team1:    match.Teams[1].Name,
 			Team2:    match.Teams[0].Name,
 			KillDiff: -killDiff,
@@ -153,49 +119,34 @@ func TeamKillDifferenceOnMap(
 
 	return TeamKillDiff{
 		MatchID:  match.MatchID,
-		Date:     date,
-		MapName:  mapName,
+		Date:     match.Date,
 		Team1:    match.Teams[0].Name,
 		Team2:    match.Teams[1].Name,
 		KillDiff: killDiff,
 	}, nil
 }
 
-type TeamKillDiffArgs struct {
-	Date    string `json:"date"`
-	MatchID string `json:"match_id"`
-	MapName string `json:"map_name"`
-}
-
 //export teamKillDifferenceFromRimble
-func teamKillDifferenceFromRimble(inputPtr uint64, secretPtr uint64) uint64 {
-	var input TeamKillDiffArgs
-	inputData := basm.ReadFromHost(inputPtr)
-	err := json.Unmarshal(inputData, &input)
-	if err != nil {
-		outErr := fmt.Errorf("could not unmarshal input args: %w", err)
-		return WriteError(outErr)
-	}
-
+func teamKillDifferenceFromRimble(_ uint64, secretPtr uint64) uint64 {
 	var secret SecretArgs
 	secretData := basm.ReadFromHost(secretPtr)
-	err = json.Unmarshal(secretData, &secret)
+	err := json.Unmarshal(secretData, &secret)
 	if err != nil {
 		outErr := fmt.Errorf("could not unmarshal secret args: %w", err)
 		return WriteError(outErr)
 	}
 
-	match, err := getMatchDataFromRimble(
-		input.Date,
-		input.MatchID,
-		secret.RimbleAPIKey,
-	)
-	if err != nil {
-		outErr := fmt.Errorf("getting match data: %w", err)
+	matches, err := getRecentMatchesFromRimble(secret.RimbleAPIKey)
+	switch {
+	case err != nil:
+		outErr := fmt.Errorf("getting recent matches: %w", err)
+		return WriteError(outErr)
+	case len(matches) == 0:
+		outErr := fmt.Errorf("no recent matches found")
 		return WriteError(outErr)
 	}
 
-	teamKillDiff, err := TeamKillDifferenceOnMap(match, input.Date, input.MapName)
+	teamKillDiff, err := TeamKillDifference(matches[0])
 	if err != nil {
 		outErr := fmt.Errorf("getting team kill difference: %w", err)
 		return WriteError(outErr)
