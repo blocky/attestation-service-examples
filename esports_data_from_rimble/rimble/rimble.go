@@ -50,6 +50,7 @@ type Metadata struct {
 
 type MatchData struct {
 	Metadata    Metadata `json:"metadata"`
+	Date        string   `json:"date"`
 	Team1Name   string   `json:"team_1_name"`
 	Team2Name   string   `json:"team_2_name"`
 	Teams       []Team   `json:"teams"`
