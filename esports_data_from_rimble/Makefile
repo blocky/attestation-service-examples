@@ -1,4 +1,4 @@
-default: run
+default: match-winner
 
 tmp:
 	@mkdir -p tmp
@@ -40,7 +40,10 @@ build: tmp/x.wasm
 .PHONY: match-winner
 match-winner: check build
 	@echo "Running WASM module..."
-	@sed -e 's/{{ .YOUR_RIMBLE_API_KEY }}/$(RIMBLE_API_KEY)/' ./match-winner.json.template > ./tmp/match-winner.json
+	@sed -e 's/{{ .YOUR_RIMBLE_MATCH_DATE }}/$(RIMBLE_MATCH_DATE)/' \
+	     -e 's/{{ .YOUR_RIMBLE_MATCH_ID }}/$(RIMBLE_MATCH_ID)/' \
+	     -e 's/{{ .YOUR_RIMBLE_API_KEY }}/$(RIMBLE_API_KEY)/' \
+	     ./match-winner.json.template > ./tmp/match-winner.json
 	@cat ./tmp/match-winner.json | bky-as attest-fn-call >tmp/out.json
 	@echo "Output:"
 	@jq -r '.transitive_attested_function_call.claims.output | @base64d | fromjson' tmp/out.json
@@ -48,20 +51,24 @@ match-winner: check build
 .PHONY: team-kill-diff
 team-kill-diff: check build
 	@echo "Running WASM module..."
-	@sed -e 's/{{ .YOUR_RIMBLE_API_KEY }}/$(RIMBLE_API_KEY)/' ./team-kill-diff.json.template > ./tmp/team-kill-diff.json
+	@sed -e 's/{{ .YOUR_RIMBLE_MATCH_DATE }}/$(RIMBLE_MATCH_DATE)/' \
+	     -e 's/{{ .YOUR_RIMBLE_MATCH_ID }}/$(RIMBLE_MATCH_ID)/' \
+	     -e 's/{{ .YOUR_RIMBLE_API_KEY }}/$(RIMBLE_API_KEY)/' \
+	     ./team-kill-diff.json.template > ./tmp/team-kill-diff.json
 	@cat ./tmp/team-kill-diff.json | bky-as attest-fn-call >tmp/out.json
 	@echo "Output:"
 	@jq -r '.transitive_attested_function_call.claims.output | @base64d | fromjson' tmp/out.json
 
+.PHONY: fetch-match-id
+fetch-match-id:
+	@echo "Fetching recent match ID and date..."
+	@curl -s --location 'https://rimbleanalytics.com/raw/csgo/completed-matches/' \
+		--header 'x-api-key: $(RIMBLE_API_KEY)' \
+		| jq -r '.[0] | "Match ID: \(.matchid)\nDate: \(.date)"'
+
 .PHONY: clean
 clean:
 	@rm -rf tmp
-
-.PHONY: update-rimble-test-data
-update-rimble-test-data:
-	@curl -s "https://rimbleanalytics.com/raw/csgo/match-status/?matchid=2382907&date=2025-06-03" \
-		-H "x-api-key: $(RIMBLE_API_KEY)" \
-		| jq . > rimble/testdata/match_data.json
 
 .PHONY: test-rimble
 test-rimble:
