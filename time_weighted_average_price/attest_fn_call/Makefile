@@ -37,34 +37,36 @@ build: tmp/x.wasm
 
 .PHONY: prev
 prev: check
-	$(eval prev_ea := $(shell jq '.enclave_attested_application_public_key.enclave_attestation' tmp/prev.json | sed 's/\//\\\//g' ))
-	$(eval prev_ta := $(shell jq '.transitive_attested_function_call.transitive_attestation' tmp/prev.json | sed 's/\//\\\//g' ))
+	$(eval prev_ea := $(shell jq '.enclave_attested_application_public_key.enclave_attestation' tmp/prev.json))
+	$(eval prev_ta := $(shell jq '.transitive_attested_function_call.transitive_attestation' tmp/prev.json ))
 
 .PHONY: init
 init: check build
-	@sed -e 's/VAR_EATTEST/null/' -e 's/VAR_TATTEST//' ./iteration-call.json.template > ./tmp/iteration-call.json
+	@sed \
+		-e 's|{{ .PREVIOUS_ENCLAVE_ATTESTATION }}|null|' \
+		-e 's|{{ .PREVIOUS_TRANSITIVE_ATTESTATION }}|null|' \
+		./iteration-call.json > ./tmp/iteration-call.json
 	@cat tmp/iteration-call.json | bky-as attest-fn-call  | jq . > tmp/prev.json
 	@jq -r '.transitive_attested_function_call.claims.output | @base64d' tmp/prev.json | jq .
 
 .PHONY: iteration
 iteration: check prev build
 	@sed \
-		-e 's/VAR_TATTEST/"tAttest": ${prev_ta},/' \
-		-e 's/VAR_EATTEST/${prev_ea}/' \
-		iteration-call.json.template > tmp/iteration-call.json
+		-e 's|{{ .PREVIOUS_ENCLAVE_ATTESTATION }}|${prev_ea}|' \
+		-e 's|{{ .PREVIOUS_TRANSITIVE_ATTESTATION }}|${prev_ta}|' \
+		iteration-call.json > tmp/iteration-call.json
 	@cat tmp/iteration-call.json | bky-as attest-fn-call | jq . > tmp/prev.json
 	@jq -r '.transitive_attested_function_call.claims.output | @base64d | fromjson' tmp/prev.json
 
 .PHONY: twap
 twap: check prev build
 	@sed \
-		-e 's/VAR_TATTEST/"tAttest": ${prev_ta},/' \
-		-e 's/VAR_EATTEST/${prev_ea}/' \
-		twap-call.json.template > tmp/twap-call.json
+		-e 's|{{ .PREVIOUS_ENCLAVE_ATTESTATION }}|${prev_ea}|' \
+		-e 's|{{ .PREVIOUS_TRANSITIVE_ATTESTATION }}|${prev_ta}|' \
+		twap-call.json > tmp/twap-call.json
 	@cat tmp/twap-call.json | bky-as attest-fn-call | jq . > tmp/twap.json
 	@jq -r '.transitive_attested_function_call.claims.output | @base64d | fromjson' tmp/twap.json
 
 .PHONY: clean
 clean:
 	@rm -rf tmp
-

@@ -4,13 +4,13 @@
     "input": {
         "coin_id": "polygon-pos-bridged-weth-polygon-pos",
         "num_samples": 3,
-        "eAttest": VAR_EATTEST,
-        VAR_TATTEST
+        "eAttest": {{ .PREVIOUS_ENCLAVE_ATTESTATION }},
+        "tAttest": {{ .PREVIOUS_TRANSITIVE_ATTESTATION }},
         "whitelist": [
             { "platform": "plain", "code": "plain" }
         ]
     },
     "secret": {
-      "api_key": "CoinGecko API key"
+      "api_key": "{{ .YOUR_COINGECKO_API_KEY }}"
     }
 }

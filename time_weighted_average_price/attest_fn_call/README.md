@@ -25,7 +25,7 @@ In this example, you'll learn how to:
   [Docker](https://www.docker.com/) and [jq](https://jqlang.org/) installed on
   your system.
 - [Get a key for the CoinGecko API](https://docs.coingecko.com/reference/setting-up-your-api-key)
-  and set it in `iteration-call.json.template` in the `api_key` field.
+  and set it in `iteration-call.json` in the `api_key` field.
 
 ## Quick Start
 
@@ -83,12 +83,12 @@ Let's do these things by defining a `getNewSamplePrice` function in
 [`main.go`](./main.go):
 
 ```go
-type CoinGeckoResponse struct {
-	Price struct {
-		USD           float64 `json:"usd"`
-		LastUpdatedAt int     `json:"last_updated_at"`
-	} `json:"price"`
+type CoinGeckoCoinPrice struct {
+	USD           float64 `json:"usd"`
+	LastUpdatedAt int     `json:"last_updated_at"`
 }
+
+type CoinGeckoResponse map[string]CoinGeckoCoinPrice
 
 func getNewPriceSample(coinID string, apiKey string) (price.Price, error) {
 	req := basm.HTTPRequestInput{
@@ -116,10 +116,8 @@ func getNewPriceSample(coinID string, apiKey string) (price.Price, error) {
 		)
 	}
 
-	respBody := bytes.ReplaceAll(resp.Body, []byte(coinID), []byte("price"))
-
-	var coinGeckoResponse CoinGeckoResponse
-	err = json.Unmarshal(respBody, &coinGeckoResponse)
+	var response CoinGeckoResponse
+	err = json.Unmarshal(resp.Body, &response)
 	if err != nil {
 		return price.Price{}, fmt.Errorf(
 			"unmarshaling CoinGecko data: %w...%s",
@@ -128,26 +126,24 @@ func getNewPriceSample(coinID string, apiKey string) (price.Price, error) {
 		)
 	}
 
-	timestamp := time.Unix(int64(coinGeckoResponse.Price.LastUpdatedAt), 0)
+	coinPrice := response[coinID]
+	timestamp := time.Unix(int64(coinPrice.LastUpdatedAt), 0)
+	value := coinPrice.USD
 
 	return price.Price{
-		Value:     coinGeckoResponse.Price.USD,
+		Value:     value,
 		Timestamp: timestamp,
 	}, nil
 }
+
 ```
 
 where we fetch data from CoinGecko, parse the JSON response, record the current
 time, set it in a `Price` struct defined in the `price` package in 
-[`price/price.go`](./price/price.go), and return it. 
+[`price/price.go`](./price/price.go), and return it.
 If the details of this flow are new to you, you may want to review the 
 [Getting Coin Prices From CoinGecko](../../coin_prices_from_coingecko/README.md)
 example, where we walk thought how to fetch and parse API data in more detail.
-One thing to notice in this example is that we replace the value of the 
-variable `coinID` in the response body with the string `"price"` to allow
-for deterministic unmarshalling the response into the `CoinGeckoResponse` 
-struct.
-
 
 ### Step 2: Attest the price samples
 
@@ -312,7 +308,7 @@ marshal it to JSON, to then unmarshal it into a `[]price.Price` struct
 ### Step 3: Collect price samples
 
 To collect a sample, we define the call to the `iteration` function in
-[`iteration-call.json.template`](./iteration-call.json.template):
+[`iteration-call.json`](./iteration-call.json.template):
 
 ```
 {
@@ -321,23 +317,24 @@ To collect a sample, we define the call to the `iteration` function in
     "input": {
         "coin_id": "polygon-pos-bridged-weth-polygon-pos",
         "num_samples": 3,
-        "eAttest": VAR_EATTEST,
-        VAR_TATTEST
+        "eAttest": "{{ .PREVIOUS_ENCLAVE_ATTESTATION }}",
+        "tAttest": "{{ .PREVIOUS_TRANSITIVE_ATTESTATION }}",
         "whitelist": [
             { "platform": "plain", "code": "plain" }
         ]
     },
     "secret": {
-      "api_key": "CoinGeckoAPIKey"
+      "api_key": "{{ .YOUR_COINGECKO_API_KEY }}"
     }
 }
 ```
 
 where we pass in the `coin_id` of the token we want to
 price, the `num_samples` we want to collect, and the `whitelist` of acceptable
-enclave measurements. The `VAR_EATTEST` and `VAR_TATTEST` placeholders will be
-used to insert the enclave attested application public key and the
-transitive attested function call, respectively in subsequent steps.
+enclave measurements. The `{{ .PREVIOUS_ENCLAVE_ATTESTATION }}` and
+`{{ .PREVIOUS_TRANSITIVE_ATTESTATION }}` placeholders will be used to insert
+the enclave attested application public key and the transitive attested
+function call, respectively in subsequent steps.
 
 To collect the first price sample, we call:
 
@@ -359,21 +356,22 @@ If you inspect the `iteration` target in the [`Makefile`](./Makefile):
 
 ```makefile
 prev: check
-	$(eval prev_ea := $(shell jq '.enclave_attested_application_public_key.enclave_attestation' tmp/prev.json | sed 's/\//\\\//g' ))
+	$(eval prev_ea := $(shell jq '.enclave_attested_application_public_key.enclave_attestation' tmp/prev.json))
 	$(eval prev_ta := $(shell jq '.transitive_attested_function_call.transitive_attestation' tmp/prev.json ))
 
 iteration: check prev build
 	@sed \
-		-e 's/VAR_TATTEST/"tAttest": ${prev_ta},/' \
-		-e 's/VAR_EATTEST/${prev_ea}/' \
-		iteration-call.json.template > tmp/iteration-call.json
+		-e 's|{{ .PREVIOUS_ENCLAVE_ATTESTATION }}|${prev_ea}|' \
+		-e 's|{{ .PREVIOUS_TRANSITIVE_ATTESTATION }}|${prev_ta}|' \
+		iteration-call.json > tmp/iteration-call.json
 	@cat tmp/iteration-call.json | bky-as attest-fn-call | jq . > tmp/prev.json
 	@jq -r '.transitive_attested_function_call.claims.output | @base64d | fromjson' tmp/prev.json
 ```
 
 you'll see that `iteration` target calls the `prev` target to load the `prev_ea`
 and `prev_ta` from [`tmp/prev.json`](./tmp/prev.json). The `iteration` target
-then replaces the `VAR_EATTEST` and `VAR_TATTEST` in 
+then replaces the `{{ .PREVIOUS_ENCLAVE_ATTESTATION }}` and
+`{{ .PREVIOUS_TRANSITIVE_ATTESTATION }}` in
 [`iteration-call.json.template`](./iteration-call.json.template) with the
 `prev_ea` and `prev_ta` values, respectively, and saves the result in 
 [`tmp/iteration-call.json`](./tmp/iteration-call.json). With the enclave
@@ -496,18 +494,20 @@ To obtain the TWAP, we define a call to the `twap` function in
     "code_file": "./tmp/x.wasm",
     "function": "twap",
     "input": {
-        "eAttest": VAR_EATTEST,
-        VAR_TATTEST
+        "eAttest": {{ .PREVIOUS_ENCLAVE_ATTESTATION }},
+        "tAttest": {{ .PREVIOUS_TRANSITIVE_ATTESTATION }},
         "whitelist": [
             { "platform": "plain", "code": "plain" }
         ]
     }
 }
+
 ```
 
-where again the `VAR_EATTEST` and `VAR_TATTEST` placeholders will be
-used to insert the enclave attested application public key and the
-transitive attested function call with the collected price samples.
+where again the `{{ .PREVIOUS_ENCLAVE_ATTESTATION }}` and 
+`{{ .PREVIOUS_TRANSITIVE_ATTESTATION }}` placeholders will be used to insert
+the enclave attested application public key and the transitive attested
+function call with the collected price samples.
 
 To invoke the `twap` function, we call:
 
