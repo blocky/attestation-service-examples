@@ -62,6 +62,8 @@ func TestESportsDataFromRimble(t *testing.T) {
 	projectName := "esports_data_from_rimble"
 	projectDir := filepath.Join(examplesDir, projectName)
 	requiredEnvVars := []string{
+		"YOUR_RIMBLE_MATCH_DATE",
+		"YOUR_RIMBLE_MATCH_ID",
 		"YOUR_RIMBLE_API_KEY",
 	}
 
