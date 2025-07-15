@@ -91,16 +91,4 @@ jobs:
             --keep YOUR_RIMBLE_API_KEY \
             --keep YOUR_RIMBLE_MATCH_DATE \
             --keep YOUR_RIMBLE_MATCH_ID \
-            --run "\
-            go test -C test . -count=1 -v -run=TestCoinPricesFromCoingecko && \
-            go test -C test . -count=1 -v -run=TestErrorHandlingAttestFnCall && \
-            go test -C test . -count=1 -v -run=TestErrorHandlingOnChain && \
-            go test -C test . -count=1 -v -run=TestESportsDataFromPandaScore && \
-            go test -C test . -count=1 -v -run=TestESportsDataFromRimble && \
-            go test -C test . -count=1 -v -run=TestAttestFnCall && \
-            go test -C test . -count=1 -v -run=TestHelloWorldOnChain && \
-            go test -C test . -count=1 -v -run=TestParamsAndSecrets && \
-            go test -C test . -count=1 -v -run=TestRandom && \
-            go test -C test . -count=1 -v -run=TestShipmentTrackingWithDHL && \
-            go test -C test . -count=1 -v -run=TestTime && \
-            go test -C test . -count=1 -v -run=TestTWAPOnChain"
+            --run "make test"
