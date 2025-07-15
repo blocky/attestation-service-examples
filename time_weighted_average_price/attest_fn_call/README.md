@@ -25,7 +25,8 @@ In this example, you'll learn how to:
   [Docker](https://www.docker.com/) and [jq](https://jqlang.org/) installed on
   your system.
 - [Get a key for the CoinGecko API](https://docs.coingecko.com/reference/setting-up-your-api-key)
-  and set it in `iteration-call.json` in the `api_key` field.
+  and set it in `iteration-call.json.template` in the `api_key` field,
+  replacing the `{{ .YOUR_COINGECKO_API_KEY }}` placeholder.
 
 ## Quick Start
 
@@ -308,7 +309,7 @@ marshal it to JSON, to then unmarshal it into a `[]price.Price` struct
 ### Step 3: Collect price samples
 
 To collect a sample, we define the call to the `iteration` function in
-[`iteration-call.json`](./iteration-call.json.template):
+[`iteration-call.json.template`](./iteration-call.json.template):
 
 ```
 {
@@ -317,8 +318,8 @@ To collect a sample, we define the call to the `iteration` function in
     "input": {
         "coin_id": "polygon-pos-bridged-weth-polygon-pos",
         "num_samples": 3,
-        "eAttest": "{{ .PREVIOUS_ENCLAVE_ATTESTATION }}",
-        "tAttest": "{{ .PREVIOUS_TRANSITIVE_ATTESTATION }}",
+        "eAttest": "[[ .PREVIOUS_ENCLAVE_ATTESTATION ]]",
+        "tAttest": "[[ .PREVIOUS_TRANSITIVE_ATTESTATION ]]",
         "whitelist": [
             { "platform": "plain", "code": "plain" }
         ]
@@ -331,8 +332,8 @@ To collect a sample, we define the call to the `iteration` function in
 
 where we pass in the `coin_id` of the token we want to
 price, the `num_samples` we want to collect, and the `whitelist` of acceptable
-enclave measurements. The `{{ .PREVIOUS_ENCLAVE_ATTESTATION }}` and
-`{{ .PREVIOUS_TRANSITIVE_ATTESTATION }}` placeholders will be used to insert
+enclave measurements. The `[[ .PREVIOUS_ENCLAVE_ATTESTATION ]]` and
+`[[ .PREVIOUS_TRANSITIVE_ATTESTATION ]]` placeholders will be used to insert
 the enclave attested application public key and the transitive attested
 function call, respectively in subsequent steps.
 
@@ -356,22 +357,22 @@ If you inspect the `iteration` target in the [`Makefile`](./Makefile):
 
 ```makefile
 prev: check
-	$(eval prev_ea := $(shell jq '.enclave_attested_application_public_key.enclave_attestation' tmp/prev.json))
-	$(eval prev_ta := $(shell jq '.transitive_attested_function_call.transitive_attestation' tmp/prev.json ))
+	$(eval prev_ea := $(shell jq -r '.enclave_attested_application_public_key.enclave_attestation' tmp/prev.json))
+	$(eval prev_ta := $(shell jq -r '.transitive_attested_function_call.transitive_attestation' tmp/prev.json ))
 
 iteration: check prev build
 	@sed \
-		-e 's|{{ .PREVIOUS_ENCLAVE_ATTESTATION }}|${prev_ea}|' \
-		-e 's|{{ .PREVIOUS_TRANSITIVE_ATTESTATION }}|${prev_ta}|' \
-		iteration-call.json > tmp/iteration-call.json
+		-e 's|[[ .PREVIOUS_ENCLAVE_ATTESTATION ]]|"${prev_ea}"|' \
+		-e 's|[[ .PREVIOUS_TRANSITIVE_ATTESTATION ]]"|${prev_ta}"|' \
+		iteration-call.json.template > tmp/iteration-call.json
 	@cat tmp/iteration-call.json | bky-as attest-fn-call | jq . > tmp/prev.json
 	@jq -r '.transitive_attested_function_call.claims.output | @base64d | fromjson' tmp/prev.json
 ```
 
 you'll see that `iteration` target calls the `prev` target to load the `prev_ea`
 and `prev_ta` from [`tmp/prev.json`](./tmp/prev.json). The `iteration` target
-then replaces the `{{ .PREVIOUS_ENCLAVE_ATTESTATION }}` and
-`{{ .PREVIOUS_TRANSITIVE_ATTESTATION }}` in
+then replaces the `[[ .PREVIOUS_ENCLAVE_ATTESTATION ]]` and
+`[[ .PREVIOUS_TRANSITIVE_ATTESTATION ]]` in
 [`iteration-call.json.template`](./iteration-call.json.template) with the
 `prev_ea` and `prev_ta` values, respectively, and saves the result in 
 [`tmp/iteration-call.json`](./tmp/iteration-call.json). With the enclave
@@ -494,8 +495,8 @@ To obtain the TWAP, we define a call to the `twap` function in
     "code_file": "./tmp/x.wasm",
     "function": "twap",
     "input": {
-        "eAttest": {{ .PREVIOUS_ENCLAVE_ATTESTATION }},
-        "tAttest": {{ .PREVIOUS_TRANSITIVE_ATTESTATION }},
+        "eAttest": [[ .PREVIOUS_ENCLAVE_ATTESTATION ]],
+        "tAttest": [[ .PREVIOUS_TRANSITIVE_ATTESTATION ]],
         "whitelist": [
             { "platform": "plain", "code": "plain" }
         ]
@@ -504,8 +505,8 @@ To obtain the TWAP, we define a call to the `twap` function in
 
 ```
 
-where again the `{{ .PREVIOUS_ENCLAVE_ATTESTATION }}` and 
-`{{ .PREVIOUS_TRANSITIVE_ATTESTATION }}` placeholders will be used to insert
+where again the `[[ .PREVIOUS_ENCLAVE_ATTESTATION ]]` and 
+`[[ .PREVIOUS_TRANSITIVE_ATTESTATION ]]` placeholders will be used to insert
 the enclave attested application public key and the transitive attested
 function call with the collected price samples.
 
