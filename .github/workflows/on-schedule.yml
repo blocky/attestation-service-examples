@@ -53,6 +53,24 @@ jobs:
           echo "SERVER_CODE_MEASURE=${server_code_measure}" >> "$GITHUB_ENV"
           echo "SERVER_PLATFORM=${server_platform}" >> "$GITHUB_ENV"
 
+      - name: Fetch Recent Match ID
+        run: |
+          response=$(curl --fail --location \
+              -H 'x-api-key: ${{ secrets.RIMBLE_API_KEY }}' \
+              'https://rimbleanalytics.com/raw/csgo/completed-matches/')
+          
+          match_date=$(echo "$response" | jq -r '.[0].date')
+          match_id=$(echo "$response" | jq -r '.[0].matchid')
+          
+          if [ -z "match_date" ] || [ -z "match_id" ]; then
+            echo "Error: One or more response values are empty."
+            echo "Response: $response"
+            exit 1
+          fi
+
+          echo "RIMBLE_MATCH_DATE=${match_date}" >> "$GITHUB_ENV"
+          echo "RIMBLE_MATCH_ID=${match_id}" >> "$GITHUB_ENV"
+
       - name: Run Tests
         env:
           LIVE_TEST_AUTH_TOKEN: ${{ secrets.TYK_GITHUB_WORKFLOW_API_TOKEN }}
@@ -61,6 +79,12 @@ jobs:
           LIVE_TEST_PLATFORM: ${{ env.SERVER_PLATFORM }}
           GH_TOKEN: ${{ secrets.GH_ACCESS_TOKEN }}
           YOUR_COINGECKO_API_KEY: ${{ secrets.COINGECKO_API_KEY }}
+          YOUR_DHL_API_KEY: ${{ secrets.DHL_API_KEY }}
+          YOUR_PANDASCORE_API_KEY: ${{ secrets.PANDASCORE_API_KEY }}
+          YOUR_PANDASCORE_API_ENDPOINT: ${{ secrets.PANDASCORE_API_ENDPOINT }}
+          YOUR_RIMBLE_API_KEY: ${{ secrets.RIMBLE_API_KEY }}
+          YOUR_RIMBLE_MATCH_DATE: ${{ env.RIMBLE_MATCH_DATE }}
+          YOUR_RIMBLE_MATCH_ID: ${{ env.RIMBLE_MATCH_ID }}
         run: |
           nix-shell \
             --pure \
@@ -75,4 +99,10 @@ jobs:
             --keep LIVE_TEST_PLATFORM \
             --keep GH_TOKEN \
             --keep YOUR_COINGECKO_API_KEY \
+            --keep YOUR_DHL_API_KEY \
+            --keep YOUR_PANDASCORE_API_KEY \
+            --keep YOUR_PANDASCORE_API_ENDPOINT \
+            --keep YOUR_RIMBLE_API_KEY \
+            --keep YOUR_RIMBLE_MATCH_DATE \
+            --keep YOUR_RIMBLE_MATCH_ID \
             --run "make test-live"
