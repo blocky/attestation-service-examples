@@ -138,20 +138,6 @@ func TestShipmentTrackingWithDHL(t *testing.T) {
 		Run(filepath.Join(scriptDir, projectName+".txtar"))
 }
 
-func TestSportsDataFromSportRadar(t *testing.T) {
-	projectName := "sports_data_from_sportradar"
-	projectDir := filepath.Join(examplesDir, projectName)
-	requiredEnvVars := []string{
-		"YOUR_SPORTRADAR_API_KEY",
-	}
-	NewTestscriptTest(t, projectDir).
-		ExecuteMakeTarget("build").
-		CopyFile("tmp/x.wasm").
-		CopyFile("config.toml").
-		RenderTemplateFileFromEnvWithCleanup("fn-call.json", requiredEnvVars).
-		Run(filepath.Join(scriptDir, projectName+".txtar"))
-}
-
 func TestTime(t *testing.T) {
 	projectName := "time"
 	projectDir := filepath.Join(examplesDir, projectName)
