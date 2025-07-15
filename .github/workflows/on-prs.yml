@@ -70,6 +70,8 @@ jobs:
           GH_TOKEN: ${{ secrets.GH_ACCESS_TOKEN }}
           YOUR_COINGECKO_API_KEY: ${{ secrets.COINGECKO_API_KEY }}
           YOUR_DHL_API_KEY: ${{ secrets.DHL_API_KEY }}
+          YOUR_PANDASCORE_API_KEY: ${{ secrets.PANDASCORE_API_KEY }}
+          YOUR_PANDASCORE_API_ENDPOINT: ${{ secrets.PANDASCORE_API_ENDPOINT }}
           YOUR_RIMBLE_API_KEY: ${{ secrets.RIMBLE_API_KEY }}
           YOUR_RIMBLE_MATCH_DATE: ${{ env.RIMBLE_MATCH_DATE }}
           YOUR_RIMBLE_MATCH_ID: ${{ env.RIMBLE_MATCH_ID }}
@@ -84,6 +86,8 @@ jobs:
             --keep GH_TOKEN \
             --keep YOUR_COINGECKO_API_KEY \
             --keep YOUR_DHL_API_KEY \
+            --keep YOUR_PANDASCORE_API_KEY \
+            --keep YOUR_PANDASCORE_API_ENDPOINT \
             --keep YOUR_RIMBLE_API_KEY \
             --keep YOUR_RIMBLE_MATCH_DATE \
             --keep YOUR_RIMBLE_MATCH_ID \
@@ -91,6 +95,7 @@ jobs:
             go test -C test . -count=1 -v -run=TestCoinPricesFromCoingecko && \
             go test -C test . -count=1 -v -run=TestErrorHandlingAttestFnCall && \
             go test -C test . -count=1 -v -run=TestErrorHandlingOnChain && \
+            go test -C test . -count=1 -v -run=TestESportsDataFromPandaScore && \
             go test -C test . -count=1 -v -run=TestESportsDataFromRimble && \
             go test -C test . -count=1 -v -run=TestAttestFnCall && \
             go test -C test . -count=1 -v -run=TestHelloWorldOnChain && \

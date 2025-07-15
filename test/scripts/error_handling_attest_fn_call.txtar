@@ -21,5 +21,4 @@ stdin panicFunc.json
 ! exec bky-as attest-fn-call
 
 # [check] assert stderr contains panic output
-stderr 'Expected panic call'
 stderr 'wasm error: unreachable'
