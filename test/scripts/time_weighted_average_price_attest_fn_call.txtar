@@ -1,0 +1,5 @@
+env PREVIOUS_ENCLAVE_ATTESTATION="null"
+env PREVIOUS_TRANSITIVE_ATTESTATION="null"
+exec cat iteration-call.json.template
+renderTemplateFileFromEnv -cleanup iteration-call.json.template iteration-call.json PREVIOUS_ENCLAVE_ATTESTATION,PREVIOUS_TRANSITIVE_ATTESTATION
+exec cat iteration-call.json
