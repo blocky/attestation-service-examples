@@ -1,3 +1,69 @@
-exec sed -e 's|[[ .PREVIOUS_ENCLAVE_ATTESTATION ]]|null|' -e 's|[[ .PREVIOUS_TRANSITIVE_ATTESTATION ]]|null|' ./iteration-call.json.template
+# prepare iteration-call template for iteration 1 (bootstrap without previous attestations)
+exec sed -e 's|PREV_ENCLAVE_ATTESTATION|null|' -e 's|PREV_TRANSITIVE_ATTESTATION|null|' ./iteration-call.json.template
 cp stdout ./tmp/iteration-call.json
-exec echo $(cat ./tmp/iteration-call.json)
+
+# perform initial attest-fn-call
+stdin ./tmp/iteration-call.json
+exec bky-as attest-fn-call
+cp stdout tmp/prev.json
+exec jq -r '.transitive_attested_function_call.claims.output | @base64d | fromjson' tmp/prev.json
+
+# extract the attestations from iteration 1 response
+exec jq -r '.enclave_attested_application_public_key.enclave_attestation' tmp/prev.json
+cp stdout tmp/prev_ea
+exec  jq -r '.transitive_attested_function_call.transitive_attestation' tmp/prev.json
+cp stdout tmp/prev_ta
+
+setEnvValueFromFile prev_ea ./tmp/prev_ea
+setEnvValueFromFile prev_ta ./tmp/prev_ta
+
+# prepare iteration-call template for iteration 2
+exec sed -e 's|PREV_ENCLAVE_ATTESTATION|'"${prev_ea}"'|' -e 's|PREV_TRANSITIVE_ATTESTATION|'"${prev_ta}"'|' iteration-call.json.template
+cp stdout ./tmp/iteration-call.json
+
+# perform attest-fn-call for iteration 2
+stdin ./tmp/iteration-call.json
+exec bky-as attest-fn-call
+cp stdout tmp/prev.json
+exec jq -r '.transitive_attested_function_call.claims.output | @base64d | fromjson' tmp/prev.json
+
+# extract the attestations from iteration 2 response
+exec jq -r '.enclave_attested_application_public_key.enclave_attestation' tmp/prev.json
+cp stdout tmp/prev_ea
+exec  jq -r '.transitive_attested_function_call.transitive_attestation' tmp/prev.json
+cp stdout tmp/prev_ta
+
+setEnvValueFromFile prev_ea ./tmp/prev_ea
+setEnvValueFromFile prev_ta ./tmp/prev_ta
+
+# prepare iteration-call template for iteration 3
+exec sed -e 's|PREV_ENCLAVE_ATTESTATION|'"${prev_ea}"'|' -e 's|PREV_TRANSITIVE_ATTESTATION|'"${prev_ta}"'|' iteration-call.json.template
+cp stdout ./tmp/iteration-call.json
+
+# perform attest-fn-call for iteration 3
+stdin ./tmp/iteration-call.json
+exec bky-as attest-fn-call
+cp stdout tmp/prev.json
+exec jq -r '.transitive_attested_function_call.claims.output | @base64d | fromjson' tmp/prev.json
+
+# extract the attestations from iteration 3 response
+exec jq -r '.enclave_attested_application_public_key.enclave_attestation' tmp/prev.json
+cp stdout tmp/prev_ea
+exec  jq -r '.transitive_attested_function_call.transitive_attestation' tmp/prev.json
+cp stdout tmp/prev_ta
+
+setEnvValueFromFile prev_ea ./tmp/prev_ea
+setEnvValueFromFile prev_ta ./tmp/prev_ta
+
+# prepare twap-call template for final calculation
+exec sed -e 's|PREV_ENCLAVE_ATTESTATION|'"${prev_ea}"'|' -e 's|PREV_TRANSITIVE_ATTESTATION|'"${prev_ta}"'|' twap-call.json.template
+cp stdout ./tmp/twap-call.json
+
+# perform twap-call for final calculation
+stdin ./tmp/twap-call.json
+exec bky-as attest-fn-call
+cp stdout tmp/twap.json
+
+exec jq -r '.transitive_attested_function_call.claims.output | @base64d | fromjson' tmp/twap.json
+cp stdout final-output.json
+exec jq -e '.Success == true' final-output.json
