@@ -2,8 +2,8 @@
     "code_file": "./tmp/x.wasm",
     "function": "twap",
     "input": {
-        "eAttest": [[ .PREVIOUS_ENCLAVE_ATTESTATION ]],
-        "tAttest": [[ .PREVIOUS_TRANSITIVE_ATTESTATION ]],
+        "eAttest": PREV_ENCLAVE_ATTESTATION,
+        "tAttest": PREV_TRANSITIVE_ATTESTATION,
         "whitelist": [
             { "platform": "plain", "code": "plain" }
         ]

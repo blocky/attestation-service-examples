@@ -4,8 +4,8 @@
     "input": {
         "coin_id": "polygon-pos-bridged-weth-polygon-pos",
         "num_samples": 3,
-        "eAttest": [[ .PREVIOUS_ENCLAVE_ATTESTATION ]],
-        "tAttest": [[ .PREVIOUS_TRANSITIVE_ATTESTATION ]],
+        "eAttest": PREV_ENCLAVE_ATTESTATION,
+        "tAttest": PREV_TRANSITIVE_ATTESTATION,
         "whitelist": [
             { "platform": "plain", "code": "plain" }
         ]

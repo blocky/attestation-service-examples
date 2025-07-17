@@ -43,8 +43,8 @@ prev: check
 .PHONY: init
 init: check build
 	@sed \
-		-e 's|[[ .PREVIOUS_ENCLAVE_ATTESTATION ]]|null|' \
-		-e 's|[[ .PREVIOUS_TRANSITIVE_ATTESTATION ]]|null|' \
+		-e 's|PREV_ENCLAVE_ATTESTATION|null|' \
+		-e 's|PREV_TRANSITIVE_ATTESTATION|null|' \
 		./iteration-call.json.template > ./tmp/iteration-call.json
 	@cat tmp/iteration-call.json | bky-as attest-fn-call  | jq . > tmp/prev.json
 	@jq -r '.transitive_attested_function_call.claims.output | @base64d' tmp/prev.json | jq .
@@ -52,8 +52,8 @@ init: check build
 .PHONY: iteration
 iteration: check prev build
 	@sed \
-		-e 's|[[ .PREVIOUS_ENCLAVE_ATTESTATION ]]|"${prev_ea}"|' \
-		-e 's|[[ .PREVIOUS_TRANSITIVE_ATTESTATION ]]"|${prev_ta}"|' \
+		-e 's|PREV_ENCLAVE_ATTESTATION|"${prev_ea}"|' \
+		-e 's|PREV_TRANSITIVE_ATTESTATION"|${prev_ta}"|' \
 		iteration-call.json.template > tmp/iteration-call.json
 	@cat tmp/iteration-call.json | bky-as attest-fn-call | jq . > tmp/prev.json
 	@jq -r '.transitive_attested_function_call.claims.output | @base64d | fromjson' tmp/prev.json
@@ -61,8 +61,8 @@ iteration: check prev build
 .PHONY: twap
 twap: check prev build
 	@sed \
-		-e 's|[[ .PREVIOUS_ENCLAVE_ATTESTATION ]]|"${prev_ea}"|' \
-		-e 's|[[ .PREVIOUS_TRANSITIVE_ATTESTATION ]]|"${prev_ta}"|' \
+		-e 's|PREV_ENCLAVE_ATTESTATION|"${prev_ea}"|' \
+		-e 's|PREV_TRANSITIVE_ATTESTATION|"${prev_ta}"|' \
 		twap-call.json.template > tmp/twap-call.json
 	@cat tmp/twap-call.json | bky-as attest-fn-call | jq . > tmp/twap.json
 	@jq -r '.transitive_attested_function_call.claims.output | @base64d | fromjson' tmp/twap.json
