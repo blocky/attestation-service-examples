@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -11,12 +12,12 @@ import (
 	"github.com/blocky/basm-go-sdk/x/xbasm"
 )
 
-type CoinGeckoCoinPrice struct {
-	USD           float64 `json:"usd"`
-	LastUpdatedAt int     `json:"last_updated_at"`
+type CoinGeckoResponse struct {
+	Price struct {
+		USD           float64 `json:"usd"`
+		LastUpdatedAt int     `json:"last_updated_at"`
+	} `json:"price"`
 }
-
-type CoinGeckoResponse map[string]CoinGeckoCoinPrice
 
 func getNewPriceSample(coinID string, apiKey string) (price.Price, error) {
 	req := basm.HTTPRequestInput{
@@ -44,8 +45,10 @@ func getNewPriceSample(coinID string, apiKey string) (price.Price, error) {
 		)
 	}
 
-	var response CoinGeckoResponse
-	err = json.Unmarshal(resp.Body, &response)
+	respBody := bytes.ReplaceAll(resp.Body, []byte(coinID), []byte("price"))
+
+	var coinGeckoResponse CoinGeckoResponse
+	err = json.Unmarshal(respBody, &coinGeckoResponse)
 	if err != nil {
 		return price.Price{}, fmt.Errorf(
 			"unmarshaling CoinGecko data: %w...%s",
@@ -54,12 +57,10 @@ func getNewPriceSample(coinID string, apiKey string) (price.Price, error) {
 		)
 	}
 
-	coinPrice := response[coinID]
-	timestamp := time.Unix(int64(coinPrice.LastUpdatedAt), 0)
-	value := coinPrice.USD
+	timestamp := time.Unix(int64(coinGeckoResponse.Price.LastUpdatedAt), 0)
 
 	return price.Price{
-		Value:     value,
+		Value:     coinGeckoResponse.Price.USD,
 		Timestamp: timestamp,
 	}, nil
 }
