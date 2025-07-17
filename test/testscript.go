@@ -155,7 +155,6 @@ func (e *TestscriptTest) Run(scriptFile string) {
 	e.params.Cmds = map[string]func(*testscript.TestScript, bool, []string){
 		"setEnvValueFromFile": cmdSetEnvValueFromFile,
 	}
-	e.params.TestWork = true
 	testscript.Run(e.t, e.params)
 }
 
