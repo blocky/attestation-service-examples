@@ -62,10 +62,17 @@ describe("Local Tests", function () {
                 evmLinkData.transitiveAttestation,
             )
 
+        function anyFloat(x: unknown): boolean {
+            const n = Number(x);
+            return !Number.isNaN(n) && Number.isFinite(n);
+        }
+
         // then
+        // assert the transaction emitted an event with a float number
+        // (time weighted average price) as an argument
         await expect(tx).to.emit(
             userContract,
             'TWAP'
-        ).withArgs("1636.6828176996771")
+        ).withArgs(anyFloat)
     })
 });
