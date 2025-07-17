@@ -84,12 +84,12 @@ Let's do these things by defining a `getNewSamplePrice` function in
 [`main.go`](./main.go):
 
 ```go
-type CoinGeckoCoinPrice struct {
-	USD           float64 `json:"usd"`
-	LastUpdatedAt int     `json:"last_updated_at"`
+type CoinGeckoResponse struct {
+	Price struct {
+		USD           float64 `json:"usd"`
+		LastUpdatedAt int     `json:"last_updated_at"`
+	} `json:"price"`
 }
-
-type CoinGeckoResponse map[string]CoinGeckoCoinPrice
 
 func getNewPriceSample(coinID string, apiKey string) (price.Price, error) {
 	req := basm.HTTPRequestInput{
@@ -117,8 +117,10 @@ func getNewPriceSample(coinID string, apiKey string) (price.Price, error) {
 		)
 	}
 
-	var response CoinGeckoResponse
-	err = json.Unmarshal(resp.Body, &response)
+	respBody := bytes.ReplaceAll(resp.Body, []byte(coinID), []byte("price"))
+
+	var coinGeckoResponse CoinGeckoResponse
+	err = json.Unmarshal(respBody, &coinGeckoResponse)
 	if err != nil {
 		return price.Price{}, fmt.Errorf(
 			"unmarshaling CoinGecko data: %w...%s",
@@ -127,24 +129,26 @@ func getNewPriceSample(coinID string, apiKey string) (price.Price, error) {
 		)
 	}
 
-	coinPrice := response[coinID]
-	timestamp := time.Unix(int64(coinPrice.LastUpdatedAt), 0)
-	value := coinPrice.USD
+	timestamp := time.Unix(int64(coinGeckoResponse.Price.LastUpdatedAt), 0)
 
 	return price.Price{
-		Value:     value,
+		Value:     coinGeckoResponse.Price.USD,
 		Timestamp: timestamp,
 	}, nil
 }
-
 ```
 
 where we fetch data from CoinGecko, parse the JSON response, record the current
 time, set it in a `Price` struct defined in the `price` package in 
-[`price/price.go`](./price/price.go), and return it.
+[`price/price.go`](./price/price.go), and return it. 
 If the details of this flow are new to you, you may want to review the 
 [Getting Coin Prices From CoinGecko](../../coin_prices_from_coingecko/README.md)
 example, where we walk thought how to fetch and parse API data in more detail.
+One thing to notice in this example is that we replace the value of the 
+variable `coinID` in the response body with the string `"price"` to allow
+for deterministic unmarshalling the response into the `CoinGeckoResponse` 
+struct.
+
 
 ### Step 2: Attest the price samples
 
@@ -318,8 +322,8 @@ To collect a sample, we define the call to the `iteration` function in
     "input": {
         "coin_id": "polygon-pos-bridged-weth-polygon-pos",
         "num_samples": 3,
-        "eAttest": "PREV_ENCLAVE_ATTESTATION",
-        "tAttest": "PREV_TRANSITIVE_ATTESTATION",
+        "eAttest": PREV_ENCLAVE_ATTESTATION,
+        "tAttest": PREV_TRANSITIVE_ATTESTATION,
         "whitelist": [
             { "platform": "plain", "code": "plain" }
         ]
@@ -502,7 +506,6 @@ To obtain the TWAP, we define a call to the `twap` function in
         ]
     }
 }
-
 ```
 
 where again the `PREV_ENCLAVE_ATTESTATION` and 
