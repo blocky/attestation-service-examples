@@ -149,6 +149,21 @@ func TestTime(t *testing.T) {
 		Run(filepath.Join(scriptDir, projectName+".txtar"))
 }
 
+func TestTWAPAttestFnCall(t *testing.T) {
+	projectName := "time_weighted_average_price_attest_fn_call"
+	projectDir := filepath.Join(examplesDir, "time_weighted_average_price", "attest_fn_call")
+	requiredEnvVars := []string{
+		"YOUR_COINGECKO_API_KEY",
+	}
+	NewTestscriptTest(t, projectDir).
+		ExecuteMakeTarget("build").
+		CopyFile("tmp/x.wasm").
+		CopyFile("config.toml").
+		CopyFile("twap-call.json.template").
+		RenderTemplateFileFromEnvWithCleanup("iteration-call.json.template", requiredEnvVars).
+		Run(filepath.Join(scriptDir, projectName+".txtar"))
+}
+
 func TestTWAPOnChain(t *testing.T) {
 	projectName := "time_weighted_average_price/on_chain"
 	projectDir := filepath.Join(examplesDir, projectName)

@@ -5,6 +5,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 	"testing"
 	"text/template"
 
@@ -151,5 +152,42 @@ func (e *TestscriptTest) Run(scriptFile string) {
 		return nil
 	}
 	e.params.Files = []string{scriptFile}
+	e.params.Cmds = map[string]func(*testscript.TestScript, bool, []string){
+		"setEnvValueFromFile": cmdSetEnvValueFromFile,
+	}
 	testscript.Run(e.t, e.params)
+}
+
+// setEnvValueFromFile envKey filePath
+// setEnvValueFromFile reads the contents of a file (filePath) and sets an
+// environment variable (envKey) to the rendered contents of the file
+func cmdSetEnvValueFromFile(
+	ts *testscript.TestScript,
+	neg bool,
+	args []string,
+) {
+	if neg {
+		ts.Fatalf("unsupported: ! setEnvValueFromFile")
+	}
+	var srcRelPath string
+	if len(args) != 2 {
+		ts.Fatalf("usage: setEnvValueFromFile envKey filePath")
+	}
+	srcRelPath = args[1]
+	envKey := args[0]
+
+	workDir := ts.Getenv("WORK")
+	if workDir == "" {
+		ts.Fatalf("WORK environment variable is not set")
+	}
+	src := filepath.Join(workDir, srcRelPath)
+	content, err := os.ReadFile(src)
+	if err != nil {
+		ts.Fatalf("failed to read file '%s': %v", src, err)
+	}
+	contentStr := strings.TrimSpace(string(content))
+	if contentStr == "" {
+		ts.Fatalf("file '%s' is empty", src)
+	}
+	ts.Setenv(envKey, contentStr)
 }
