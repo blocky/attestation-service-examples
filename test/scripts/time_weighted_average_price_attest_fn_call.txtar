@@ -64,6 +64,7 @@ stdin ./tmp/twap-call.json
 exec bky-as attest-fn-call
 cp stdout tmp/twap.json
 
+# assert the final output is successful
 exec jq -r '.transitive_attested_function_call.claims.output | @base64d | fromjson' tmp/twap.json
 cp stdout final-output.json
 exec jq -e '.Success == true' final-output.json
