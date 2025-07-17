@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"time"
@@ -73,9 +74,13 @@ func extractPriceSamples(
 	[]price.Price,
 	error,
 ) {
-	// bootstrap with empty samples if we don't have a transitive attestation
-	if tAttest == "" {
+	switch {
+	// bootstrap with empty samples if we don't have the attestations
+	case eAttest == "" && tAttest == "":
 		return []price.Price{}, nil
+	// otherwise, ensure we have both attestations
+	case eAttest == "" || tAttest == "":
+		return nil, errors.New("missing one of eAttest or tAttest, both required")
 	}
 
 	verifiedTA, err := basm.VerifyAttestation(
