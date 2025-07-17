@@ -1,5 +1,3 @@
-env PREVIOUS_ENCLAVE_ATTESTATION="null"
-env PREVIOUS_TRANSITIVE_ATTESTATION="null"
-exec cat iteration-call.json.template
-renderTemplateFileFromEnv -cleanup iteration-call.json.template iteration-call.json PREVIOUS_ENCLAVE_ATTESTATION,PREVIOUS_TRANSITIVE_ATTESTATION
-exec cat iteration-call.json
+exec sed -e 's|[[ .PREVIOUS_ENCLAVE_ATTESTATION ]]|null|' -e 's|[[ .PREVIOUS_TRANSITIVE_ATTESTATION ]]|null|' ./iteration-call.json.template
+cp stdout ./tmp/iteration-call.json
+exec echo $(cat ./tmp/iteration-call.json)
