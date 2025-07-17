@@ -62,6 +62,8 @@ func TestESportsDataFromRimble(t *testing.T) {
 	projectName := "esports_data_from_rimble"
 	projectDir := filepath.Join(examplesDir, projectName)
 	requiredEnvVars := []string{
+		"YOUR_RIMBLE_MATCH_DATE",
+		"YOUR_RIMBLE_MATCH_ID",
 		"YOUR_RIMBLE_API_KEY",
 	}
 
@@ -127,20 +129,6 @@ func TestShipmentTrackingWithDHL(t *testing.T) {
 	projectDir := filepath.Join(examplesDir, projectName)
 	requiredEnvVars := []string{
 		"YOUR_DHL_API_KEY",
-	}
-	NewTestscriptTest(t, projectDir).
-		ExecuteMakeTarget("build").
-		CopyFile("tmp/x.wasm").
-		CopyFile("config.toml").
-		RenderTemplateFileFromEnvWithCleanup("fn-call.json", requiredEnvVars).
-		Run(filepath.Join(scriptDir, projectName+".txtar"))
-}
-
-func TestSportsDataFromSportRadar(t *testing.T) {
-	projectName := "sports_data_from_sportradar"
-	projectDir := filepath.Join(examplesDir, projectName)
-	requiredEnvVars := []string{
-		"YOUR_SPORTRADAR_API_KEY",
 	}
 	NewTestscriptTest(t, projectDir).
 		ExecuteMakeTarget("build").

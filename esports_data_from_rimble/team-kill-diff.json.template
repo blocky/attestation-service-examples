@@ -2,9 +2,8 @@
   "code_file": "tmp/x.wasm",
   "function": "teamKillDifferenceFromRimble",
   "input": {
-    "date": "2025-06-20",
-    "match_id": "2382613",
-    "map_name": "Inferno"
+    "date": "{{ .YOUR_RIMBLE_MATCH_DATE }}",
+    "match_id": "{{ .YOUR_RIMBLE_MATCH_ID }}"
   },
   "secret": {
     "api_key": "{{ .YOUR_RIMBLE_API_KEY }}"

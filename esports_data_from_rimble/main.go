@@ -40,7 +40,7 @@ func getMatchDataFromRimble(
 	match, err := rimble.MakeMatchDataFromMatchesJSON(resp.Body)
 	if err != nil {
 		err = fmt.Errorf(
-			"making match given data '%s' and match ID '%s': %w",
+			"making match given date '%s' and match ID '%s': %w",
 			date,
 			matchID,
 			err,
@@ -119,23 +119,16 @@ func matchWinnerFromRimble(inputPtr uint64, secretPtr uint64) uint64 {
 type TeamKillDiff struct {
 	MatchID  string
 	Date     string
-	MapName  string
 	Team1    string
 	Team2    string
 	KillDiff int
 }
 
-func TeamKillDifferenceOnMap(
+func TeamKillDifference(
 	match rimble.MatchData,
 	date string,
-	mapName string,
 ) (TeamKillDiff, error) {
-	gamesOnMap, err := match.GamesOnMap(mapName)
-	if err != nil {
-		return TeamKillDiff{}, fmt.Errorf("getting games on map: %w", err)
-	}
-
-	killDiff, err := match.TeamKillDifferenceInGames(gamesOnMap)
+	killDiff, err := match.TeamKillDifferenceInGames(match.Metadata.Games)
 	if err != nil {
 		return TeamKillDiff{}, fmt.Errorf("getting team kill difference: %w", err)
 	}
@@ -144,7 +137,6 @@ func TeamKillDifferenceOnMap(
 		return TeamKillDiff{
 			MatchID:  match.MatchID,
 			Date:     date,
-			MapName:  mapName,
 			Team1:    match.Teams[1].Name,
 			Team2:    match.Teams[0].Name,
 			KillDiff: -killDiff,
@@ -154,7 +146,6 @@ func TeamKillDifferenceOnMap(
 	return TeamKillDiff{
 		MatchID:  match.MatchID,
 		Date:     date,
-		MapName:  mapName,
 		Team1:    match.Teams[0].Name,
 		Team2:    match.Teams[1].Name,
 		KillDiff: killDiff,
@@ -195,7 +186,7 @@ func teamKillDifferenceFromRimble(inputPtr uint64, secretPtr uint64) uint64 {
 		return WriteError(outErr)
 	}
 
-	teamKillDiff, err := TeamKillDifferenceOnMap(match, input.Date, input.MapName)
+	teamKillDiff, err := TeamKillDifference(match, input.Date)
 	if err != nil {
 		outErr := fmt.Errorf("getting team kill difference: %w", err)
 		return WriteError(outErr)

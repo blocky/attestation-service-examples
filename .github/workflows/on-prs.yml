@@ -47,12 +47,34 @@ jobs:
         with:
           nix_path: nixpkgs=channel:nixos-24.11
 
+      - name: Fetch Recent Match ID
+        run: |
+          response=$(curl --fail --location \
+              -H 'x-api-key: ${{ secrets.RIMBLE_API_KEY }}' \
+              'https://rimbleanalytics.com/raw/csgo/completed-matches/')
+          
+          match_date=$(echo "$response" | jq -r '.[0].date')
+          match_id=$(echo "$response" | jq -r '.[0].matchid')
+          
+          if [ -z "match_date" ] || [ -z "match_id" ]; then
+            echo "Error: One or more response values are empty."
+            echo "Response: $response"
+            exit 1
+          fi
+
+          echo "RIMBLE_MATCH_DATE=${match_date}" >> "$GITHUB_ENV"
+          echo "RIMBLE_MATCH_ID=${match_id}" >> "$GITHUB_ENV"
+
       - name: Run Tests
         env:
           GH_TOKEN: ${{ secrets.GH_ACCESS_TOKEN }}
           YOUR_COINGECKO_API_KEY: ${{ secrets.COINGECKO_API_KEY }}
           YOUR_DHL_API_KEY: ${{ secrets.DHL_API_KEY }}
+          YOUR_PANDASCORE_API_KEY: ${{ secrets.PANDASCORE_API_KEY }}
+          YOUR_PANDASCORE_API_ENDPOINT: ${{ secrets.PANDASCORE_API_ENDPOINT }}
           YOUR_RIMBLE_API_KEY: ${{ secrets.RIMBLE_API_KEY }}
+          YOUR_RIMBLE_MATCH_DATE: ${{ env.RIMBLE_MATCH_DATE }}
+          YOUR_RIMBLE_MATCH_ID: ${{ env.RIMBLE_MATCH_ID }}
         run: |
           nix-shell \
             --pure \
@@ -64,16 +86,9 @@ jobs:
             --keep GH_TOKEN \
             --keep YOUR_COINGECKO_API_KEY \
             --keep YOUR_DHL_API_KEY \
+            --keep YOUR_PANDASCORE_API_KEY \
+            --keep YOUR_PANDASCORE_API_ENDPOINT \
             --keep YOUR_RIMBLE_API_KEY \
-            --run "\
-            go test -C test . -count=1 -v -run=TestCoinPricesFromCoingecko && \
-            go test -C test . -count=1 -v -run=TestErrorHandlingAttestFnCall && \
-            go test -C test . -count=1 -v -run=TestErrorHandlingOnChain && \
-            go test -C test . -count=1 -v -run=TestESportsDataFromRimble && \
-            go test -C test . -count=1 -v -run=TestAttestFnCall && \
-            go test -C test . -count=1 -v -run=TestHelloWorldOnChain && \
-            go test -C test . -count=1 -v -run=TestParamsAndSecrets && \
-            go test -C test . -count=1 -v -run=TestRandom && \
-            go test -C test . -count=1 -v -run=TestShipmentTrackingWithDHL && \
-            go test -C test . -count=1 -v -run=TestTime && \
-            go test -C test . -count=1 -v -run=TestTWAPOnChain"
+            --keep YOUR_RIMBLE_MATCH_DATE \
+            --keep YOUR_RIMBLE_MATCH_ID \
+            --run "make test"
