@@ -203,6 +203,28 @@ func TestLiveShipmentTrackingWithDHL(t *testing.T) {
 		Run(filepath.Join(scriptDir, projectName+".txtar"))
 }
 
+func TestLiveTWAPAttestFnCall(t *testing.T) {
+	projectName := "time_weighted_average_price_attest_fn_call"
+	projectDir := filepath.Join(examplesDir, "time_weighted_average_price", "attest_fn_call")
+	requiredEnvVars := []string{
+		"LIVE_TEST_PLATFORM",
+		"LIVE_TEST_CODE",
+		"LIVE_TEST_AUTH_TOKEN",
+		"LIVE_TEST_HOST",
+		"YOUR_COINGECKO_API_KEY",
+	}
+	test.NewTestscriptTest(t, projectDir).
+		ExecuteMakeTarget("build").
+		CopyFile("tmp/x.wasm").
+		CopyFile("twap-call.json.template").
+		RenderTemplateStringFromEnvWithCleanup(
+			liveTestConfigTemplate,
+			"config.toml",
+			requiredEnvVars).
+		RenderTemplateFileFromEnvWithCleanup("iteration-call.json.template", requiredEnvVars).
+		Run(filepath.Join(scriptDir, projectName+".txtar"))
+}
+
 func TestLiveTime(t *testing.T) {
 	projectName := "time"
 	projectDir := filepath.Join(examplesDir, projectName)
