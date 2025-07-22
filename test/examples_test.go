@@ -222,3 +222,31 @@ func TestTWAPOnChain(t *testing.T) {
 		NPMInstall().
 		Run("--grep", "Local")
 }
+
+func TestTWAPCombined(t *testing.T) {
+	twapAttestFnCallName := "time_weighted_average_price/attest_fn_call"
+	twapAttestFnCallDir := filepath.Join(examplesDir, twapAttestFnCallName)
+	twapOnChainName := "time_weighted_average_price/on_chain"
+	twapOnChainDir := filepath.Join(examplesDir, twapOnChainName)
+	saveDir := twapOnChainDir + "/tmp"
+	requiredEnvVars := []string{
+		"YOUR_COINGECKO_API_KEY",
+	}
+
+	t.Run(twapAttestFnCallName, func(t *testing.T) {
+		NewTestscriptTest(t, twapAttestFnCallDir, saveDir).
+			ExecuteMakeTarget("build").
+			CopyFile("tmp/x.wasm").
+			CopyFile("config.toml").
+			CopyFile("twap-call.json.template").
+			RenderTemplateFileFromEnvWithCleanup("iteration-call.json.template", requiredEnvVars).
+			Run(filepath.Join(scriptDir, "time_weighted_average_price_attest_fn_call.txtar"))
+	})
+
+	t.Run(twapOnChainName, func(t *testing.T) {
+		NewHardhatTest(t, twapOnChainDir).
+			NPMInstall().
+			SetEnv("TA_FILE", "../tmp/twap.json").
+			Run("--grep", "Local")
+	})
+}
