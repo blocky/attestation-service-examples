@@ -50,7 +50,7 @@ func TestErrorHandlingCombined(t *testing.T) {
 	errorHandlingOnChainDir := filepath.Join(examplesDir, errorHandlingOnChainName)
 	saveDir := errorHandlingOnChainDir + "/tmp"
 
-	t.Run("error_handling_attest_fn_call", func(t *testing.T) {
+	t.Run(errorHandlingName, func(t *testing.T) {
 		NewTestscriptTest(t, errorHandlingDir, saveDir).
 			ExecuteMakeTarget("build").
 			CopyFile("tmp/x.wasm").
@@ -61,7 +61,7 @@ func TestErrorHandlingCombined(t *testing.T) {
 			Run(filepath.Join(scriptDir, errorHandlingName+".txtar"))
 	})
 
-	t.Run("error_handling_on_chain", func(t *testing.T) {
+	t.Run(errorHandlingOnChainName, func(t *testing.T) {
 		NewHardhatTest(t, errorHandlingOnChainDir).
 			NPMInstall().
 			SetEnv("TA_SUCCESS_FILE", "../tmp/out-success.json").
@@ -135,7 +135,7 @@ func TestAttestFnCallCombined(t *testing.T) {
 	helloWorldOnChainDir := filepath.Join(examplesDir, helloWorldOnChainName)
 	saveDir := helloWorldOnChainDir + "/tmp"
 
-	t.Run("attest_fn_call", func(t *testing.T) {
+	t.Run(attestFnCallName, func(t *testing.T) {
 		NewTestscriptTest(t, attestFnCallDir, saveDir).
 			ExecuteMakeTarget("main.wasm").
 			CopyFile("main.wasm").
@@ -144,7 +144,7 @@ func TestAttestFnCallCombined(t *testing.T) {
 			Run(filepath.Join(scriptDir, attestFnCallName+".txtar"))
 	})
 
-	t.Run("hello_world_on_chain", func(t *testing.T) {
+	t.Run(helloWorldOnChainName, func(t *testing.T) {
 		NewHardhatTest(t, helloWorldOnChainDir).
 			NPMInstall().
 			SetEnv("TA_FILE", "../tmp/attest-fn-call-out.json").
