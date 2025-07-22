@@ -14,7 +14,7 @@ func TestCoinPricesFromCoingecko(t *testing.T) {
 	requiredEnvVars := []string{
 		"YOUR_COINGECKO_API_KEY",
 	}
-	NewTestscriptTest(t, projectDir).
+	NewTestscriptTest(t, projectDir, "").
 		ExecuteMakeTarget("build").
 		CopyFile("tmp/x.wasm").
 		CopyFile("config.toml").
@@ -25,7 +25,7 @@ func TestCoinPricesFromCoingecko(t *testing.T) {
 func TestErrorHandlingAttestFnCall(t *testing.T) {
 	projectName := "error_handling_attest_fn_call"
 	projectDir := filepath.Join(examplesDir, projectName)
-	NewTestscriptTest(t, projectDir).
+	NewTestscriptTest(t, projectDir, "").
 		ExecuteMakeTarget("build").
 		CopyFile("tmp/x.wasm").
 		CopyFile("config.toml").
@@ -43,6 +43,33 @@ func TestErrorHandlingOnChain(t *testing.T) {
 		Run("--grep", "Local")
 }
 
+func TestErrorHandlingCombined(t *testing.T) {
+	errorHandlingName := "error_handling_attest_fn_call"
+	errorHandlingDir := filepath.Join(examplesDir, errorHandlingName)
+	errorHandlingOnChainName := "error_handling_on_chain"
+	errorHandlingOnChainDir := filepath.Join(examplesDir, errorHandlingOnChainName)
+	saveDir := errorHandlingOnChainDir + "/tmp"
+
+	t.Run("error_handling_attest_fn_call", func(t *testing.T) {
+		NewTestscriptTest(t, errorHandlingDir, saveDir).
+			ExecuteMakeTarget("build").
+			CopyFile("tmp/x.wasm").
+			CopyFile("config.toml").
+			CopyFile("successFunc.json").
+			CopyFile("errorFunc.json").
+			CopyFile("panicFunc.json").
+			Run(filepath.Join(scriptDir, errorHandlingName+".txtar"))
+	})
+
+	t.Run("error_handling_on_chain", func(t *testing.T) {
+		NewHardhatTest(t, errorHandlingOnChainDir).
+			NPMInstall().
+			SetEnv("TA_SUCCESS_FILE", "../tmp/out-success.json").
+			SetEnv("TA_ERROR_FILE", "../tmp/out-error.json").
+			Run("--grep", "Local")
+	})
+}
+
 func TestESportsDataFromPandaScore(t *testing.T) {
 	projectName := "esports_data_from_pandascore"
 	projectDir := filepath.Join(examplesDir, projectName)
@@ -50,7 +77,7 @@ func TestESportsDataFromPandaScore(t *testing.T) {
 		"YOUR_PANDASCORE_API_ENDPOINT",
 		"YOUR_PANDASCORE_API_KEY",
 	}
-	NewTestscriptTest(t, projectDir).
+	NewTestscriptTest(t, projectDir, "").
 		ExecuteMakeTarget("build").
 		CopyFile("tmp/x.wasm").
 		CopyFile("config.toml").
@@ -67,7 +94,7 @@ func TestESportsDataFromRimble(t *testing.T) {
 		"YOUR_RIMBLE_API_KEY",
 	}
 
-	NewTestscriptTest(t, projectDir).
+	NewTestscriptTest(t, projectDir, "").
 		ExecuteMakeTarget("build").
 		CopyFile("tmp/x.wasm").
 		CopyFile("config.toml").
@@ -85,7 +112,7 @@ func TestESportsDataFromRimble(t *testing.T) {
 func TestAttestFnCall(t *testing.T) {
 	projectName := "attest_fn_call"
 	projectDir := filepath.Join(examplesDir, projectName)
-	NewTestscriptTest(t, projectDir).
+	NewTestscriptTest(t, projectDir, "").
 		ExecuteMakeTarget("main.wasm").
 		CopyFile("main.wasm").
 		CopyFile("config.toml").
@@ -101,10 +128,34 @@ func TestHelloWorldOnChain(t *testing.T) {
 		Run("--grep", "Local")
 }
 
+func TestAttestFnCallCombined(t *testing.T) {
+	attestFnCallName := "attest_fn_call"
+	attestFnCallDir := filepath.Join(examplesDir, attestFnCallName)
+	helloWorldOnChainName := "hello_world_on_chain"
+	helloWorldOnChainDir := filepath.Join(examplesDir, helloWorldOnChainName)
+	saveDir := helloWorldOnChainDir + "/tmp"
+
+	t.Run("attest_fn_call", func(t *testing.T) {
+		NewTestscriptTest(t, attestFnCallDir, saveDir).
+			ExecuteMakeTarget("main.wasm").
+			CopyFile("main.wasm").
+			CopyFile("config.toml").
+			CopyFile("fn-call.json").
+			Run(filepath.Join(scriptDir, attestFnCallName+".txtar"))
+	})
+
+	t.Run("hello_world_on_chain", func(t *testing.T) {
+		NewHardhatTest(t, helloWorldOnChainDir).
+			NPMInstall().
+			SetEnv("TA_FILE", "../tmp/attest-fn-call-out.json").
+			Run("--grep", "Local")
+	})
+}
+
 func TestParamsAndSecrets(t *testing.T) {
 	projectName := "params_and_secrets"
 	projectDir := filepath.Join(examplesDir, projectName)
-	NewTestscriptTest(t, projectDir).
+	NewTestscriptTest(t, projectDir, "").
 		ExecuteMakeTarget("build").
 		CopyFile("tmp/x.wasm").
 		CopyFile("config.toml").
@@ -116,7 +167,7 @@ func TestParamsAndSecrets(t *testing.T) {
 func TestRandom(t *testing.T) {
 	projectName := "random"
 	projectDir := filepath.Join(examplesDir, projectName)
-	NewTestscriptTest(t, projectDir).
+	NewTestscriptTest(t, projectDir, "").
 		ExecuteMakeTarget("build").
 		CopyFile("tmp/x.wasm").
 		CopyFile("config.toml").
@@ -130,7 +181,7 @@ func TestShipmentTrackingWithDHL(t *testing.T) {
 	requiredEnvVars := []string{
 		"YOUR_DHL_API_KEY",
 	}
-	NewTestscriptTest(t, projectDir).
+	NewTestscriptTest(t, projectDir, "").
 		ExecuteMakeTarget("build").
 		CopyFile("tmp/x.wasm").
 		CopyFile("config.toml").
@@ -141,7 +192,7 @@ func TestShipmentTrackingWithDHL(t *testing.T) {
 func TestTime(t *testing.T) {
 	projectName := "time"
 	projectDir := filepath.Join(examplesDir, projectName)
-	NewTestscriptTest(t, projectDir).
+	NewTestscriptTest(t, projectDir, "").
 		ExecuteMakeTarget("build").
 		CopyFile("tmp/x.wasm").
 		CopyFile("config.toml").
@@ -155,7 +206,7 @@ func TestTWAPAttestFnCall(t *testing.T) {
 	requiredEnvVars := []string{
 		"YOUR_COINGECKO_API_KEY",
 	}
-	NewTestscriptTest(t, projectDir).
+	NewTestscriptTest(t, projectDir, "").
 		ExecuteMakeTarget("build").
 		CopyFile("tmp/x.wasm").
 		CopyFile("config.toml").

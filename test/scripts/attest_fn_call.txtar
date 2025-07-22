@@ -6,3 +6,4 @@ cp stdout out.json
 # [check] assert stderr and stdout expected values
 exec jq -r '.transitive_attested_function_call.claims.output | @base64d' out.json
 stdout 'Hello, World!'
+saveFile out.json attest-fn-call-out.json
