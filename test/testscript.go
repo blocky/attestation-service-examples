@@ -58,6 +58,15 @@ func copyFile(src string, dst string) error {
 	return nil
 }
 
+func (e *TestscriptTest) SetEnv(key, value string) *TestscriptTest {
+	setupFunc := func(env *testscript.Env) error {
+		env.Setenv(key, value)
+		return nil
+	}
+	e.setupFuncs = append(e.setupFuncs, setupFunc)
+	return e
+}
+
 func (e *TestscriptTest) CopyFile(srcRelPath string) *TestscriptTest {
 	setupFunc := func(env *testscript.Env) error {
 		src := filepath.Join(e.projectDir, srcRelPath)
@@ -163,41 +172,36 @@ func (e *TestscriptTest) Run(scriptFile string) {
 	}
 	e.params.Files = []string{scriptFile}
 	e.params.Cmds = map[string]func(*testscript.TestScript, bool, []string){
-		"saveFile":            saveFileCmd("saveFile", e.saveDir),
+		"optionalSaveFile":    optionalSaveFile("optionalSaveFile"),
 		"setEnvValueFromFile": setEnvValueFromFileCmd("setEnvValueFromFile"),
 	}
 	testscript.Run(e.t, e.params)
 }
 
-func saveFileCmd(
+func optionalSaveFile(
 	cmdName string,
-	saveDir string,
 ) func(*testscript.TestScript, bool, []string) {
+	// saveFile bool src dst
 	return func(ts *testscript.TestScript, neg bool, args []string) {
 		workDir := ts.Getenv("WORK")
 		switch {
 		case neg:
 			ts.Fatalf("unsupported: ! %s", cmdName)
-		case len(args) != 2:
-			ts.Fatalf("usage: %s src dst", cmdName)
+		case len(args) != 3:
+			ts.Fatalf("usage: %s bool src dst", cmdName)
+		case args[0] != "true":
+			// if the first argument is not "true", skip the command
+			return
 		case workDir == "":
 			ts.Fatalf("WORK environment variable is not set")
-		case saveDir == "":
-			ts.Logf(
-				"save directory is not set. Skipping copy of '%s' to '%s'",
-				args[0],
-				args[1],
-			)
-			return
 		}
 
-		absSaveDir, err := filepath.Abs(saveDir)
+		dst, err := filepath.Abs(args[2])
 		if err != nil {
-			ts.Fatalf("failed to get absolute path of '%s': %v", saveDir, err)
+			ts.Fatalf("failed to get absolute path of '%s': %v", dst, err)
 		}
 
-		src := filepath.Join(workDir, args[0])
-		dst := filepath.Join(absSaveDir, args[1])
+		src := filepath.Join(workDir, args[1])
 		ts.Logf("Copying file '%s' to '%s'\n", src, dst)
 		err = copyFile(src, dst)
 		if err != nil {
