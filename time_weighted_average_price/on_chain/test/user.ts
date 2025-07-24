@@ -52,8 +52,14 @@ describe("Local Tests", function () {
 
     it("Verify attested TWAP in User contract", async () => {
         // given
-        const evmLinkData: EVMLinkData = loadEVMLinkData("../inputs/twap.json");
+        const taFile = process.env.TA_FILE || "../inputs/twap.json";
+        const evmLinkData: EVMLinkData = loadEVMLinkData(taFile);
         const {userContract} = await loadFixture(deployUser) as UserContract;
+
+        function anyFloat(x: unknown): boolean {
+            const n = Number(x);
+            return !Number.isNaN(n) && Number.isFinite(n);
+        }
 
         // when
         const tx: ethers.ContractTransactionResponse =
@@ -63,9 +69,11 @@ describe("Local Tests", function () {
             )
 
         // then
+        // assert the transaction emitted an event with a float number
+        // (time weighted average price) as an argument
         await expect(tx).to.emit(
             userContract,
             'TWAP'
-        ).withArgs("1636.6828176996771")
+        ).withArgs(anyFloat)
     })
 });

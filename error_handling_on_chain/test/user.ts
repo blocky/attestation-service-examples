@@ -52,7 +52,8 @@ describe("Local Test", function (): void {
 
     it("Verify TA and parse Result w/success", async (): Promise<void> => {
         // given
-        const evmLinkData: EVMLinkData = loadEVMLinkData("../inputs/out-success.json");
+        const taFile = process.env.TA_SUCCESS_FILE || "../inputs/out-success.json";
+        const evmLinkData: EVMLinkData = loadEVMLinkData(taFile);
         const {userContract} = await loadFixture(deployUser) as UserContract;
 
         // when
@@ -71,7 +72,8 @@ describe("Local Test", function (): void {
 
     it("Verify TA and parse Result w/error", async (): Promise<void> => {
         // given
-        const evmLinkData: EVMLinkData = loadEVMLinkData("../inputs/out-error.json");
+        const taFile = process.env.TA_ERROR_FILE || "../inputs/out-error.json";
+        const evmLinkData: EVMLinkData = loadEVMLinkData(taFile);
         const {userContract} = await loadFixture(deployUser) as UserContract;
 
         // when/then

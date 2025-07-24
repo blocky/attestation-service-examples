@@ -49,7 +49,8 @@ describe("Local Test", function (): void {
 
     it("Verify TA", async (): Promise<void> => {
         // given
-        const evmLinkData: EVMLinkData = loadEVMLinkData("../inputs/out.json");
+        const taFile = process.env.TA_FILE || "../inputs/out.json";
+        const evmLinkData: EVMLinkData = loadEVMLinkData(taFile);
         const publicKey: string = evmLinkData.publicKey;
 
         const {userContract} = await loadFixture(deployUser) as UserContract;

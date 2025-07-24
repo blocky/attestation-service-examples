@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"attestation-service-examples.test"
+	"github.com/stretchr/testify/require"
 )
 
 const liveTestConfigTemplate = `
@@ -31,7 +32,7 @@ func TestLiveCoinPricesFromCoingecko(t *testing.T) {
 
 	test.NewTestscriptTest(t, projectDir).
 		ExecuteMakeTarget("build").
-		CopyFile("tmp/x.wasm").
+		CopyProjectFile("tmp/x.wasm").
 		RenderTemplateFileFromEnvWithCleanup("fn-call.json", requiredEnvVars).
 		RenderTemplateStringFromEnvWithCleanup(
 			liveTestConfigTemplate,
@@ -52,15 +53,62 @@ func TestLiveErrorHandlingAttestFnCall(t *testing.T) {
 
 	test.NewTestscriptTest(t, projectDir).
 		ExecuteMakeTarget("build").
-		CopyFile("tmp/x.wasm").
+		CopyProjectFile("tmp/x.wasm").
 		RenderTemplateStringFromEnvWithCleanup(
 			liveTestConfigTemplate,
 			"config.toml",
 			requiredEnvVars).
-		CopyFile("successFunc.json").
-		CopyFile("errorFunc.json").
-		CopyFile("panicFunc.json").
+		CopyProjectFile("successFunc.json").
+		CopyProjectFile("errorFunc.json").
+		CopyProjectFile("panicFunc.json").
 		Run(filepath.Join(scriptDir, projectName+".txtar"))
+}
+
+func TestLiveErrorHandlingCombined(t *testing.T) {
+	errorHandlingOnChainDir := filepath.Join(examplesDir, "error_handling_on_chain")
+	onChainSuccessCopyProjectFile, err := filepath.Abs(filepath.Join(
+		errorHandlingOnChainDir,
+		"tmp/out-success.json",
+	))
+	require.NoError(t, err)
+	onChainErrorCopyProjectFile, err := filepath.Abs(filepath.Join(
+		errorHandlingOnChainDir,
+		"tmp/out-error.json",
+	))
+	require.NoError(t, err)
+
+	errorHandlingName := "error_handling_attest_fn_call"
+	t.Run(errorHandlingName, func(t *testing.T) {
+		errorHandlingDir := filepath.Join(examplesDir, errorHandlingName)
+		requiredEnvVars := []string{
+			"LIVE_TEST_PLATFORM",
+			"LIVE_TEST_CODE",
+			"LIVE_TEST_AUTH_TOKEN",
+			"LIVE_TEST_HOST",
+		}
+
+		test.NewTestscriptTest(t, errorHandlingDir).
+			ExecuteMakeTarget("build").
+			CopyProjectFile("tmp/x.wasm").
+			RenderTemplateStringFromEnvWithCleanup(
+				liveTestConfigTemplate,
+				"config.toml",
+				requiredEnvVars).
+			CopyProjectFile("successFunc.json").
+			CopyProjectFile("errorFunc.json").
+			CopyProjectFile("panicFunc.json").
+			CopyTestscriptFile("out-success.json", onChainSuccessCopyProjectFile).
+			CopyTestscriptFile("out-error.json", onChainErrorCopyProjectFile).
+			Run(filepath.Join(scriptDir, errorHandlingName+".txtar"))
+	})
+
+	require.FileExists(t, onChainSuccessCopyProjectFile)
+	require.FileExists(t, onChainErrorCopyProjectFile)
+	t.Setenv("TA_SUCCESS_FILE", onChainSuccessCopyProjectFile)
+	t.Setenv("TA_ERROR_FILE", onChainErrorCopyProjectFile)
+	test.NewHardhatTest(t, errorHandlingOnChainDir).
+		NPMInstall().
+		Run("--grep", "Local")
 }
 
 func TestLiveESportsDataFromPandaScore(t *testing.T) {
@@ -77,7 +125,7 @@ func TestLiveESportsDataFromPandaScore(t *testing.T) {
 
 	test.NewTestscriptTest(t, projectDir).
 		ExecuteMakeTarget("build").
-		CopyFile("tmp/x.wasm").
+		CopyProjectFile("tmp/x.wasm").
 		RenderTemplateStringFromEnvWithCleanup(
 			liveTestConfigTemplate,
 			"config.toml",
@@ -101,7 +149,7 @@ func TestLiveESportsDataFromRimble(t *testing.T) {
 
 	test.NewTestscriptTest(t, projectDir).
 		ExecuteMakeTarget("build").
-		CopyFile("tmp/x.wasm").
+		CopyProjectFile("tmp/x.wasm").
 		RenderTemplateStringFromEnvWithCleanup(
 			liveTestConfigTemplate,
 			"config.toml",
@@ -129,13 +177,50 @@ func TestLiveAttestFnCall(t *testing.T) {
 
 	test.NewTestscriptTest(t, projectDir).
 		ExecuteMakeTarget("main.wasm").
-		CopyFile("main.wasm").
+		CopyProjectFile("main.wasm").
 		RenderTemplateStringFromEnvWithCleanup(
 			liveTestConfigTemplate,
 			"config.toml",
 			requiredEnvVars).
-		CopyFile("fn-call.json").
+		CopyProjectFile("fn-call.json").
 		Run(filepath.Join(scriptDir, projectName+".txtar"))
+}
+
+func TestLiveAttestFnCallCombined(t *testing.T) {
+	helloWorldOnChainDir := filepath.Join(examplesDir, "hello_world_on_chain")
+	onChainCopyProjectFile, err := filepath.Abs(filepath.Join(
+		helloWorldOnChainDir,
+		"tmp/attest-fn-call-out.json",
+	))
+	require.NoError(t, err)
+
+	attestFnCallName := "attest_fn_call"
+	t.Run(attestFnCallName, func(t *testing.T) {
+		attestFnCallDir := filepath.Join(examplesDir, attestFnCallName)
+		requiredEnvVars := []string{
+			"LIVE_TEST_PLATFORM",
+			"LIVE_TEST_CODE",
+			"LIVE_TEST_AUTH_TOKEN",
+			"LIVE_TEST_HOST",
+		}
+
+		test.NewTestscriptTest(t, attestFnCallDir).
+			ExecuteMakeTarget("main.wasm").
+			CopyProjectFile("main.wasm").
+			RenderTemplateStringFromEnvWithCleanup(
+				liveTestConfigTemplate,
+				"config.toml",
+				requiredEnvVars).
+			CopyProjectFile("fn-call.json").
+			CopyTestscriptFile("out.json", onChainCopyProjectFile).
+			Run(filepath.Join(scriptDir, attestFnCallName+".txtar"))
+	})
+
+	require.FileExists(t, onChainCopyProjectFile)
+	t.Setenv("TA_FILE", onChainCopyProjectFile)
+	test.NewHardhatTest(t, helloWorldOnChainDir).
+		NPMInstall().
+		Run("--grep", "Local")
 }
 
 func TestLiveParamsAndSecrets(t *testing.T) {
@@ -150,13 +235,13 @@ func TestLiveParamsAndSecrets(t *testing.T) {
 
 	test.NewTestscriptTest(t, projectDir).
 		ExecuteMakeTarget("build").
-		CopyFile("tmp/x.wasm").
+		CopyProjectFile("tmp/x.wasm").
 		RenderTemplateStringFromEnvWithCleanup(
 			liveTestConfigTemplate,
 			"config.toml",
 			requiredEnvVars).
-		CopyFile("fn-call.json").
-		CopyFile("fn-call-error.json").
+		CopyProjectFile("fn-call.json").
+		CopyProjectFile("fn-call-error.json").
 		Run(filepath.Join(scriptDir, projectName+".txtar"))
 }
 
@@ -172,12 +257,12 @@ func TestLiveRandom(t *testing.T) {
 
 	test.NewTestscriptTest(t, projectDir).
 		ExecuteMakeTarget("build").
-		CopyFile("tmp/x.wasm").
+		CopyProjectFile("tmp/x.wasm").
 		RenderTemplateStringFromEnvWithCleanup(
 			liveTestConfigTemplate,
 			"config.toml",
 			requiredEnvVars).
-		CopyFile("fn-call.json").
+		CopyProjectFile("fn-call.json").
 		Run(filepath.Join(scriptDir, projectName+".txtar"))
 }
 
@@ -194,7 +279,7 @@ func TestLiveShipmentTrackingWithDHL(t *testing.T) {
 
 	test.NewTestscriptTest(t, projectDir).
 		ExecuteMakeTarget("build").
-		CopyFile("tmp/x.wasm").
+		CopyProjectFile("tmp/x.wasm").
 		RenderTemplateStringFromEnvWithCleanup(
 			liveTestConfigTemplate,
 			"config.toml",
@@ -215,11 +300,11 @@ func TestLiveTime(t *testing.T) {
 
 	test.NewTestscriptTest(t, projectDir).
 		ExecuteMakeTarget("build").
-		CopyFile("tmp/x.wasm").
+		CopyProjectFile("tmp/x.wasm").
 		RenderTemplateStringFromEnvWithCleanup(
 			liveTestConfigTemplate,
 			"config.toml",
 			requiredEnvVars).
-		CopyFile("fn-call.json").
+		CopyProjectFile("fn-call.json").
 		Run(filepath.Join(scriptDir, projectName+".txtar"))
 }
