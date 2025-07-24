@@ -85,4 +85,3 @@ cp stdout tmp/output.json
 exec jq -e '.Success == true' tmp/output.json
 exec jq -e '.Error == ""' tmp/output.json
 exec jq -e '(.Value|tostring|test("^[0-9]+(\\.[0-9]+)?$"))' tmp/output.json # verify the resulting TWAP price value is a reasonable price value
-saveFile tmp/twap.json twap.json

@@ -17,13 +17,11 @@ type TestscriptTest struct {
 	params     testscript.Params
 	setupFuncs []func(*testscript.Env) error
 	projectDir string
-	saveDir    string
 }
 
 func NewTestscriptTest(
 	t *testing.T,
 	projectDir string,
-	saveDir string,
 ) *TestscriptTest {
 	params := testscript.Params{
 		Files:               []string{},
@@ -35,7 +33,6 @@ func NewTestscriptTest(
 		t:          t,
 		params:     params,
 		projectDir: projectDir,
-		saveDir:    saveDir,
 	}
 }
 
@@ -58,11 +55,33 @@ func copyFile(src string, dst string) error {
 	return nil
 }
 
-func (e *TestscriptTest) CopyFile(srcRelPath string) *TestscriptTest {
+func (e *TestscriptTest) InputFile(srcRelPath string) *TestscriptTest {
 	setupFunc := func(env *testscript.Env) error {
 		src := filepath.Join(e.projectDir, srcRelPath)
 		dst := filepath.Join(env.WorkDir, srcRelPath)
 		return copyFile(src, dst)
+	}
+	e.setupFuncs = append(e.setupFuncs, setupFunc)
+	return e
+}
+
+func (e *TestscriptTest) OutputFile(srcRelPath string, dstAbsPath string) *TestscriptTest {
+	setupFunc := func(env *testscript.Env) error {
+		env.Defer(func() {
+			src := filepath.Join(env.WorkDir, srcRelPath)
+			if !filepath.IsAbs(dstAbsPath) {
+				e.t.Fatalf("destination path must be absolute: %s", dstAbsPath)
+			}
+			if err := copyFile(src, dstAbsPath); err != nil {
+				e.t.Fatalf(
+					"failed to copy file from '%s' to '%s': %v",
+					src,
+					dstAbsPath,
+					err,
+				)
+			}
+		})
+		return nil
 	}
 	e.setupFuncs = append(e.setupFuncs, setupFunc)
 	return e
@@ -163,47 +182,9 @@ func (e *TestscriptTest) Run(scriptFile string) {
 	}
 	e.params.Files = []string{scriptFile}
 	e.params.Cmds = map[string]func(*testscript.TestScript, bool, []string){
-		"saveFile":            saveFileCmd("saveFile", e.saveDir),
 		"setEnvValueFromFile": setEnvValueFromFileCmd("setEnvValueFromFile"),
 	}
 	testscript.Run(e.t, e.params)
-}
-
-func saveFileCmd(
-	cmdName string,
-	saveDir string,
-) func(*testscript.TestScript, bool, []string) {
-	return func(ts *testscript.TestScript, neg bool, args []string) {
-		workDir := ts.Getenv("WORK")
-		switch {
-		case neg:
-			ts.Fatalf("unsupported: ! %s", cmdName)
-		case len(args) != 2:
-			ts.Fatalf("usage: %s src dst", cmdName)
-		case workDir == "":
-			ts.Fatalf("WORK environment variable is not set")
-		case saveDir == "":
-			ts.Logf(
-				"save directory is not set. Skipping copy of '%s' to '%s'",
-				args[0],
-				args[1],
-			)
-			return
-		}
-
-		absSaveDir, err := filepath.Abs(saveDir)
-		if err != nil {
-			ts.Fatalf("failed to get absolute path of '%s': %v", saveDir, err)
-		}
-
-		src := filepath.Join(workDir, args[0])
-		dst := filepath.Join(absSaveDir, args[1])
-		ts.Logf("Copying file '%s' to '%s'\n", src, dst)
-		err = copyFile(src, dst)
-		if err != nil {
-			ts.Fatalf("failed to copy file '%s' to '%s': %v", src, dst, err)
-		}
-	}
 }
 
 func setEnvValueFromFileCmd(
