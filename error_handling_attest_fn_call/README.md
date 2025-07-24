@@ -15,7 +15,7 @@ functions
 - Report errors from your functions
 - Log errors in your functions
   
-## Setup
+## Setupf
 
 - Install the Blocky AS CLI by following the
   [setup instructions](https://blocky-docs.redocly.app/attestation-service/{{{AS_VERSION}}}/setup)
