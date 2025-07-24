@@ -18,8 +18,8 @@ func TestCoinPricesFromCoingecko(t *testing.T) {
 	}
 	NewTestscriptTest(t, projectDir).
 		ExecuteMakeTarget("build").
-		InputFile("tmp/x.wasm").
-		InputFile("config.toml").
+		CopyProjectFile("tmp/x.wasm").
+		CopyProjectFile("config.toml").
 		RenderTemplateFileFromEnvWithCleanup("fn-call.json", requiredEnvVars).
 		Run(filepath.Join(scriptDir, projectName+".txtar"))
 }
@@ -29,11 +29,11 @@ func TestErrorHandlingAttestFnCall(t *testing.T) {
 	projectDir := filepath.Join(examplesDir, projectName)
 	NewTestscriptTest(t, projectDir).
 		ExecuteMakeTarget("build").
-		InputFile("tmp/x.wasm").
-		InputFile("config.toml").
-		InputFile("successFunc.json").
-		InputFile("errorFunc.json").
-		InputFile("panicFunc.json").
+		CopyProjectFile("tmp/x.wasm").
+		CopyProjectFile("config.toml").
+		CopyProjectFile("successFunc.json").
+		CopyProjectFile("errorFunc.json").
+		CopyProjectFile("panicFunc.json").
 		Run(filepath.Join(scriptDir, projectName+".txtar"))
 }
 
@@ -47,12 +47,12 @@ func TestErrorHandlingOnChain(t *testing.T) {
 
 func TestErrorHandlingCombined(t *testing.T) {
 	errorHandlingOnChainDir := filepath.Join(examplesDir, "error_handling_on_chain")
-	onChainSuccessInputFile, err := filepath.Abs(filepath.Join(
+	onChainSuccessCopyProjectFile, err := filepath.Abs(filepath.Join(
 		errorHandlingOnChainDir,
 		"tmp/out-success.json",
 	))
 	require.NoError(t, err)
-	onChainErrorInputFile, err := filepath.Abs(filepath.Join(
+	onChainErrorCopyProjectFile, err := filepath.Abs(filepath.Join(
 		errorHandlingOnChainDir,
 		"tmp/out-error.json",
 	))
@@ -63,20 +63,20 @@ func TestErrorHandlingCombined(t *testing.T) {
 		errorHandlingDir := filepath.Join(examplesDir, errorHandlingName)
 		NewTestscriptTest(t, errorHandlingDir).
 			ExecuteMakeTarget("build").
-			InputFile("tmp/x.wasm").
-			InputFile("config.toml").
-			InputFile("successFunc.json").
-			InputFile("errorFunc.json").
-			InputFile("panicFunc.json").
-			OutputFile("out-success.json", onChainSuccessInputFile).
-			OutputFile("out-error.json", onChainErrorInputFile).
+			CopyProjectFile("tmp/x.wasm").
+			CopyProjectFile("config.toml").
+			CopyProjectFile("successFunc.json").
+			CopyProjectFile("errorFunc.json").
+			CopyProjectFile("panicFunc.json").
+			CopyTestscriptFile("out-success.json", onChainSuccessCopyProjectFile).
+			CopyTestscriptFile("out-error.json", onChainErrorCopyProjectFile).
 			Run(filepath.Join(scriptDir, errorHandlingName+".txtar"))
 	})
 
-	require.FileExists(t, onChainSuccessInputFile)
-	require.FileExists(t, onChainErrorInputFile)
-	t.Setenv("TA_SUCCESS_FILE", onChainSuccessInputFile)
-	t.Setenv("TA_ERROR_FILE", onChainErrorInputFile)
+	require.FileExists(t, onChainSuccessCopyProjectFile)
+	require.FileExists(t, onChainErrorCopyProjectFile)
+	t.Setenv("TA_SUCCESS_FILE", onChainSuccessCopyProjectFile)
+	t.Setenv("TA_ERROR_FILE", onChainErrorCopyProjectFile)
 	NewHardhatTest(t, errorHandlingOnChainDir).
 		NPMInstall().
 		Run("--grep", "Local")
@@ -91,8 +91,8 @@ func TestESportsDataFromPandaScore(t *testing.T) {
 	}
 	NewTestscriptTest(t, projectDir).
 		ExecuteMakeTarget("build").
-		InputFile("tmp/x.wasm").
-		InputFile("config.toml").
+		CopyProjectFile("tmp/x.wasm").
+		CopyProjectFile("config.toml").
 		RenderTemplateFileFromEnvWithCleanup("fn-call.json", requiredEnvVars).
 		Run(filepath.Join(scriptDir, projectName+".txtar"))
 }
@@ -108,8 +108,8 @@ func TestESportsDataFromRimble(t *testing.T) {
 
 	NewTestscriptTest(t, projectDir).
 		ExecuteMakeTarget("build").
-		InputFile("tmp/x.wasm").
-		InputFile("config.toml").
+		CopyProjectFile("tmp/x.wasm").
+		CopyProjectFile("config.toml").
 		RenderTemplateFileFromEnvWithCleanup(
 			"match-winner.json.template",
 			requiredEnvVars,
@@ -126,9 +126,9 @@ func TestAttestFnCall(t *testing.T) {
 	projectDir := filepath.Join(examplesDir, projectName)
 	NewTestscriptTest(t, projectDir).
 		ExecuteMakeTarget("main.wasm").
-		InputFile("main.wasm").
-		InputFile("config.toml").
-		InputFile("fn-call.json").
+		CopyProjectFile("main.wasm").
+		CopyProjectFile("config.toml").
+		CopyProjectFile("fn-call.json").
 		Run(filepath.Join(scriptDir, projectName+".txtar"))
 }
 
@@ -142,7 +142,7 @@ func TestHelloWorldOnChain(t *testing.T) {
 
 func TestAttestFnCallCombined(t *testing.T) {
 	helloWorldOnChainDir := filepath.Join(examplesDir, "hello_world_on_chain")
-	onChainInputFile, err := filepath.Abs(filepath.Join(
+	onChainCopyProjectFile, err := filepath.Abs(filepath.Join(
 		helloWorldOnChainDir,
 		"tmp/attest-fn-call-out.json",
 	))
@@ -153,15 +153,15 @@ func TestAttestFnCallCombined(t *testing.T) {
 		attestFnCallDir := filepath.Join(examplesDir, attestFnCallName)
 		NewTestscriptTest(t, attestFnCallDir).
 			ExecuteMakeTarget("main.wasm").
-			InputFile("main.wasm").
-			InputFile("config.toml").
-			InputFile("fn-call.json").
-			OutputFile("out.json", onChainInputFile).
+			CopyProjectFile("main.wasm").
+			CopyProjectFile("config.toml").
+			CopyProjectFile("fn-call.json").
+			CopyTestscriptFile("out.json", onChainCopyProjectFile).
 			Run(filepath.Join(scriptDir, attestFnCallName+".txtar"))
 	})
 
-	require.FileExists(t, onChainInputFile)
-	t.Setenv("TA_FILE", onChainInputFile)
+	require.FileExists(t, onChainCopyProjectFile)
+	t.Setenv("TA_FILE", onChainCopyProjectFile)
 	NewHardhatTest(t, helloWorldOnChainDir).
 		NPMInstall().
 		Run("--grep", "Local")
@@ -172,10 +172,10 @@ func TestParamsAndSecrets(t *testing.T) {
 	projectDir := filepath.Join(examplesDir, projectName)
 	NewTestscriptTest(t, projectDir).
 		ExecuteMakeTarget("build").
-		InputFile("tmp/x.wasm").
-		InputFile("config.toml").
-		InputFile("fn-call.json").
-		InputFile("fn-call-error.json").
+		CopyProjectFile("tmp/x.wasm").
+		CopyProjectFile("config.toml").
+		CopyProjectFile("fn-call.json").
+		CopyProjectFile("fn-call-error.json").
 		Run(filepath.Join(scriptDir, projectName+".txtar"))
 }
 
@@ -184,9 +184,9 @@ func TestRandom(t *testing.T) {
 	projectDir := filepath.Join(examplesDir, projectName)
 	NewTestscriptTest(t, projectDir).
 		ExecuteMakeTarget("build").
-		InputFile("tmp/x.wasm").
-		InputFile("config.toml").
-		InputFile("fn-call.json").
+		CopyProjectFile("tmp/x.wasm").
+		CopyProjectFile("config.toml").
+		CopyProjectFile("fn-call.json").
 		Run(filepath.Join(scriptDir, projectName+".txtar"))
 }
 
@@ -198,8 +198,8 @@ func TestShipmentTrackingWithDHL(t *testing.T) {
 	}
 	NewTestscriptTest(t, projectDir).
 		ExecuteMakeTarget("build").
-		InputFile("tmp/x.wasm").
-		InputFile("config.toml").
+		CopyProjectFile("tmp/x.wasm").
+		CopyProjectFile("config.toml").
 		RenderTemplateFileFromEnvWithCleanup("fn-call.json", requiredEnvVars).
 		Run(filepath.Join(scriptDir, projectName+".txtar"))
 }
@@ -209,9 +209,9 @@ func TestTime(t *testing.T) {
 	projectDir := filepath.Join(examplesDir, projectName)
 	NewTestscriptTest(t, projectDir).
 		ExecuteMakeTarget("build").
-		InputFile("tmp/x.wasm").
-		InputFile("config.toml").
-		InputFile("fn-call.json").
+		CopyProjectFile("tmp/x.wasm").
+		CopyProjectFile("config.toml").
+		CopyProjectFile("fn-call.json").
 		Run(filepath.Join(scriptDir, projectName+".txtar"))
 }
 
@@ -223,9 +223,9 @@ func TestTWAPAttestFnCall(t *testing.T) {
 	}
 	NewTestscriptTest(t, projectDir).
 		ExecuteMakeTarget("build").
-		InputFile("tmp/x.wasm").
-		InputFile("config.toml").
-		InputFile("twap-call.json.template").
+		CopyProjectFile("tmp/x.wasm").
+		CopyProjectFile("config.toml").
+		CopyProjectFile("twap-call.json.template").
 		RenderTemplateFileFromEnvWithCleanup("iteration-call.json.template", requiredEnvVars).
 		Run(filepath.Join(scriptDir, projectName+".txtar"))
 }
@@ -243,7 +243,7 @@ func TestTWAPCombined(t *testing.T) {
 		examplesDir,
 		"time_weighted_average_price/on_chain",
 	)
-	onChainInputFile, err := filepath.Abs(filepath.Join(
+	onChainCopyProjectFile, err := filepath.Abs(filepath.Join(
 		twapOnChainDir,
 		"tmp/twap.json",
 	))
@@ -257,22 +257,22 @@ func TestTWAPCombined(t *testing.T) {
 		}
 		NewTestscriptTest(t, twapAttestFnCallDir).
 			ExecuteMakeTarget("build").
-			InputFile("tmp/x.wasm").
-			InputFile("config.toml").
-			InputFile("twap-call.json.template").
+			CopyProjectFile("tmp/x.wasm").
+			CopyProjectFile("config.toml").
+			CopyProjectFile("twap-call.json.template").
 			RenderTemplateFileFromEnvWithCleanup(
 				"iteration-call.json.template",
 				requiredEnvVars,
 			).
-			OutputFile("tmp/twap.json", onChainInputFile).
+			CopyTestscriptFile("tmp/twap.json", onChainCopyProjectFile).
 			Run(filepath.Join(
 				scriptDir,
 				"time_weighted_average_price_attest_fn_call.txtar",
 			))
 	})
 
-	require.FileExists(t, onChainInputFile)
-	t.Setenv("TA_FILE", onChainInputFile)
+	require.FileExists(t, onChainCopyProjectFile)
+	t.Setenv("TA_FILE", onChainCopyProjectFile)
 	NewHardhatTest(t, twapOnChainDir).
 		NPMInstall().
 		Run("--grep", "Local")

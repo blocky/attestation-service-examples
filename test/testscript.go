@@ -55,7 +55,9 @@ func copyFile(src string, dst string) error {
 	return nil
 }
 
-func (e *TestscriptTest) InputFile(srcRelPath string) *TestscriptTest {
+// CopyProjectFile copies a file from the project directory to the test script's
+// working directory, preserving the relative path.
+func (e *TestscriptTest) CopyProjectFile(srcRelPath string) *TestscriptTest {
 	setupFunc := func(env *testscript.Env) error {
 		src := filepath.Join(e.projectDir, srcRelPath)
 		dst := filepath.Join(env.WorkDir, srcRelPath)
@@ -65,7 +67,12 @@ func (e *TestscriptTest) InputFile(srcRelPath string) *TestscriptTest {
 	return e
 }
 
-func (e *TestscriptTest) OutputFile(srcRelPath string, dstAbsPath string) *TestscriptTest {
+// CopyTestscriptFile copies a file from the test script's working directory
+// after script execution to an absolute destination path.
+func (e *TestscriptTest) CopyTestscriptFile(
+	srcRelPath string,
+	dstAbsPath string,
+) *TestscriptTest {
 	setupFunc := func(env *testscript.Env) error {
 		env.Defer(func() {
 			src := filepath.Join(env.WorkDir, srcRelPath)
