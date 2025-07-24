@@ -194,6 +194,8 @@ func (e *TestscriptTest) Run(scriptFile string) {
 	testscript.Run(e.t, e.params)
 }
 
+// setEnvValueFromFile reads the contents of a file (filePath) and sets an
+// environment variable (envKey) to the rendered contents of the file
 func setEnvValueFromFileCmd(
 	cmdName string,
 ) func(*testscript.TestScript, bool, []string) {
