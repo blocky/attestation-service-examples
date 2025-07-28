@@ -20,7 +20,7 @@
   #
   # This default value can be overwritten from the command line by using a valid
   # semver tag pointing to a stable version
-  #   `nix-shell --argstr asVersion v0.1.0-alpha.1`
+  #   `nix-shell --argstr cVersion v0.1.0-alpha.1`
   # or use the default value by omitting the argument, e.g.
   #   `nix-shell`
   cVersion ? "v0.1.0-beta.2",
@@ -49,7 +49,7 @@ mkDevShell {
     pkgs.jq # for processing data in examples
     pkgs.nixfmt-rfc-style # for formatting nix files
     pkgs.nodejs_22 # for on chain examples
-    pkgs.docker # for building wasm
+    pkgs.docker # for building wasm via bky-c
     pkgs.mo # for stamping version
     pkgs.cacert # for npm install
   ];

@@ -26,20 +26,22 @@ let
   bky-c-stable = pkgs.stdenv.mkDerivation {
     pname = "bky-c";
     version = cVersion;
-    src = builtins.fetchurl {
-      # todo: switch bky-as to bky-c
-      # url = "https://github.com/blocky/compiler/releases/download/${cVersion}/bky-c_v${cVersion}_${goos}_${goarch}";
-      # todo: until bky-c is released, download bky-as binary instead (to test the nix setup)
-      url = "https://github.com/blocky/attestation-service-cli/releases/download/${cVersion}/bky-as_${goos}_${goarch}";
-    };
+    src = ./fetch-bky-c.sh;
     unpackPhase = ":";
     installPhase = ''
-      install -D -m 555 $src $out/bin/bky-c
+      install -D -m 555 $src $out/bin/fetch-bky-c.sh
     '';
   };
 
   stableShell = pkgs.mkShellNoCC {
-    packages = devDependencies ++ [ bky-as-stable bky-c-stable ];
+    packages =
+      devDependencies
+      ++ [ bky-as-stable bky-c-stable ]
+      #dependencies required by the fetch script
+      ++ [
+        pkgs.curl
+        pkgs.jq
+      ];
     shellHook = ''
       set -e
       export AS_VERSION=${asVersion}
@@ -56,15 +58,19 @@ let
         find . -type f -name go.mod -execdir bash -c 'pwd && go get -u github.com/blocky/basm-go-sdk && go mod tidy' \;
       }
 
-      echo "Stable bky-as version: $AS_VERSION"
-      echo "Stable bky-c version: $C_VERSION"
+      bin=$(pwd)/tmp/bin
+      fetch-bky-c.sh $bin ${cVersion} ${goos} ${goarch}
+      export PATH=$bin:$PATH
+
+      echo "Stable shell bky-as version: $AS_VERSION"
+      echo "Stable shell bky-c version: $C_VERSION"
       set +e
     '';
   };
 
   bky-as-unstable = pkgs.stdenv.mkDerivation {
     pname = "bky-as";
-    asVersion = asVersion;
+    version = asVersion;
     src = ./fetch-bky-as.sh;
     unpackPhase = ":";
     installPhase = ''
@@ -76,8 +82,9 @@ let
     packages =
       devDependencies
       ++ [ bky-as-unstable bky-c-stable ]
-      #dependencies required by the fetch script
+      #dependencies required by the fetch scripts
       ++ [
+        pkgs.curl
         pkgs.gh
         pkgs.awscli2
         pkgs.jq
@@ -87,11 +94,13 @@ let
 
       bin=$(pwd)/tmp/bin
       fetch-bky-as.sh $bin ${asVersion} ${goos} ${goarch}
+      fetch-bky-c.sh $bin ${cVersion} ${goos} ${goarch}
       export PATH=$bin:$PATH
       export AS_VERSION=${asVersion};
+      export C_VERSION=${cVersion}
 
-      echo "Unstable bky-as version: $AS_VERSION"
-      echo "Unstable bky-c version: $C_VERSION"
+      echo "Unstable shell bky-as version: $AS_VERSION"
+      echo "Unstable shell bky-c version: $C_VERSION"
       set +e
     '';
   };
