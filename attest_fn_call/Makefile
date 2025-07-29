@@ -12,7 +12,7 @@ DEPS := go.mod go.sum
 
 main.wasm: $(SRCS) $(DEPS) | check
 	@echo "Building WASM module..."
-	@mkdir -p tmp
+	@mkdir -p -m 777 tmp
 	@bky-c build . tmp/x.wasm
 
 out.json: main.wasm fn-call.json | check

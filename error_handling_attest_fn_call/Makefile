@@ -1,7 +1,7 @@
 default: run-success
 
 tmp:
-	@mkdir -p tmp
+	@mkdir -p -m 777 tmp
 
 .PHONY: check
 check:
@@ -15,7 +15,6 @@ DEPS := go.mod go.sum
 
 tmp/x.wasm: $(SRCS) $(DEPS) | tmp check
 	@echo "Building WASM module..."
-	@mkdir -p tmp
 	@bky-c build . tmp/x.wasm
 
 .PHONY: build
