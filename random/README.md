@@ -116,14 +116,10 @@ it into a WASM file. If you inspect the `build` target in the
 [`Makefile`](./Makefile), you'll see the build command:
 
 ```bash
-@docker run --rm \
-    -v .:/src \
-    -w /src \
-    tinygo/tinygo:0.31.2 \
-    tinygo build -o tmp/x.wasm -target=wasi ./...
+@bky-c build . tmp/x.wasm
 ```
 
-where we use `docker` to run [`tinygo`](https://tinygo.org/) to compile
+where we use the `Blocky Compiler` (`bky-c`) to compile
 [`main.go`](./main.go) to WASM and save it to `tmp/x.wasm`. You can build our
 function by calling:
 
