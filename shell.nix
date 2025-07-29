@@ -12,7 +12,7 @@
   #   `nix-shell --argstr asVersion latest`
   # or use the default value by omitting the argument, e.g.
   #   `nix-shell`
-  asVersion ? "v0.1.0-beta.1",
+  asVersion ? "latest",
 
   # This value controls the default version of the bky-c cli that is setup in
   # the development shell. On all branches this value should be a valid semver
@@ -23,7 +23,7 @@
   #   `nix-shell --argstr cVersion v0.1.0-alpha.1`
   # or use the default value by omitting the argument, e.g.
   #   `nix-shell`
-  cVersion ? "v0.1.0-beta.2",
+  cVersion ? "latest",
 }:
 let
   nixpkgs = fetchTarball "https://github.com/NixOS/nixpkgs/tarball/nixos-24.11";

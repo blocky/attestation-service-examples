@@ -6,14 +6,14 @@ bin=$1
 version=$2
 os=$3
 arch=$4
-#arch="amd64"
 
-REPO="attestation-service-cli"
-APP="bky-as"
+REPO="compiler"
+APP="bky-c"
 
 mkdir -p $bin
 
 if [[ "${version}" == latest ]]; then
+  echo "Downloading latest ${APP} release"
   release=$(curl -s \
                   -H "Accept: application/vnd.github+json" \
                   -H "X-GitHub-Api-Version: 2022-11-28" \
@@ -25,21 +25,20 @@ if [[ "${version}" == latest ]]; then
                 | .[0]
             ')
   artifact="${APP}_${os}_${arch}"
-  echo "Wanted artifact: ${artifact}"
   url=$(echo "$release" | jq -r --arg name "${artifact}" '
     .assets[] | select(.name == $name) | .browser_download_url
   ')
-  echo $url
 else
+  echo "Downloading tagged ${APP} release: ${version}"
    base="https://github.com/blocky/${REPO}/releases/download"
    artifact="${APP}_${os}_${arch}"
    url="${base}/${version}/${artifact}"
-  echo $url
 fi
 
-echo "Downloading cli from: ${url}"
-if ! curl --silent --location --fail --show-error "${url}" -o "${bin}/bky-c"; then
+echo "Downloading ${APP} cli from: ${url}"
+if ! curl --silent --location --fail --show-error "${url}" -o "${bin}/${APP}"; then
     exit 1
 fi
-echo "Downloaded bky-c"
-chmod +x "${bin}/bky-c"
+
+echo "Downloaded ${APP}"
+chmod +x "${bin}/${APP}"
