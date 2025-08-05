@@ -1,6 +1,7 @@
 {
   pkgs,
-  version,
+  asVersion,
+  cVersion,
   devDependencies,
 }:
 let
@@ -12,9 +13,9 @@ let
 
   bky-as-stable = pkgs.stdenv.mkDerivation {
     pname = "bky-as";
-    version = version;
+    version = asVersion;
     src = builtins.fetchurl {
-      url = "https://github.com/blocky/attestation-service-cli/releases/download/${version}/bky-as_${goos}_${goarch}";
+      url = "https://github.com/blocky/attestation-service-cli/releases/download/${asVersion}/bky-as_${goos}_${goarch}";
     };
     unpackPhase = ":";
     installPhase = ''
@@ -22,11 +23,29 @@ let
     '';
   };
 
+  bky-c-stable = pkgs.stdenv.mkDerivation {
+    pname = "bky-c";
+    version = cVersion;
+    src = ./fetch-bky-c.sh;
+    unpackPhase = ":";
+    installPhase = ''
+      install -D -m 555 $src $out/bin/fetch-bky-c.sh
+    '';
+  };
+
   stableShell = pkgs.mkShellNoCC {
-    packages = devDependencies ++ [ bky-as-stable ];
+    packages =
+      devDependencies
+      ++ [ bky-as-stable bky-c-stable ]
+      #dependencies required by the fetch script
+      ++ [
+        pkgs.curl
+        pkgs.jq
+      ];
     shellHook = ''
       set -e
-      export AS_VERSION=${version}
+      export AS_VERSION=${asVersion}
+      export C_VERSION=${cVersion}
 
       render-md() {
         for file in $(git ls-files '*.md'); do
@@ -39,14 +58,19 @@ let
         find . -type f -name go.mod -execdir bash -c 'pwd && go get -u github.com/blocky/basm-go-sdk && go mod tidy' \;
       }
 
-      echo "Stable bky-as version: $AS_VERSION"
+      bin=$(pwd)/tmp/bin
+      fetch-bky-c.sh $bin ${cVersion} ${goos} ${goarch}
+      export PATH=$bin:$PATH
+
+      echo "Stable shell bky-as version: $AS_VERSION"
+      echo "Stable shell bky-c version: $C_VERSION"
       set +e
     '';
   };
 
   bky-as-unstable = pkgs.stdenv.mkDerivation {
     pname = "bky-as";
-    version = version;
+    version = asVersion;
     src = ./fetch-bky-as.sh;
     unpackPhase = ":";
     installPhase = ''
@@ -57,9 +81,10 @@ let
   unstableShell = pkgs.mkShellNoCC {
     packages =
       devDependencies
-      ++ [ bky-as-unstable ]
-      #dependencies required by the fetch script
+      ++ [ bky-as-unstable bky-c-stable ]
+      #dependencies required by the fetch scripts
       ++ [
+        pkgs.curl
         pkgs.gh
         pkgs.awscli2
         pkgs.jq
@@ -68,18 +93,21 @@ let
       set -e
 
       bin=$(pwd)/tmp/bin
-      fetch-bky-as.sh $bin ${version} ${goos} ${goarch}
+      fetch-bky-as.sh $bin ${asVersion} ${goos} ${goarch}
+      fetch-bky-c.sh $bin ${cVersion} ${goos} ${goarch}
       export PATH=$bin:$PATH
-      export AS_VERSION=${version};
+      export AS_VERSION=${asVersion};
+      export C_VERSION=${cVersion}
 
-      echo "Unstable bky-as version: $AS_VERSION"
+      echo "Unstable shell bky-as version: $AS_VERSION"
+      echo "Unstable shell bky-c version: $C_VERSION"
       set +e
     '';
   };
 in
-if isCommit version || version == "latest" then
+if isCommit asVersion || asVersion == "latest" then
   unstableShell
 else
-  # If the version is not a commit hash or "latest", we assume it is a stable
-  # release version.
+  # If the asVersion is not a commit hash or "latest", we assume it is a stable
+  # release asVersion.
   stableShell
