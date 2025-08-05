@@ -12,7 +12,6 @@ DEPS := go.mod go.sum
 
 main.wasm: $(SRCS) $(DEPS) | check
 	@echo "Building WASM module..."
-	chmod 777 .
 	@bky-c build . ./main.wasm
 
 out.json: main.wasm fn-call.json | check

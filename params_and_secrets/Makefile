@@ -1,7 +1,7 @@
 default: run
 
 tmp:
-	@mkdir -p -m 777 tmp
+	@mkdir -p tmp
 
 .PHONY: check
 check:
