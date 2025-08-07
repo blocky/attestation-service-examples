@@ -12,7 +12,7 @@
   #   `nix-shell --argstr asVersion latest`
   # or use the default value by omitting the argument, e.g.
   #   `nix-shell`
-  asVersion ? "latest",
+  asVersion ? "v0.1.0-beta.11",
 
   # This value controls the default version of the bky-c cli that is setup in
   # the development shell. On all branches this value should be a valid semver
