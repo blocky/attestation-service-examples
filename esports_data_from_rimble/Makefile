@@ -42,8 +42,8 @@ team-kill-diff: check build
 	@echo "Output:"
 	@jq -r '.transitive_attested_function_call.claims.output | @base64d | fromjson' tmp/out.json
 
-.PHONY: fetch-match-id
-fetch-match-id:
+.PHONY: fetch-match-id-and-date
+fetch-match-id-and-date:
 	@echo "Fetching recent match ID and date..."
 	@curl -s --location 'https://rimbleanalytics.com/raw/csgo/completed-matches/' \
 		--header 'x-api-key: $(RIMBLE_API_KEY)' \

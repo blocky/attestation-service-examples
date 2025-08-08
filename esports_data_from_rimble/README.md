@@ -22,9 +22,9 @@ In this example, you'll learn how to:
   [Docker](https://www.docker.com/) and [jq](https://jqlang.org/) installed on
   your system.
 - [Get a key for the Rimble API](https://documenter.getpostman.com/view/16449503/Tzm8FvFw#authentication)
-  and set it in your environment. For the purpose of this example, you can use
-   the demo key provided by Rimble. You can set the key in your environment
-  by running:
+  and set it in your environment. You may also use our demo key (below), but
+  note that its scope and quota are limited. You can set the key in your
+  environment by running:
 
   ```bash
    export RIMBLE_API_KEY=TU167z1Pwb9SAbUErPZN2aepia1MOsBN3nXbC1eE
@@ -40,10 +40,27 @@ match teams on a specific map.
 
 ### Step 1: Get match ID for the Rimble API
 
-You can use
+This example uses the
 [Rimble API](https://documenter.getpostman.com/view/16449503/Tzm8FvFw#682e4cd5-97b3-455d-aa52-51b57a819473)
-to get CS:GO matches. Let's say you're interested in match with the ID `2382613`
-that took place on 2025-06-20.
+to get CS:GO match data, but requires a match id and date as input. For the sake
+of convenience, we have provided a makefile target `fetch-match-id-and-date` to
+grab the id and date of the most recently completed CS:GO match. Of course,
+you can look up ids and dates for specific matches if you would prefer.
+
+```bash
+# Remember to set your Rimble API key in your environment
+export RIMBLE_API_KEY="your-rimble-api-key"
+
+# Fetch the most recent match ID and date
+make fetch-match-id-and-date
+Fetching recent match ID and date...
+Match ID: 2382613
+Date: 2025-06-20
+
+# Set the match ID and date as environment variables
+export RIMBLE_MATCH_ID="2382613"
+export RIMBLE_MATCH_DATE="2025-06-20"
+```
 
 ### Step 2: Create a parameterized function to attest match winner
 
@@ -229,7 +246,7 @@ func teamKillDifferenceFromRimble(inputPtr uint64, secretPtr uint64) uint64 {
 		return WriteError(outErr)
 	}
 
-	teamKillDiff, err := TeamKillDifferenceOnMap(match, input.Date, input.MapName)
+	teamKillDiff, err := TeamKillDifference(match, input.Date)
 	if err != nil {
 		outErr := fmt.Errorf("getting team kill difference: %w", err)
 		return WriteError(outErr)
@@ -241,30 +258,23 @@ func teamKillDifferenceFromRimble(inputPtr uint64, secretPtr uint64) uint64 {
 
 The `teamKillDifferenceFromRimble` function uses a helper function
 `getMatchDataFromRimble` to fetch the match data from the Rimble API. The
-`teamKillDifferenceFromRimble` function then calls the `TeamKillDifferenceOnMap`
-function to get the team kill difference on a particular map.
+`teamKillDifferenceFromRimble` function then calls the `TeamKillDifference`
+function to get the team kill difference for the match.
 
 ```go
 type TeamKillDiff struct {
 	MatchID  string
 	Date     string
-	MapName  string
 	Team1    string
 	Team2    string
 	KillDiff int
 }
 
-func TeamKillDifferenceOnMap(
+func TeamKillDifference(
 	match rimble.MatchData,
 	date string,
-	mapName string,
 ) (TeamKillDiff, error) {
-	gamesOnMap, err := match.GamesOnMap(mapName)
-	if err != nil {
-		return TeamKillDiff{}, fmt.Errorf("getting games on map: %w", err)
-	}
-
-	killDiff, err := match.TeamKillDifferenceInGames(gamesOnMap)
+	killDiff, err := match.TeamKillDifference(match.Metadata.Games)
 	if err != nil {
 		return TeamKillDiff{}, fmt.Errorf("getting team kill difference: %w", err)
 	}
@@ -273,7 +283,6 @@ func TeamKillDifferenceOnMap(
 		return TeamKillDiff{
 			MatchID:  match.MatchID,
 			Date:     date,
-			MapName:  mapName,
 			Team1:    match.Teams[1].Name,
 			Team2:    match.Teams[0].Name,
 			KillDiff: -killDiff,
@@ -283,7 +292,6 @@ func TeamKillDifferenceOnMap(
 	return TeamKillDiff{
 		MatchID:  match.MatchID,
 		Date:     date,
-		MapName:  mapName,
 		Team1:    match.Teams[0].Name,
 		Team2:    match.Teams[1].Name,
 		KillDiff: killDiff,
@@ -291,11 +299,8 @@ func TeamKillDifferenceOnMap(
 }
 ```
 
-In `TeamKillDifferenceOnMap`, we first get the games played on the map using
-the `MatchData.GamesOnMap` function defined in 
-[`rimble.go`](./rimble/rimble.go). We then form the `TeamKillDiff` struct
-where the `KillDiff` field is the difference in kills between `Team1` and
-`Team2`.
+In `TeamKillDifference`, we calculate the difference in kills between `Team1` 
+and `Team2` for all combined games played during the match.
 
 ### Step 5: Attest team kill difference
 
@@ -319,7 +324,6 @@ to get the output:
   "Value": {
     "MatchID": "2382613",
     "Date": "2025-06-20",
-    "MapName": "Inferno",
     "Team1": "paiN",
     "Team2": "FURIA",
     "KillDiff": 12
@@ -343,22 +347,14 @@ contains tests for the `rimble` package. You can run the tests using:
 make test-rimble
 ```
 
-The tests in [`rimble_test.go`](./rimble/rimble_test.go) use a response from the
-Rimble API saved in [`match_data.json`](./rimble/testdata/match_data.json).
-To update the test data with a fresh API response, you can run:
-
-```bash
-make update-rimble-test-data
-```
-
 ## Next steps
 
 Now that you have successfully run the example, you can start modifying it to
 fit your own needs. For example, you can add functions to 
 [`rimble.go`](rimble/rimble.go) to compute additional game statistics and then
 user them in [`main.go`](./main.go) to create additional Blocky AS oracle
-functions. You can also expand this example with an on chain component, you may
-explore the 
+functions. You can also expand this example with an on chain component.
+Explore the 
 [Hello World - Bringing A Blocky AS Function Call Attestation On Chain](../hello_world_on_chain/README.md)
-example to learn you can bring the match results and statistics into a smart
+example to learn how to bring the match results and statistics into a smart
 contract.
