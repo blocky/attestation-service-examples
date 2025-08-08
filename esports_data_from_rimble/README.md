@@ -22,9 +22,9 @@ In this example, you'll learn how to:
   [Docker](https://www.docker.com/) and [jq](https://jqlang.org/) installed on
   your system.
 - [Get a key for the Rimble API](https://documenter.getpostman.com/view/16449503/Tzm8FvFw#authentication)
-  and set it in your environment. For the purpose of this example, you can use
-   the demo key provided by Rimble. You can set the key in your environment
-  by running:
+  and set it in your environment. You may also use our demo key (below), but
+  note that its scope and quota may be more limited than regular keys.
+  You can set the key in your environment by running:
 
   ```bash
    export RIMBLE_API_KEY=TU167z1Pwb9SAbUErPZN2aepia1MOsBN3nXbC1eE
@@ -48,11 +48,16 @@ grab the id and date of the most recently completed CS:GO match. Of course,
 you can look up ids and dates for specific matches if you would prefer.
 
 ```bash
+# Remember to set your Rimble API key in your environment
 export RIMBLE_API_KEY="your-rimble-api-key"
+
+# Fetch the most recent match ID and date
 make fetch-match-id-and-date
 Fetching recent match ID and date...
 Match ID: 2382613
 Date: 2025-06-20
+
+# Set the match ID and date as environment variables
 export RIMBLE_MATCH_ID="2382613"
 export RIMBLE_MATCH_DATE="2025-06-20"
 ```
