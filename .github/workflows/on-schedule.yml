@@ -37,7 +37,7 @@ jobs:
         run: |
           response=$(curl \
             --fail \
-            -H "Authorization: ${{ secrets.TYK_GITHUB_WORKFLOW_API_TOKEN }}" \
+            -H "Authorization: ${{ secrets.BKY_GATEWAY_GITHUB_WORKFLOW_API_TOKEN }}" \
             https://api.bky.sh/staging/delphi/unsafe/inspect
           )
 
@@ -73,7 +73,7 @@ jobs:
 
       - name: Run Tests
         env:
-          LIVE_TEST_AUTH_TOKEN: ${{ secrets.TYK_GITHUB_WORKFLOW_API_TOKEN }}
+          LIVE_TEST_AUTH_TOKEN: ${{ secrets.BKY_GATEWAY_GITHUB_WORKFLOW_API_TOKEN }}
           LIVE_TEST_CODE: ${{ env.SERVER_CODE_MEASURE }}
           LIVE_TEST_HOST: https://api.bky.sh/staging/delphi
           LIVE_TEST_PLATFORM: ${{ env.SERVER_PLATFORM }}
