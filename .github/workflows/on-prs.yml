@@ -78,7 +78,8 @@ jobs:
         run: |
           nix-shell \
             --pure \
-            --argstr bkyAsVersion "latest" \
+            --argstr asVersion "latest" \
+            --argstr cVersion "latest" \
             --keep AWS_ACCESS_KEY_ID \
             --keep AWS_SECRET_ACCESS_KEY \
             --keep AWS_SESSION_TOKEN \
