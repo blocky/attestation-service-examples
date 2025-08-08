@@ -23,8 +23,8 @@ In this example, you'll learn how to:
   your system.
 - [Get a key for the Rimble API](https://documenter.getpostman.com/view/16449503/Tzm8FvFw#authentication)
   and set it in your environment. You may also use our demo key (below), but
-  note that its scope and quota may be more limited than regular keys.
-  You can set the key in your environment by running:
+  note that its scope and quota are limited. You can set the key in your
+  environment by running:
 
   ```bash
    export RIMBLE_API_KEY=TU167z1Pwb9SAbUErPZN2aepia1MOsBN3nXbC1eE
