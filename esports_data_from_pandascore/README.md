@@ -296,5 +296,5 @@ also lists the `match_id` of 1121861. Finally, we get the `winner`, `loser`,
 Now that you have successfully run the example, you can start modifying it to
 fit your own needs. If you want to take expand this 
 example with an on chain component, you may explore the
-[Hello World - Bringing A Blocky AS Function Call Attestation On Chain](../hello_world_on_chain/README.md)
+[Bringing A Blocky AS Function Call Attestation On Chain](../on_chain/README.md)
 example to learn you can bring the `MatchResult` struct into a smart contract.

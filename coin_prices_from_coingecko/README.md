@@ -273,5 +273,5 @@ Now that you have successfully run the example, you can start modifying it to
 fit your own needs. For example, you can try passing in different parameters to
 `priceFunc`, or changing out the API endpoint in `getPriceFromCoinGecko` to fetch data from
 a different API, or even multiple APIs. You may also want to explore the
-[Hello World - Bringing A Blocky AS Function Call Attestation On Chain](../hello_world_on_chain/README.md)
+[Bringing A Blocky AS Function Call Attestation On Chain](../on_chain/README.md)
 example to learn you can bring the `Price` struct into a smart contract.

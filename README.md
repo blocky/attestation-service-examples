@@ -14,7 +14,7 @@ following order:
    - Create a function that returns a `"Hello, World!"` message
    - Invoke functions in the Blocky AS using its `bky-as` CLI
    - Extract function output from the Blocky AS attestation
-- [Hello World - Bringing A Blocky AS Function Call Attestation On Chain](./hello_world_on_chain)
+- [Bringing A Blocky AS Function Call Attestation On Chain](on_chain)
   shows you how to bring a Blocky AS function call attestation on chain. You'll
   learn how to:
    - Write a smart contract to verify and parse a function call attestation
