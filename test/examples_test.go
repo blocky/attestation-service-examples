@@ -132,8 +132,8 @@ func TestAttestFnCall(t *testing.T) {
 		Run(filepath.Join(scriptDir, projectName+".txtar"))
 }
 
-func TestHelloWorldOnChain(t *testing.T) {
-	projectName := "hello_world_on_chain"
+func TestOnChain(t *testing.T) {
+	projectName := "on_chain"
 	projectDir := filepath.Join(examplesDir, projectName)
 	NewHardhatTest(t, projectDir).
 		NPMInstall().
@@ -141,9 +141,9 @@ func TestHelloWorldOnChain(t *testing.T) {
 }
 
 func TestAttestFnCallCombined(t *testing.T) {
-	helloWorldOnChainDir := filepath.Join(examplesDir, "hello_world_on_chain")
+	onChainDir := filepath.Join(examplesDir, "on_chain")
 	onChainCopyProjectFile, err := filepath.Abs(filepath.Join(
-		helloWorldOnChainDir,
+		onChainDir,
 		"tmp/attest-fn-call-out.json",
 	))
 	require.NoError(t, err)
@@ -162,7 +162,7 @@ func TestAttestFnCallCombined(t *testing.T) {
 
 	require.FileExists(t, onChainCopyProjectFile)
 	t.Setenv("TA_FILE", onChainCopyProjectFile)
-	NewHardhatTest(t, helloWorldOnChainDir).
+	NewHardhatTest(t, onChainDir).
 		NPMInstall().
 		Run("--grep", "Local")
 }

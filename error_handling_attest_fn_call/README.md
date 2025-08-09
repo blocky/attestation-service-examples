@@ -255,7 +255,7 @@ Now that you have successfully run the example, you can start modifying it to
 fit your own needs. 
 
 If you explored the 
-[Hello World - Bringing A Blocky AS Function Call Attestation On Chain](../hello_world_on_chain/README.md)
+[Bringing A Blocky AS Function Call Attestation On Chain](../on_chain/README.md)
 example, you can extend it to use `Result.Success` to decide whether you want to
 bring the attestation on chain or not. You can also extend the example, so that
 transactions calling the `User.sol` `verifyAttestedFnCallClaims` function revert
