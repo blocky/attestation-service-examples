@@ -16,7 +16,7 @@ contract User {
         console.log("\t%s: %s", label, string(data));
     }
 
-    function processTransitivelyAttestedHelloWorldOutput(
+    function processTransitiveAttestedFunctionCall(
         bytes calldata applicationPublicKey,
         bytes calldata transitiveAttestation
     )

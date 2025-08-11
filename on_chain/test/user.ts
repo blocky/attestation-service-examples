@@ -38,7 +38,7 @@ function loadEVMLinkData(jsonPath: string): EVMLinkData {
 
 interface UserContract extends ethers.Contract {
     // @ts-ignore
-    processTransitivelyAttestedHelloWorldOutput(publicKey: string, ta: string): Promise<ethers.ContractTransactionResponse>;
+    processTransitiveAttestedFunctionCall(publicKey: string, ta: string): Promise<ethers.ContractTransactionResponse>;
 }
 
 describe("Local Test", function (): void {
@@ -58,7 +58,7 @@ describe("Local Test", function (): void {
         // when
         const ta: string = evmLinkData.transitiveAttestation;
         const tx: ethers.ContractTransactionResponse =
-            await userContract.processTransitivelyAttestedHelloWorldOutput(
+            await userContract.processTransitiveAttestedFunctionCall(
             publicKey,
             ta,
         )
