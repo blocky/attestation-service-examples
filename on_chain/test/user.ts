@@ -49,7 +49,7 @@ describe("Local Test", function (): void {
 
     it("Verify TA", async (): Promise<void> => {
         // given
-        const taFile = process.env.TA_FILE || "../inputs/out.json";
+        const taFile = process.env.TA_FILE;
         const evmLinkData: EVMLinkData = loadEVMLinkData(taFile);
         const publicKey: string = evmLinkData.publicKey;
 
