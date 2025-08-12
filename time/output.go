@@ -35,6 +35,7 @@ func WriteError(err error) uint64 {
 	data, marshalErr := json.Marshal(result)
 	if marshalErr != nil {
 		basm.Log(fmt.Sprintf("Error marshalling Result: %v", marshalErr))
+		data = []byte(`{ "Success": false, "Error": "failed to marshal result" , "Value": null }`)
 	}
 	return basm.WriteToHost(data)
 }
