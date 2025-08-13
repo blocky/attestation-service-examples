@@ -1,4 +1,4 @@
-# Hello World - Bringing A Blocky AS Function Call Attestation On Chain
+# Bringing A Blocky AS Function Call Attestation On Chain
 
 This example shows you how to bring a Blocky AS function call attestation
 on chain. It builds on the 
