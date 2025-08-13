@@ -1,7 +1,7 @@
 # Error Handling - Handling Attested Function Call Errors On Chain
 
 This example shows you how to handle errors in Blocky AS function calls on chain.
-It builds on the [Hello World On Chain](../hello_world_on_chain) and the
+It builds on the [On Chain](../on_chain) and the
 [Error Handling - Attested Function Calls](../error_handling_attest_fn_call)
 examples, which show you how to verify and parse Blocky AS attestations on
 chain and handle errors returned by attested function calls.
@@ -49,7 +49,7 @@ within a local test environment:
 ### Step 1: Parse an attested function call `Result`
 We cover the basics of how to verify an attested function call in a smart
 contract in the
-[Hello World - Bringing A Blocky AS Function Call Attestation On Chain](../../hello_world_on_chain)
+[Bringing A Blocky AS Function Call Attestation On Chain](../on_chain)
 example.
 
 In this example, we go a step further and show you how to extract the `Result`

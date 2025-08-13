@@ -355,6 +355,6 @@ fit your own needs. For example, you can add functions to
 user them in [`main.go`](./main.go) to create additional Blocky AS oracle
 functions. You can also expand this example with an on chain component.
 Explore the 
-[Hello World - Bringing A Blocky AS Function Call Attestation On Chain](../hello_world_on_chain/README.md)
+[Bringing A Blocky AS Function Call Attestation On Chain](../on_chain/README.md)
 example to learn how to bring the match results and statistics into a smart
 contract.

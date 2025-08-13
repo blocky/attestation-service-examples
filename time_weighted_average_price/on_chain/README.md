@@ -4,7 +4,7 @@ This example shows you how to bring an attestation of time-weighted average pric
 on chain. It builds on the 
 [Attesting A Time-Weighted Average Price](../attest_fn_call) 
 example, which shows you how to obtain an attestation of a TWAP, and on the
-[Hello World - Bringing A Blocky AS Function Call Attestation On Chain](../../hello_world_on_chain)
+[Bringing A Blocky AS Function Call Attestation On Chain](../../on_chain)
 example, which shows you how to bring an attestation of a Blocky AS function
 call on chain.
 
@@ -41,7 +41,7 @@ within a local test environment and give your output like:
 
 We cover the basics of how to verify an attested function call in a smart 
 contract in the
-[Hello World - Bringing A Blocky AS Function Call Attestation On Chain](../../hello_world_on_chain)
+[Bringing A Blocky AS Function Call Attestation On Chain](../../on_chain)
 example. 
 
 In this example, we go a step further and show you how to parse out the 
