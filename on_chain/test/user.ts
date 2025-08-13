@@ -45,13 +45,13 @@ interface UserContract extends ethers.Contract {
     processTransitiveAttestedFunctionCall(ta: string): Promise<ethers.ContractTransactionResponse>;
 }
 
-describe("Local Test", function (): void {
+describe("User contract test", function (): void {
     async function deployUser(): Promise<{ userContract: User }> {
         const contract: User = await hre.ethers.deployContract("User");
         return {userContract: contract};
     }
 
-    it("Verify TA", async (): Promise<void> => {
+    it("Verify transitive attested function call", async (): Promise<void> => {
         // given
         const taFile = process.env.TA_FILE;
         const evmLinkData: EVMLinkData = loadEVMLinkData(taFile);

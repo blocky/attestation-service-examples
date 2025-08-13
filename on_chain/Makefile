@@ -1,6 +1,6 @@
 .PHONY: test-local
 test-local:
-	npx hardhat test --grep "Local"
+	npx hardhat test --grep "User contract"
 
 .PHONY: very-clean
 very-clean:

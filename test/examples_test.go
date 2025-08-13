@@ -156,7 +156,7 @@ func TestAttestFnCallCombined(t *testing.T) {
 	t.Setenv("TA_FILE", onChainCopyProjectFile)
 	NewHardhatTest(t, onChainDir).
 		NPMInstall().
-		Run("--grep", "Local")
+		Run("--grep", "User contract")
 }
 
 func TestParamsAndSecrets(t *testing.T) {
