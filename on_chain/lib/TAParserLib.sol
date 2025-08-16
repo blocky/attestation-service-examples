@@ -32,7 +32,7 @@ library TAParserLib {
         return address(uint160(uint256(keccak256(strippedPublicKey))));
     }
 
-    function verifyTransitivelyAttestedFnCall(
+    function verifyTransitiveAttestedFnCall(
         address applicationPublicKey,
         bytes calldata transitiveAttestation
     )

@@ -30,7 +30,10 @@ function loadEVMLinkData(jsonPath: string): EVMLinkData {
         const taBytes: Uint8Array = ethers.decodeBase64(j)
         const ta: string = Buffer.from(taBytes).toString('hex');
 
-        return {publicKey: `0x${publicKeyHex}`, transitiveAttestation: `0x${ta}`};
+        return {
+            publicKey: `0x${publicKeyHex}`,
+            transitiveAttestation: `0x${ta}`
+        };
     } catch (e) {
         throw new Error(`Error loading EVM link data: ` + e);
     }
@@ -38,35 +41,35 @@ function loadEVMLinkData(jsonPath: string): EVMLinkData {
 
 interface UserContract extends ethers.Contract {
     // @ts-ignore
-    processTransitivelyAttestedHelloWorldOutput(publicKey: string, ta: string): Promise<ethers.ContractTransactionResponse>;
+    setEnclaveAttestedAppPubKey(publicKey:string): Promise<ethers.ContractTransactionResponse>;
+    processTransitiveAttestedFunctionCall(ta: string): Promise<ethers.ContractTransactionResponse>;
 }
 
-describe("Local Test", function (): void {
+describe("User contract test", function (): void {
     async function deployUser(): Promise<{ userContract: User }> {
         const contract: User = await hre.ethers.deployContract("User");
         return {userContract: contract};
     }
 
-    it("Verify TA", async (): Promise<void> => {
+    it("Verify transitive attested function call", async (): Promise<void> => {
         // given
-        const taFile = process.env.TA_FILE || "../inputs/out.json";
+        const taFile = process.env.TA_FILE;
         const evmLinkData: EVMLinkData = loadEVMLinkData(taFile);
         const publicKey: string = evmLinkData.publicKey;
 
         const {userContract} = await loadFixture(deployUser) as UserContract;
 
+        await userContract.setEnclaveAttestedAppPubKey(publicKey);
+
         // when
         const ta: string = evmLinkData.transitiveAttestation;
         const tx: ethers.ContractTransactionResponse =
-            await userContract.processTransitivelyAttestedHelloWorldOutput(
-            publicKey,
-            ta,
-        )
+            await userContract.processTransitiveAttestedFunctionCall(ta);
 
         // then
-        await expect(tx).to.emit(
-            userContract,
-            'AttestedFunctionCallOutput'
-        ).withArgs("Hello, World!")
+        const expEvent = "AttestedFunctionCallOutput"
+        const expEventArg = "Hello, World!"
+        await expect(tx).to.emit(userContract, expEvent).withArgs(expEventArg);
+        console.log("\tprocessTransitiveAttestedFunctionCall emitted %s(%s)", expEvent, expEventArg);
     })
 });

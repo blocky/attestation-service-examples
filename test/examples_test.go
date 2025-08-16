@@ -132,14 +132,6 @@ func TestAttestFnCall(t *testing.T) {
 		Run(filepath.Join(scriptDir, projectName+".txtar"))
 }
 
-func TestOnChain(t *testing.T) {
-	projectName := "on_chain"
-	projectDir := filepath.Join(examplesDir, projectName)
-	NewHardhatTest(t, projectDir).
-		NPMInstall().
-		Run("--grep", "Local")
-}
-
 func TestAttestFnCallCombined(t *testing.T) {
 	onChainDir := filepath.Join(examplesDir, "on_chain")
 	onChainCopyProjectFile, err := filepath.Abs(filepath.Join(
@@ -164,7 +156,7 @@ func TestAttestFnCallCombined(t *testing.T) {
 	t.Setenv("TA_FILE", onChainCopyProjectFile)
 	NewHardhatTest(t, onChainDir).
 		NPMInstall().
-		Run("--grep", "Local")
+		Run("--grep", "User contract")
 }
 
 func TestParamsAndSecrets(t *testing.T) {
