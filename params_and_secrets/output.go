@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 
 	"github.com/blocky/basm-go-sdk/basm"
@@ -27,6 +28,10 @@ func WriteOutput(output any) uint64 {
 }
 
 func WriteError(err error) uint64 {
+	if err == nil {
+		err = errors.New("WriteError called with nil error")
+	}
+
 	result := Result{
 		Success: false,
 		Error:   err.Error(),
