@@ -9,9 +9,9 @@ cmp stdout expected-output.json
 
 -- expected-output.json --
 {
-  "Success": true,
-  "Error": "",
-  "Value": {
+  "success": true,
+  "error": "",
+  "value": {
     "league": "starcraft-2-pl-invitational",
     "serie": "starcraft-2-pl-invitational-2025",
     "tournament": "starcraft-2-pl-invitational-2025-playoffs",

@@ -5,7 +5,7 @@ cp stdout out-success.json
 
 # [check] assert stdout contains success output
 exec jq -c -r '.transitive_attested_function_call.claims.output | @base64d | fromjson' out-success.json
-stdout '{"Success":true,"Error":"","Value":{"number":42}}'
+stdout '{"success":true,"error":"","value":{"number":42}}'
 
 # [execute] function call that errors
 stdin errorFunc.json
@@ -14,7 +14,7 @@ cp stdout out-error.json
 
 # [check] assert stdout contains error output
 exec jq -c -r '.transitive_attested_function_call.claims.output | @base64d | fromjson' out-error.json
-stdout '{"Success":false,"Error":"expected error","Value":null}'
+stdout '{"success":false,"error":"expected error","value":null}'
 
 # [execute] function call that panics
 stdin panicFunc.json

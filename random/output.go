@@ -9,20 +9,9 @@ import (
 )
 
 type Result struct {
-	Success bool
-	Error   string
-	Value   any
-}
-
-func (r Result) JSONMarshalWithError(err error) []byte {
-	if err == nil {
-		err = errors.New("JSONMarshalWithError invoked with nil error")
-	}
-	resultStr := fmt.Sprintf(
-		`{ "Success": false, "Error": "%s" , "Value": null }`,
-		err.Error(),
-	)
-	return []byte(resultStr)
+	Success bool   `json:"success"`
+	Error   string `json:"error"`
+	Value   any    `json:"value"`
 }
 
 func WriteOutput(output any) uint64 {
@@ -32,13 +21,26 @@ func WriteOutput(output any) uint64 {
 	}
 	data, err := json.Marshal(result)
 	if err != nil {
-		basm.Log(fmt.Sprintf("Error marshalling Result: %v", err))
+		basm.Log(fmt.Sprintf("Error marshalling output Result: %v", err))
 		return WriteError(err)
 	}
 	return basm.WriteToHost(data)
 }
 
 func WriteError(err error) uint64 {
-	data := Result{}.JSONMarshalWithError(err)
+	if err == nil {
+		err = errors.New("WriteError called with nil error")
+	}
+
+	result := Result{
+		Success: false,
+		Error:   err.Error(),
+		Value:   nil,
+	}
+	data, marshalErr := json.Marshal(result)
+	if marshalErr != nil {
+		basm.Log(fmt.Sprintf("Error marshalling error Result: %v", marshalErr))
+		data = []byte(`{ "success": false, "error": "failed to marshal result" , "value": null }`)
+	}
 	return basm.WriteToHost(data)
 }
