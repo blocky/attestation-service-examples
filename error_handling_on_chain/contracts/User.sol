@@ -58,7 +58,7 @@ contract User {
                     tokens[i].end
                 );
 
-                if (keccak256(bytes(key)) == keccak256("Success")) {
+                if (keccak256(bytes(key)) == keccak256("success")) {
                     resultSuccess = JsmnSolLib.parseBool(
                         JsmnSolLib.getBytes(
                             resultString,
@@ -66,13 +66,13 @@ contract User {
                             tokens[i + 1].end
                         )
                     );
-                } else if (keccak256(bytes(key)) == keccak256("Error")) {
+                } else if (keccak256(bytes(key)) == keccak256("error")) {
                     resultError = JsmnSolLib.getBytes(
                         resultString,
                         tokens[i + 1].start,
                         tokens[i + 1].end
                     );
-                } else if (keccak256(bytes(key)) == keccak256("Value")) {
+                } else if (keccak256(bytes(key)) == keccak256("value")) {
                     valueString = JsmnSolLib.getBytes(
                         resultString,
                         tokens[i + 1].start,
