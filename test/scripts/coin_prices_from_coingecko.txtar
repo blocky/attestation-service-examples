@@ -6,4 +6,4 @@ cp stdout result.json
 # [check] assert stderr and stdout expected values
 exec jq -r '.transitive_attested_function_call.claims.output | @base64d | fromjson' result.json
 cp stdout output.json
-exec jq -e '.Success == true' output.json
+exec jq -e '.success == true' output.json
