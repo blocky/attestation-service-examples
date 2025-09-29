@@ -8,10 +8,10 @@
   "author": "Blocky, Inc.",
   "license": "MIT",
   "dependencies": {
-    "@nomicfoundation/hardhat-toolbox": "^5.0.0",
-    "dotenv": "^16.4.7",
+    "@nomicfoundation/hardhat-toolbox": "^6.1.0",
+    "dotenv": "^17.2.2",
     "hardhat": "^2.22.19",
-    "npm": "^10.9.0",
-    "solidity-bytes-utils": "^0.8.3"
+    "npm": "^11.6.1",
+    "solidity-bytes-utils": "^0.8.4"
   }
 }

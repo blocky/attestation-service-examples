@@ -19,7 +19,7 @@ In this example, you'll learn how to:
 ## Setup
 
 - Install the Blocky AS CLI by following the
-  [setup instructions](https://blocky-docs.redocly.app/attestation-service/{{{AS_VERSION}}}/setup)
+  [setup instructions](https://docs.blocky.rocks/attestation-service/{{{AS_VERSION}}}/setup)
   in the Blocky AS documentation.
 - Make sure you also have
   [Docker](https://www.docker.com/) and [jq](https://jqlang.org/) installed on

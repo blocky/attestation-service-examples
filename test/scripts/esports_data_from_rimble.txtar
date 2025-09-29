@@ -6,11 +6,11 @@ cp stdout result-match-winner.json
 # [check] assert stdout contains correct match information
 exec jq -r '.transitive_attested_function_call.claims.output | @base64d | fromjson' result-match-winner.json
 cp stdout output.json
-exec jq -e '.Success == true' output.json
-exec jq -e '.Error == ""' output.json
-exec jq -e '.Value.MatchID' output.json
-exec jq -e '.Value.Date' output.json
-exec jq -e '.Value.Winner' output.json
+exec jq -e '.success == true' output.json
+exec jq -e '.error == ""' output.json
+exec jq -e '.value.MatchID' output.json
+exec jq -e '.value.Date' output.json
+exec jq -e '.value.Winner' output.json
 
 # [execute] attest fn call to Rimble API for team kill information
 stdin team-kill-diff.json.template
@@ -20,10 +20,10 @@ cp stdout result-team-kill-diff.json
 # [check] assert stdout contains correct team kill information
 exec jq -r '.transitive_attested_function_call.claims.output | @base64d | fromjson' result-team-kill-diff.json
 cp stdout output.json
-exec jq -e '.Success == true' output.json
-exec jq -e '.Error == ""' output.json
-exec jq -e '.Value.MatchID' output.json
-exec jq -e '.Value.Date' output.json
-exec jq -e '.Value.Team1' output.json
-exec jq -e '.Value.Team2' output.json
-exec jq -e '.Value.KillDiff' output.json
+exec jq -e '.success == true' output.json
+exec jq -e '.error == ""' output.json
+exec jq -e '.value.MatchID' output.json
+exec jq -e '.value.Date' output.json
+exec jq -e '.value.Team1' output.json
+exec jq -e '.value.Team2' output.json
+exec jq -e '.value.KillDiff' output.json
