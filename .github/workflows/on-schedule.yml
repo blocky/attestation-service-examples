@@ -106,4 +106,4 @@ jobs:
             --keep YOUR_RIMBLE_API_KEY \
             --keep YOUR_RIMBLE_MATCH_DATE \
             --keep YOUR_RIMBLE_MATCH_ID \
-            --run "make test-live"
+            --run "make GO_TEST_FLAGS=-v test-live"
