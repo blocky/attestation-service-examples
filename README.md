@@ -1,3 +1,9 @@
+## :construction: Shutdown :construction:
+
+- Cron job scheduling in the github actions workflows have been commented
+  out. To resume scheduled runs, uncomment the `schedule` block in the
+  workflow files.
+
 # Blocky Attestation Service Examples
 
 This repository contains examples of how to use the Blocky Attestation

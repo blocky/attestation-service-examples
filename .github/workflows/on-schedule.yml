@@ -2,8 +2,9 @@ name: Scheduled Tests
 
 on:
   workflow_dispatch:
-  schedule:
-    - cron: '0 8 * * *'
+#  schedule:
+# As part of shelving Blocky, all github action cron jobs have been paused.
+#    - cron: '0 8 * * *'
 
 jobs:
   test-with-live-bky-server:
